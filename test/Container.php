@@ -232,24 +232,43 @@ var_dump( $result );
 echo( "\n" );
 
 echo( "Get array copy:\n" );
-echo( '$copy = $test->getArrayCopy();' . "\n" );
-$copy = $test->getArrayCopy();
-echo( 'test_Container::convertToArray( $copy );' . "\n" );
-test_Container::convertToArray( $copy );
-print_r( $copy );
+echo( '$converted = $copy = $test->getArrayCopy();' . "\n" );
+$converted = $copy = $test->getArrayCopy();
+echo( 'test_Container::convertToArray( $converted );' . "\n" );
+test_Container::convertToArray( $converted );
+print_r( $converted );
 
 echo( "\n" );
 
 echo( "Get converted copy:\n" );
-echo( '$copy = $test->asArray();' . "\n" );
-$copy = $test->asArray();
-print_r( $copy );
+echo( '$converted = $test->asArray();' . "\n" );
+$converted = $test->asArray();
+print_r( $converted );
 
 echo( "\n" );
 
 echo( "Convert to array:\n" );
 echo( '$test->toArray();' . "\n" );
 $test->toArray();
+print_r( $test );
+
+echo( "\n====================================================================================\n\n" );
+
+//
+// Instantiate with array.
+//
+echo( "Instantiate with array:\n" );
+echo( '$test = new test_Container( $copy );' . "\n" );
+$test = new test_Container( $copy );
+print_r( $test );
+
+echo( "\n" );
+
+echo( "Instantiate with object and convert:\n" );
+echo( '$new = new ArrayObject( $copy );' . "\n" );
+$new = new ArrayObject( $copy );
+echo( '$test = new test_Container( $new, TRUE );' . "\n" );
+$test = new test_Container( $new, TRUE );
 print_r( $test );
 
 

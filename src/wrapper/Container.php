@@ -71,7 +71,92 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @var array
 	 */
-	private $mProperties = [];
+	protected $mProperties = [];
+
+
+
+
+/*=======================================================================================
+ *																						*
+ *										MAGIC											*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	__construct																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate class.</h4>
+	 *
+	 * The class may be instantiated with an array, an ArrayObject or an instance of this
+	 * class.
+	 *
+	 * If the second parameter is <tt>TRUE</tt>, the provided properties will be converted
+	 * to an array ({@link convertToArray()}.
+	 *
+	 * @param mixed					$theProperties		Properties or <tt>NULL</tt>.
+	 * @param bool					$asArray			<tt>TRUE</tt> convert to array.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses convertToArray()
+	 *
+	 * @example
+	 * <code>
+	 * $test = new Container();                                 // Empty container.
+	 * $test = new Container( [1,2,3] );                        // With array.
+	 * $test = new Container( [1,2,3], TRUE );                  // With array, flattened.
+	 * $test = new Container( new ArrayObject( [1,2,3] ) );     // With ArrayObject.
+	 * $test = new Container( new Container( [1,2,3] ), TRUE ); // With Container flattened.
+	 * </code>
+	 */
+	public function __construct( $theProperties = NULL, bool $asArray = FALSE )
+	{
+		//
+		// Handle properties.
+		//
+		if( $theProperties !== NULL )
+		{
+			//
+			// Check container type.
+			//
+			if( is_array( $theProperties )
+			 || ($theProperties instanceof self)
+			 || ($theProperties instanceof \ArrayObject) )
+			{
+				//
+				// Flatten to array.
+				//
+				if( $asArray )
+					static::convertToArray( $theProperties );
+
+				//
+				// Handle arrays.
+				//
+				if( is_array( $theProperties ) )
+					$this->mProperties = $theProperties;
+
+				//
+				// Handle objects.
+				//
+				else
+					$this->mProperties = $theProperties->getArrayCopy();
+
+			} // Valid container type.
+
+			//
+			// Handle invalid type.
+			//
+			elseif( $theProperties !== NULL )
+				throw new \InvalidArgumentException(
+					"Provided invalid container type."
+				);																// !@! ==>
+
+		} // Provided properties.
+
+	} // Constructor.
 
 
 
@@ -115,10 +200,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				Offset value or <tt>NULL</tt>.
 	 *
+	 * @uses offsetExists()
+	 *
 	 * @example
-	 * $test->offsetGet( "offset" );  // Will return the value at that offset.<br/>
-	 * $test->offsetSet( "UNKNOWN" ); // Will not generate a warning and return
-	 * 									 <tt>NULL</tt>.<br/>
+	 * <code>
+	 * $test->offsetGet( "offset" );  // Will return the value at that offset.
+	 * $test->offsetSet( "UNKNOWN" ); // Will not generate a warning and return NULL.
+	 * </code>
 	 */
 	public function offsetGet( $theOffset )
 	{
@@ -147,9 +235,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string				$theOffset			Offset.
 	 * @param mixed					$theValue			Value to set at offset.
 	 *
+	 * @uses offsetUnset()
+	 *
 	 * @example
-	 * $test->offsetSet( "offset", "value" ); // Will set a value in that offset.<br/>
-	 * $test->offsetSet( "offset", NULL );    // Will unset that offset.<br/>
+	 * <code>
+	 * $test->offsetSet( "offset", "value" ); // Will set a value in that offset.
+	 * $test->offsetSet( "offset", NULL );    // Will unset that offset.
+	 * </code>
 	 */
 	public function offsetSet( $theOffset, $theValue )
 	{
@@ -186,7 +278,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string				$theOffset			Offset.
 	 *
 	 * @example
+	 * <code>
 	 * $test->offsetUnset( "UNKNOWN" ); // Will not generate a warning.
+	 * </code>
 	 */
 	public function offsetUnset( $theOffset )
 	{
@@ -221,7 +315,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function getIterator()
 	{
-		return new ArrayIterator( $this->mProperties );								// ==>
+		return new \ArrayIterator( $this->mProperties );							// ==>
 
 	} // getIterator.
 
@@ -308,9 +402,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Return a copy of the array.</h4><p />
+	 * <h4>Return a copy of the object properties.</h4><p />
 	 *
-	 * This method implements the ArrayObject method.
+	 * This method will return an array copy containing the properties of the object.
 	 *
 	 * @return array				Array copy.
 	 */
@@ -342,7 +436,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @return array				Converted array copy.
 	 *
+	 * @uses getArrayCopy()
 	 * @uses convertToArray()
+	 *
+	 * @example
+	 * <code>
+	 * $copy = $test->asArray(); // $copy contains an array converted copy of $test.
+	 * </code>
 	 */
 	public function asArray()
 	{
@@ -370,7 +470,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * This method can be used to convert any embedded ArrayObject property to an array.
 	 *
+	 * @uses referenceGet()
 	 * @uses convertToArray()
+	 *
+	 * @example
+	 * <code>
+	 * $test->asArray(); // Any embedded object property in $test will be converted to array.
+	 * </code>
 	 */
 	public function toArray()
 	{
@@ -403,6 +509,11 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * a copy.
 	 *
 	 * @param mixed				   &$theStructure		Structure to convert.
+	 *
+	 * @example
+	 * <code>
+	 * Container::convertToArray( $test ); // Any object element in $test will be converted to array.
+	 * </code>
 	 */
 	static function convertToArray( &$theStructure )
 	{
@@ -414,41 +525,16 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		 || ($theStructure instanceof self) )
 		{
 			//
-			// Get keys.
+			// Convert to array.
 			//
-			if( is_array( $theStructure ) )
-				$keys = array_keys( $theStructure );
-			elseif( $theStructure instanceof self )
-				$keys = $theStructure->array_keys();
-			else
-				$keys = array_keys( $theStructure->getArrayCopy() );
+			if( ! is_array( $theStructure ) )
+				$theStructure = $theStructure->getArrayCopy();
 
 			//
 			// Iterate keys.
 			//
-			foreach( $keys as $key )
-			{
-				//
-				// Handle structures.
-				//
-				if( is_array( $theStructure[ $key ] )
-				 || ($theStructure[ $key ] instanceof \ArrayObject)
-				 || ($theStructure[ $key ] instanceof self) )
-				{
-					//
-					// Convert objects.
-					//
-					if( ! is_array( $theStructure[ $key ] ) )
-						$theStructure[ $key ] = $theStructure[ $key ]->getArrayCopy();
-
-					//
-					// Traverse object.
-					//
-					static::convertToArray( $theStructure[ $key ] );
-
-				} // Found structure.
-
-			} // Iterating keys.
+			foreach( array_keys( $theStructure ) as $key )
+				static::convertToArray( $theStructure[ $key ] );
 
 		} // Provided a structure.
 
@@ -496,11 +582,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @return mixed				Old or current attribute value.
 	 *
 	 * @example
-	 * $this->manageAttribute( $member, "value" );       // Set new value.<br/>
-	 * $this->manageAttribute( $member, "value", true ); // Set new value and return old one.<br/>
-	 * $this->manageAttribute( $member, NULL );          // Return current value, or NULL.<br/>
+	 * <code>
+	 * $this->manageAttribute( $member, "value" );       // Set new value.
+	 * $this->manageAttribute( $member, "value", true ); // Set new value and return old one.
+	 * $this->manageAttribute( $member, NULL );          // Return current value, or NULL.
 	 * $this->manageAttribute( $member, FALSE );         // Reset attribute to NULL.
 	 * $this->manageAttribute( $member, FALSE, TRUE );   // Reset attribute to NULL and return old value.
+	 * </code>
 	 */
 	protected function manageAttribute( &$theMember, $theValue = NULL, bool $doOld = FALSE )
 	{
@@ -565,12 +653,18 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param bool					$doOld				<tt>TRUE</tt> return old value.
 	 * @return mixed				Old or current property value.
 	 *
+	 * @uses offsetGet()
+	 * @uses offsetSet()
+	 * @uses offsetUnset()
+	 *
 	 * @example
-	 * $this->manageProperty( $offset, "value" );       // Set value in offset.<br/>
-	 * $this->manageProperty( $offset, "value", TRUE ); // Set value in offset and return old value.<br/>
-	 * $this->manageProperty( $offset, NULL );          // Return current offset value.<br/>
+	 * <code>
+	 * $this->manageProperty( $offset, "value" );       // Set value in offset.
+	 * $this->manageProperty( $offset, "value", TRUE ); // Set value in offset and return old value.
+	 * $this->manageProperty( $offset, NULL );          // Return current offset value.
 	 * $this->manageProperty( $offset, FALSE );         // Delete offset and return NULL.
 	 * $this->manageProperty( $offset, FALSE, TRUE );   // Delete offset and return old value.
+	 * </code>
 	 */
 	protected function manageProperty( $theOffset, $theValue = NULL, bool $doOld = FALSE )
 	{
@@ -586,20 +680,34 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			return $save;															// ==>
 
 		//
-		// Set or reset property.
+		// Reset property.
 		//
 		if( $theValue === FALSE )
+		{
+			//
+			// Reset property.
+			//
 			$this->offsetUnset( $theOffset );
+
+			if( ! $doOld )
+				return NULL;														// ==>
+		}
+
+		//
+		// Set property.
+		//
 		else
+		{
+			//
+			// Set property.
+			//
 			$this->offsetSet( $theOffset, $theValue );
 
-		//
-		// Return old value.
-		//
-		if( $doOld )
-			return $save;															// ==>
+			if( ! $doOld )
+				return $theValue;													// ==>
+		}
 
-		return $this->offsetGet( $theOffset );										// ==>
+		return $save;																// ==>
 
 	} // manageProperty.
 
@@ -645,12 +753,17 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @return mixed				Old or current property value.
 	 * @throws \InvalidArgumentException
 	 *
+	 * @uses manageProperty()
+	 * @uses offsetExists()
+	 *
 	 * @example
-	 * $this->manageIndexedProperty( $offset );	// Will retrieve the full offset.<br/>
-	 * $this->manageIndexedProperty( $offset, FALSE ); // Will remove the full offset.<br/>
-	 * $this->manageIndexedProperty( $offset, 'key', 'value' ); // Will set the value at key "key" to "value".<br/>
-	 * $this->manageIndexedProperty( $offset, 'key' ); // Will retrieve the value at key "key".<br/>
-	 * $this->manageIndexedProperty( $offset, 'key', FALSE ); // Will reset the value at key "key".<br/>
+	 * <code>
+	 * $this->manageIndexedProperty( $offset );                 // Will retrieve the property at offset.
+	 * $this->manageIndexedProperty( $offset, FALSE );          // Will remove the property at offset.
+	 * $this->manageIndexedProperty( $offset, 'key', 'value' ); // Will set the property at key "key" to "value".
+	 * $this->manageIndexedProperty( $offset, 'key' );          // Will retrieve the property value at key "key".
+	 * $this->manageIndexedProperty( $offset, 'key', FALSE );   // Will reset the property at key "key".
+	 * </code>
 	 */
 	protected function manageIndexedProperty( $theOffset,
 											  $theKey = NULL, $theValue = NULL,
@@ -778,6 +891,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param bitfield				$theMask			Flag mask.
 	 * @param mixed					$theValue			New value or operation.
 	 * @return boolean				Current or previous attribute switch value.
+	 *
+	 * @example
+	 * <code>
+	 * $this->manageFlagAttribute( $attribute, $mask );     // Will return TRUE if any bit in $attribute matches $mask.
+	 * $this->manageFlagAttribute( $offset, $mask, TRUE );  // Will set $attribute bits matching set $mask bits.
+	 * $this->manageFlagAttribute( $offset, $mask, FALSE ); // Will reset $attribute bits matching set $mask bits.
+	 * </code>
 	 */
 	protected function manageFlagAttribute( &$theAttribute, $theMask, $theValue = NULL )
 	{
@@ -790,7 +910,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		//
 		// Save previous value.
 		//
-		$save = (boolean)($theAttribute & $theMask);
+		$save = (bool)($theAttribute & $theMask);
 
 		//
 		// Set flag.
@@ -834,6 +954,14 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				The property reference.
 	 * @throws \InvalidArgumentException
+	 *
+	 * @uses offsetExists()
+	 *
+	 * @example
+	 * <code>
+	 * $test = & $object->referenceGet( "offset" ); // Get reference to "offset" property.
+	 * $test = "new";                               // Sets "offset" property in $object to "new".
+	 * </code>
 	 */
 	protected function & referenceGet( $theOffset = NULL )
 	{
