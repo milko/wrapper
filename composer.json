@@ -1,0 +1,28 @@
+{
+	"name": "milko/wrapper",
+	"description": "A PHP library to wrap an ontology over data",
+	"version": "0.5-dev",
+	"type": "library",
+	"keywords": ["database", "ontology", "wrapper"],
+	"license": "MIT",
+	"authors":
+	[
+		{
+			"name": "Milko Škofič",
+			"email": "skofic@gmail.com",
+			"homepage": "https://www.linkedin.com/in/mskofic",
+			"role": "Architect"
+		}
+	],
+
+	"autoload": {
+		"psr-4": { "Milko\\": "src/" }
+	},
+	"require": {
+		"apigen/apigen": ">=4.1-dev",
+		"mongodb/mongodb": ">=1.0-dev",
+		"triagens/arangodb": ">=2.8-stable",
+		"devster/ubench": ">=1.2-stable",
+		"phpoffice/phpexcel": ">=1.8.1-stable"
+	}
+}
