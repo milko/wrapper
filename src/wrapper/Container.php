@@ -1737,10 +1737,16 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * structure and the provided offsets list will remain untouched; <em>if you provide an
 	 * empty offsets list, the method will behave as if no offsets match</em>.
 	 *
+	 * If the second parameter is <tt>TRUE</tt> and all offsets are matched, the method will
+	 * return the leaf offset in the offsets leaf and return a reference to the parent
+	 * property; if any offset is not matched the method will return an empty offsets list
+	 * and the returned reference is to be ignored.
+	 *
 	 * If any of the elements of the offsets list is not a scalar, the method will raise an
 	 * exception.
 	 *
 	 * @param mixed				   &$theOffsets			Offsets list.
+	 * @param bool					$getParent			<tt>TRUE</tt> return parent.
 	 * @return mixed				The property reference.
 	 * @throws \InvalidArgumentException
 	 *
@@ -1754,7 +1760,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
 	 * </code>
 	 */
-	protected function & nestedPropertyReference( array & $theOffsets )
+	protected function & nestedPropertyReference( array & $theOffsets,
+												  bool	  $getParent = FALSE )
 	{
 		//
 		// Init local storage.
@@ -1791,6 +1798,22 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			$reference = & $reference[ $offset ];
 
 		} // Traversing structure.
+
+		//
+		// Return parent reference.
+		//
+		if( $getParent
+		 && count( $theOffsets )
+		 && ($i >= count( $theOffsets )) )
+		{
+			//
+			// Update list.
+			//
+			$theOffsets = array_slice( $theOffsets, $i - 1 );
+
+			return $save;															// ==>
+
+		} // Return parent reference.
 
 		//
 		// Update list.
