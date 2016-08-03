@@ -51,6 +51,30 @@ class test_Container extends Container
 	{
 		return $this->manageIndexedProperty( $theOffset, $theKey, $theValue, $getOld );
 	}
+
+	//
+	// Declare property reference accessor method.
+	//
+	function & ReferenceProperty( $theOffset = NULL )
+	{
+		return $this->nestedGet( $theOffset );
+	}
+
+	//
+	// Declare nested property setter accessor method.
+	//
+	function NestedPropertySet( $theOffset, $theValue )
+	{
+		return $this->nestedSet( $theOffset, $theValue );
+	}
+
+	//
+	// Declare nested property setter accessor method.
+	//
+	function & test( array & $theOffset )
+	{
+		return $this->nestedPropertyReference( $theOffset );
+	}
 }
 
 //
@@ -76,6 +100,7 @@ echo( "Set new attribute:\n" );
 echo( '$result = $test->Attribute( "pippo" );' . "\n" );
 $result = $test->Attribute( "pippo" );
 var_dump( $result );
+print_r( $test );
 
 echo( "\n" );
 
@@ -213,7 +238,7 @@ print_r( $test );
 echo( "\n====================================================================================\n\n" );
 
 //
-// Build with embedded objects.
+// Test nested properties.
 //
 echo( "Build nested object:\n" );
 echo( '$test = new test_Container();' . "\n" );
@@ -224,10 +249,115 @@ print_r( $test );
 
 echo( "\n" );
 
+echo( "Check nested offsetExists():\n" );
+echo( '$result = $test->offsetExists( ["array", "obj", "obj", 0] );' . "\n" );
+$result = $test->offsetExists( ["array", "obj", "obj", 0] );
+var_dump( $result );
+echo( '$result = $test->offsetExists( ["array", "obj", 9, 0] );' . "\n" );
+$result = $test->offsetExists( ["array", "obj", 9, 0] );
+var_dump( $result );
+
+echo( "\n" );
+
+echo( "Check nested offsetGet():\n" );
+echo( '$result = $test->offsetGet( ["array", "obj", "obj", 0] );' . "\n" );
+$result = $test->offsetGet( ["array", "obj", "obj", 0] );
+var_dump( $result );
+echo( '$result = $test->offsetGet( ["array", "obj", 9, 0] );' . "\n" );
+$result = $test->offsetGet( ["array", "obj", 9, 0] );
+var_dump( $result );
+
+echo( "\n" );
+
+echo( "Check nested offsetSet():\n" );
+echo( '$test->offsetSet( ["array", "obj", "obj", 0], "NEW VALUE" );' . "\n" );
+$test->offsetSet( ["array", "obj", "obj", 0], "NEW VALUE" );
+print_r( $test );
+echo( '$test->offsetSet( ["array", "obj", "NEW", NULL], "INSERTED VALUE" );' . "\n" );
+$test->offsetSet( ["array", "obj", "NEW", NULL], "INSERTED VALUE" );
+print_r( $test );
+exit;
+
+echo( "\n" );
+
 echo( "Get nested property:\n" );
 echo( '$result = $test[ "array" ][ "obj" ][ "obj" ][ 0 ];' . "\n" );
 $result = $test[ "array" ][ "obj" ][ "obj" ][ 0 ];
 var_dump( $result );
+
+echo( "\n" );
+
+echo( "Get root properties:\n" );
+echo( '$result = & $test->ReferenceProperty();' . "\n" );
+$result = & $test->ReferenceProperty();
+print_r( $result );
+
+echo( "\n" );
+
+echo( "Get top level property:\n" );
+echo( '$result = & $test->ReferenceProperty( "array" );' . "\n" );
+$result = & $test->ReferenceProperty( "array" );
+print_r( $result );
+
+echo( "\n" );
+
+echo( "Get second level property:\n" );
+echo( '$result = & $test->ReferenceProperty( [ "array", 0 ] );' . "\n" );
+$result = & $test->ReferenceProperty( [ "array", 0 ] );
+print_r( $result );
+echo( "\n" );
+
+echo( "\n" );
+
+echo( "Get third level property:\n" );
+echo( '$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );' . "\n" );
+$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );
+print_r( $result );
+echo( "\n" );
+
+echo( "\n" );
+
+echo( "Set third level property:\n" );
+echo( '$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );' . "\n" );
+$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );
+echo( '$result = "MODIFIED";' . "\n" );
+$result = "MODIFIED";
+print_r( $test );
+
+echo( "\n" );
+
+echo( "Set last level property:\n" );
+echo( '$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 2 ] );' . "\n" );
+$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 2 ] );
+echo( '$result = "ALSO MODIFIED";' . "\n" );
+$result = "ALSO MODIFIED";
+print_r( $test );
+
+echo( "\n" );
+
+echo( "Set last level property:\n" );
+echo( '$test->NestedPropertySet( [ "array", "obj", "new", 1 ], "YET ANOTHER VALUE" );' . "\n" );
+$test->NestedPropertySet( [ "array", "obj", "new", 1 ], "YET ANOTHER VALUE" );
+print_r( $test );
+
+echo( "\n" );
+
+echo( "Get unknown property:\n" );
+echo( '$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 9 ] );' . "\n" );
+$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 9 ] );
+var_dump( $result );
+
+echo( "\n====================================================================================\n\n" );
+
+//
+// Test conversion.
+//
+echo( "Build nested object:\n" );
+echo( '$test = new test_Container();' . "\n" );
+$test = new test_Container();
+echo( '$test[ "array" ] = [ 1, 2, 3 ];' . "\n" );
+$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 1, 2, 3, "obj" => new ArrayObject( [9,8,7] ) ] ) ];
+print_r( $test );
 
 echo( "\n" );
 

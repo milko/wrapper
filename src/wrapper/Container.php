@@ -175,14 +175,72 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Check whether an offset exists.</h4><p />
 	 *
-	 * We implement this method to use the properties member array.
+	 * The method expects a single parameter that represents the property offset to match:
+	 *
+	 * <ul>
+	 * 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
+	 * 		level.
+	 * 	<li><i>list</i>: Will traverse the structure using the provided sequence of offsets.
+	 * 		If the list is empty it is assumed the offset doesn't exist. The list must be
+	 * 		provided as an array, Container or an ArrayObject, any other type will raise an
+	 * 		exception.
+	 * </ul>
+	 *
+	 * The method will raise an exception if the provided offset is not a scalar, array,
+	 * Container or ArrayObject and, if a list, if any element is not a scalar.
 	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return bool					<tt>TRUE</tt> the offset exists.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses getArrayCopy()
+	 * @uses nestedPropertyReference()
+	 *
+	 * @example
+	 * <code>
+	 * $test->offsetExists( "offset" );  // Will return TRUE if the offset exists.
+	 * $test->offsetExists( [1, 2, 3] ); // Will return TRUE if $test[1][2][3] exists.
+	 * </code>
 	 */
 	public function offsetExists( $theOffset )
 	{
-		return array_key_exists( $theOffset, $this->mProperties );					// ==>
+		//
+		// Handle scalar property.
+		//
+		if( is_scalar( $theOffset ) )
+			return array_key_exists( $theOffset, $this->mProperties );				// ==>
+
+		//
+		// Handle nested property.
+		//
+		if( is_array( $theOffset )
+		 || ($theOffset instanceof self)
+		 || ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Convert to array.
+			//
+			if( ! is_array( $theOffset ) )
+				$theOffset = $theOffset->getArrayCopy();
+
+			//
+			// Handle empty list.
+			//
+			if( ! count( $theOffset ) )
+				return FALSE;														// ==>
+
+			//
+			// Match offsets.
+			//
+			$this->nestedPropertyReference( $theOffset );
+
+			return (! (bool)count( $theOffset ) );									// ==>
+
+		} // Nested offset.
+
+		throw new \InvalidArgumentException(
+			"Invalid offset type."
+		);																		// !@! ==>
 
 	} // offsetExists.
 
@@ -197,26 +255,75 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * We overload this method to handle the case in which the offset does not exist: if
 	 * that is the case we return <tt>NULL</tt> instead of issuing a warning.
 	 *
+	 * The method expects a single parameter that represents the property offset to match:
+	 *
+	 * <ul>
+	 * 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
+	 * 		level.
+	 * 	<li><i>list</i>: Will traverse the structure using the provided sequence of offsets.
+	 * 		If the list is empty it is assumed the offset doesn't exist. The list must be
+	 * 		provided as an array, Container or an ArrayObject, any other type will raise an
+	 * 		exception.
+	 * </ul>
+	 *
+	 * The method will raise an exception if the provided offset is not a scalar, array,
+	 * Container or ArrayObject and, if a list, if any element is not a scalar.
+	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				Offset value or <tt>NULL</tt>.
 	 *
-	 * @uses offsetExists()
+	 * @uses getArrayCopy()
+	 * @uses nestedPropertyReference()
 	 *
 	 * @example
 	 * <code>
-	 * $test->offsetGet( "offset" );  // Will return the value at that offset.
-	 * $test->offsetSet( "UNKNOWN" ); // Will not generate a warning and return NULL.
+	 * $result = $test->offsetGet( "offset" );  // Will return the value at $test["offset"] or NULL.
+	 * $result = $test->offsetGet( [1, 2, 3] ); // Will return the value at $test[1][2][3] or NULL.
 	 * </code>
 	 */
 	public function offsetGet( $theOffset )
 	{
 		//
-		// Matched offset.
+		// Handle scalar property.
 		//
-		if( $this->offsetExists( $theOffset ) )
-			return $this->mProperties[ $theOffset ];								// ==>
+		if( is_scalar( $theOffset ) )
+			return ( $this->offsetExists( $theOffset ) )
+				 ? $this->mProperties[ $theOffset ]									// ==>
+				 : NULL;															// ==>
 
-		return NULL;																// ==>
+		//
+		// Handle nested property.
+		//
+		if( is_array( $theOffset )
+			|| ($theOffset instanceof self)
+			|| ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Convert to array.
+			//
+			if( ! is_array( $theOffset ) )
+				$theOffset = $theOffset->getArrayCopy();
+
+			//
+			// Handle empty list.
+			//
+			if( ! count( $theOffset ) )
+				return NULL;														// ==>
+
+			//
+			// Match offsets.
+			//
+			$value = $this->nestedPropertyReference( $theOffset );
+
+			return (! (bool)count( $theOffset ) )
+				 ? $value															// ==>
+				 : NULL;															// ==>
+
+		} // Nested offset.
+
+		throw new \InvalidArgumentException(
+			"Invalid offset type."
+		);																		// !@! ==>
 
 	} // offsetGet.
 
@@ -232,32 +339,163 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * parameter: if the offset exists it will be deleted, if not, the method will do
 	 * nothing.
 	 *
+	 * The method expects the following parameters:
+	 *
+	 * <ul>
+	 * 	<li><b>$theOffset</b>: The offset to set.
+	 *	 <ul>
+	 *	 	<li><tt>NULL</tt>: Will append the value to the structure.
+	 *	 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
+	 *	 		level.
+	 *	 	<li><i>list</i>: Will traverse the structure using the provided sequence of
+	 * 			offsets. If the list is empty it is assumed the offset doesn't exist, in
+	 * 			which case the method will do nothing. The list must be provided as an
+	 * 			array, Container or an ArrayObject, any other type will raise an exception.
+	 *	 </ul>
+	 * </ul>
+	 *
+	 * The method will raise an exception if the provided offset is not a scalar, array,
+	 * Container or ArrayObject and, if a list, if any element is not a scalar or NULL for
+	 * appending elements.
+	 *
 	 * @param string				$theOffset			Offset.
 	 * @param mixed					$theValue			Value to set at offset.
 	 *
+	 * @uses getArrayCopy()
+	 * @uses nestedPropertyReference()
 	 * @uses offsetUnset()
 	 *
 	 * @example
 	 * <code>
-	 * $test->offsetSet( "offset", "value" ); // Will set a value in that offset.
-	 * $test->offsetSet( "offset", NULL );    // Will unset that offset.
+	 * $test->offsetSet( "offset", "value" );     // Will set $test["offset"] to "value".
+	 * $test->offsetSet( "offset", NULL );        // Will unset $test["offset"].
+	 * $test->offsetSet( [1, 2, 3], "value" );    // Will set $test[1][2][3] to "value".
+	 * $test->offsetSet( [1, 2, NULL], "value" ); // Will set $test[1][2][] to "value".
 	 * </code>
 	 */
 	public function offsetSet( $theOffset, $theValue )
 	{
 		//
-		// Skip deletions.
+		// Handle set.
 		//
 		if( $theValue !== NULL )
 		{
-			if( $theOffset !== NULL )
-				$this->mProperties[ $theOffset ] = $theValue;
-			else
+			//
+			// Append.
+			//
+			if( $theOffset === NULL )
 				$this->mProperties[] = $theValue;
-		}
+
+			//
+			// Top level property.
+			//
+			elseif( is_scalar( $theOffset ) )
+				$this->mProperties[ $theOffset ] = $theValue;
+
+			//
+			// Handle nested property.
+			//
+			elseif( is_array( $theOffset )
+				 || ($theOffset instanceof self)
+				 || ($theOffset instanceof \ArrayObject) )
+			{
+				//
+				// Convert to array.
+				//
+				if( ! is_array( $theOffset ) )
+					$theOffset = $theOffset->getArrayCopy();
+
+				//
+				// Handle list.
+				//
+				if( count( $theOffset ) )
+				{
+					//
+					// Match offsets.
+					//
+					$reference = & $this->nestedPropertyReference( $theOffset );
+
+					//
+					// Set existing offset.
+					//
+					if( ! count( $theOffset ) )
+						$reference = $theValue;
+
+					//
+					// Initialise missing offsets.
+					//
+					else
+					{
+						//
+						// Iterate missing offsets.
+						//
+						while( TRUE )
+						{
+							//
+							// Get current offset.
+							//
+							$offset = array_shift( $theOffset );
+							if( ($offset !== NULL)
+							 && (! is_scalar( $offset )) )
+								throw new \InvalidArgumentException(
+									"Provided non scalar nested offset." );		// !@! ==>
+
+							//
+							// Handle append offset.
+							//
+							if( $offset === NULL )
+								$offset = ( is_array( $reference ) )
+									? count( $reference )
+									: $reference->count();
+
+							//
+							// Not leaf offset.
+							//
+							if( count( $theOffset ) )
+							{
+								//
+								// Allocate property.
+								//
+								$reference[ $offset ] = [];
+
+								//
+								// Reference property.
+								//
+								$reference = & $reference[ $offset ];
+
+							} // Not leaf offset.
+
+							//
+							// Handle leaf.
+							//
+							else
+								break;											// =>
+
+						} // Traversing structure.
+
+						//
+						// Set value.
+						//
+						$reference[ $offset ] = $theValue;
+
+					} // Initialising missing offsets.
+
+				} // Non empty list.
+
+			} // Nested offset.
+
+			//
+			// Handle invalid offset type.
+			//
+			else
+				throw new \InvalidArgumentException(
+					"Invalid offset type."
+				);																// !@! ==>
+
+		} // Set.
 
 		//
-		// Handle delete.
+		// Handle unset.
 		//
 		else
 			$this->offsetUnset( $theOffset );
@@ -275,6 +513,22 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * We overload this method to prevent warnings when a non-existing offset is provided,
 	 * in that case we do nothing.
 	 *
+	 * The method expects the following parameters:
+	 *
+	 * <ul>
+	 * 	<li><b>$theOffset</b>: The offset to unset.
+	 *	 <ul>
+	 *	 	<li><tt>scalar</tt>: Will unset the offset exists at the top structure level.
+	 *	 	<li><i>list</i>: Will traverse the structure using the provided sequence of
+	 * 			offsets. If the list is empty it is assumed the offset doesn't exist, in
+	 * 			which case the method will do nothing. The list must be provided as an
+	 * 			array, Container or an ArrayObject, any other type will raise an exception.
+	 *	 </ul>
+	 * </ul>
+	 *
+	 * The method will raise an exception if the provided offset is not a scalar, array,
+	 * Container or ArrayObject and, if a list, if any element is not a scalar.
+	 *
 	 * @param string				$theOffset			Offset.
 	 *
 	 * @example
@@ -285,10 +539,126 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	public function offsetUnset( $theOffset )
 	{
 		//
-		// Delete value.
+		// Top level property.
 		//
-		if( array_key_exists( $theOffset, $this->mProperties ) )
-			unset( $this->mProperties[ $theOffset ] );
+		if( is_scalar( $theOffset ) )
+		{
+			//
+			// Delete value.
+			//
+			if( array_key_exists( $theOffset, $this->mProperties ) )
+				unset( $this->mProperties[ $theOffset ] );
+
+		} // Scalar.
+
+		//
+		// Handle nested property.
+		//
+		elseif( is_array( $theOffset )
+			 || ($theOffset instanceof self)
+			 || ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Convert to array.
+			//
+			if( ! is_array( $theOffset ) )
+				$theOffset = $theOffset->getArrayCopy();
+
+			//
+			// Handle list.
+			//
+			if( count( $theOffset ) )
+			{
+				//
+				// Match offsets.
+				//
+				@@@ MILKO - Need to get parent reference and leaf offset @@@
+				$reference = & $this->nestedPropertyReference( $theOffset, TRUE );
+
+				//
+				// Handle existing offset.
+				//
+				if( ! count( $theOffset ) )
+				{
+
+				} // Existing offset.
+
+				//
+				// Set existing offset.
+				//
+				if( ! count( $theOffset ) )
+					$reference = $theValue;
+
+				//
+				// Initialise missing offsets.
+				//
+				else
+				{
+					//
+					// Iterate missing offsets.
+					//
+					while( TRUE )
+					{
+						//
+						// Get current offset.
+						//
+						$offset = array_shift( $theOffset );
+						if( ($offset !== NULL)
+							&& (! is_scalar( $offset )) )
+							throw new \InvalidArgumentException(
+								"Provided non scalar nested offset." );		// !@! ==>
+
+						//
+						// Handle append offset.
+						//
+						if( $offset === NULL )
+							$offset = ( is_array( $reference ) )
+								? count( $reference )
+								: $reference->count();
+
+						//
+						// Not leaf offset.
+						//
+						if( count( $theOffset ) )
+						{
+							//
+							// Allocate property.
+							//
+							$reference[ $offset ] = [];
+
+							//
+							// Reference property.
+							//
+							$reference = & $reference[ $offset ];
+
+						} // Not leaf offset.
+
+						//
+						// Handle leaf.
+						//
+						else
+							break;											// =>
+
+					} // Traversing structure.
+
+					//
+					// Set value.
+					//
+					$reference[ $offset ] = $theValue;
+
+				} // Initialising missing offsets.
+
+			} // Non empty list.
+
+		} // Nested offset.
+
+		//
+		// Handle invalid offset type.
+		//
+		else
+			throw new \InvalidArgumentException(
+				"Invalid offset type."
+			);																// !@! ==>
 
 	} // offsetUnset.
 
@@ -480,7 +850,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function toArray()
 	{
-		self::convertToArray( $this->referenceGet() );
+		self::convertToArray( $this->nestedGet() );
 
 	} // toArray.
 
@@ -939,17 +1309,29 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 
 	/*===================================================================================
-	 *	referenceGet																	*
+	 *	propertyReference																*
 	 *==================================================================================*/
 
 	/**
 	 * <h4>Return a property reference.</h4><p />
 	 *
-	 * This method will return a reference to a specific property, if the property offset
-	 * does not exist, the method will raise an exception.
+	 * This method will return a reference to the property identified by the provided
+	 * offset, the method accepts a single parameter:
 	 *
-	 * If you provide <tt>NULL</tt> as the offset, the method will return a reference to
-	 * the object's array.
+	 * <ul>
+	 * 	<li><tt>NULL</tt>: Return a reference of the root object properties.
+	 * 	<li><tt>scalar</tt>: Return a reference of the property identified by the provided
+	 * 		offset.
+	 * 	<li><i>list</i>: Return a reference of the nested property identified by the
+	 * 		provided sequence of offsets; if the list is empty, the method will return the
+	 * 		reference to the root object properties. The provided value must be an array,
+	 * 		Container or an ArrayObject.
+	 * 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
+	 * </ul>
+	 *
+	 * If the offset does not exist, the method will return a reference to a <tt>NULL</tt>
+	 * value: <em>if you get this type of result, you should never try to use the
+	 * reference</em>.
 	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				The property reference.
@@ -959,29 +1341,465 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @example
 	 * <code>
-	 * $test = & $object->referenceGet( "offset" ); // Get reference to "offset" property.
-	 * $test = "new";                               // Sets "offset" property in $object to "new".
+	 * $test = & $object->nestedGet();              // Get reference to $object properties.
+	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
+	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
+	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
 	 * </code>
 	 */
-	protected function & referenceGet( $theOffset = NULL )
+	protected function & propertyReference( $theOffset = NULL )
 	{
 		//
-		// Get array reference.
+		// Init local storage.
+		//
+		$scrap = NULL;
+
+		//
+		// Get root properties reference.
 		//
 		if( $theOffset === NULL )
 			return $this->mProperties;												// ==>
 
 		//
-		// Check property.
+		// Handle scalar offset.
 		//
-		if( $this->offsetExists( $theOffset ) )
+		if( is_scalar( $theOffset ) )
+		{
+			//
+			// Check property.
+			//
+			if( ! $this->offsetExists( $theOffset ) )
+				return $scrap;														// ==>
+
 			return $this->mProperties[ $theOffset ];								// ==>
 
+		} // Scalar offset.
+
+		//
+		// Handle nested property.
+		//
+		if( is_array( $theOffset )
+			|| ($theOffset instanceof self)
+			|| ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Get offsets count.
+			//
+			$count = ( is_array( $theOffset ) )
+				? count( $theOffset )
+				: $theOffset->count();
+
+			//
+			// Handle root properties.
+			//
+			if( ! $count )
+				return $this->mProperties;											// ==>
+
+			//
+			// Iterate offsets.
+			//
+			$reference = & $this->mProperties;
+			foreach( $theOffset as $offset )
+			{
+				//
+				// Check offset.
+				//
+				if( ! is_scalar( $offset ) )
+					throw new \InvalidArgumentException(
+						"Provided non scalar nested offset."
+					);															// !@! ==>
+
+				//
+				// Check property.
+				//
+				if( is_array( $reference ) )
+				{
+					if( ! array_key_exists( $offset, $reference ) )
+						return $scrap;												// ==>
+				}
+				elseif( ! $reference->offsetExists( $offset ) )
+					return $scrap;													// ==>
+
+				//
+				// Reference property.
+				//
+				$reference = & $reference[ $offset ];
+
+			} // Traversing structure.
+
+			return $reference;														// ==>
+
+		} // Nested property.
+
 		throw new \InvalidArgumentException(
-			"Unknown offset [$theOffset]."
+			"Invalid offset type."
 		);																		// !@! ==>
 
-	} // referenceGet.
+	} // propertyReference.
+
+
+	/*===================================================================================
+	 *	nestedGet																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return a nested property reference.</h4><p />
+	 *
+	 * This method will return a reference to a specific property, if the property offset
+	 * does not exist, the method will raise an exception.
+	 *
+	 * The method accepts a single parameter that represents the property offset:
+	 *
+	 * <ul>
+	 * 	<li><tt>NULL</tt>: Return a reference of the root object properties.
+	 * 	<li><tt>scalar</tt>: Return a reference of the property identified by the provided
+	 * 		offset.
+	 * 	<li><i>list</i>: Return a reference of the nested property identified by the
+	 * 		provided sequence of offsets; if the list is empty, the method will return the
+	 * 		reference to the root object properties. The provided value must be an array,
+	 * 		Container or an ArrayObject.
+	 * 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
+	 * </ul>
+	 *
+	 * If the offset does not exist, the method will return a reference to a <tt>NULL</tt>
+	 * value: <em>if you get this type of result, you should never try to use the
+	 * reference</em>.
+	 *
+	 * @param mixed					$theOffset			Offset.
+	 * @return mixed				The property reference.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses offsetExists()
+	 *
+	 * @example
+	 * <code>
+	 * $test = & $object->nestedGet();              // Get reference to $object properties.
+	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
+	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
+	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
+	 * </code>
+	 */
+	protected function & nestedGet( $theOffset = NULL )
+	{
+		//
+		// Init local storage.
+		//
+		$scrap = NULL;
+
+		//
+		// Get root properties reference.
+		//
+		if( $theOffset === NULL )
+			return $this->mProperties;												// ==>
+
+		//
+		// Handle scalar offset.
+		//
+		if( is_scalar( $theOffset ) )
+		{
+			//
+			// Check property.
+			//
+			if( ! $this->offsetExists( $theOffset ) )
+				return $scrap;														// ==>
+
+			return $this->mProperties[ $theOffset ];								// ==>
+
+		} // Scalar offset.
+
+		//
+		// Handle nested property.
+		//
+		if( is_array( $theOffset )
+		 || ($theOffset instanceof self)
+		 || ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Get offsets count.
+			//
+			$count = ( is_array( $theOffset ) )
+				? count( $theOffset )
+				: $theOffset->count();
+
+			//
+			// Handle root properties.
+			//
+			if( ! $count )
+				return $this->mProperties;											// ==>
+
+			//
+			// Iterate offsets.
+			//
+			$reference = & $this->mProperties;
+			foreach( $theOffset as $offset )
+			{
+				//
+				// Check offset.
+				//
+				if( ! is_scalar( $offset ) )
+					throw new \InvalidArgumentException(
+						"Provided non scalar nested offset."
+					);															// !@! ==>
+
+				//
+				// Check property.
+				//
+				if( is_array( $reference ) )
+				{
+					if( ! array_key_exists( $offset, $reference ) )
+						return $scrap;												// ==>
+				}
+				elseif( ! $reference->offsetExists( $offset ) )
+					return $scrap;													// ==>
+
+				//
+				// Reference property.
+				//
+				$reference = & $reference[ $offset ];
+
+			} // Traversing structure.
+
+			return $reference;														// ==>
+
+		} // Nested property.
+
+		throw new \InvalidArgumentException(
+			"Invalid offset type."
+		);																		// !@! ==>
+
+	} // nestedGet.
+
+
+	/*===================================================================================
+	 *	nestedSet																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Set a nested property.</h4><p />
+	 *
+	 * This method can be used to set a nested property value. A specific method is required
+	 * since it is not possible to use multiple level indexation when setting values.
+	 *
+	 * The method accepts two parameters:
+	 *
+	 * <ul>
+	 * 	<li><b>$theOffset</b>: The property offset:
+	 *	 <ul>
+	 *	 	<li><tt>NULL</tt>: Set the object root properties with the value; the value must
+	 * 			be an array, Container or ArrayObject.
+	 *	 	<li><tt>scalar</tt>: Set the property identified by the provided offset.
+	 *	 	<li><tt>array</tt>: Set the nested property identified by the provided sequence
+	 * 			of offsets; if the array is empty, the method will set the root object
+	 * 			properties; in the latter case the value must be an array, Container or
+	 * 			ArrayObject.
+	 *	 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
+	 *	 </ul>
+	 * 	<li><b>$theValue</b>: The property value.
+	 * </ul>
+	 *
+	 * If the offset does not exist, the method will create it; intermediate offsets will be
+	 * set as arrays by default.
+	 *
+	 * @param mixed					$theOffset			Property offset.
+	 * @param mixed					$theValue			Property value.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses offsetExists()
+	 *
+	 * @example
+	 * <code>
+	 * $test = & $object->nestedGet( "offset" ); // Get reference to "offset" property.
+	 * $test = "new";                               // Sets "offset" property in $object to "new".
+	 * </code>
+	 */
+	protected function nestedSet( $theOffset, $theValue )
+	{
+		//
+		// Set root properties.
+		//
+		if( $theOffset === NULL )
+		{
+			//
+			// Check value.
+			//
+			if( is_array( $theValue ) )
+				$this->mProperties = $theValue;
+			elseif( ($theValue instanceof self)
+				 || ($theValue instanceof \ArrayObject) )
+				$this->mProperties = $theValue->getArrayCopy();
+			else
+				throw new \InvalidArgumentException(
+					"Invalid value type."
+				);																// !@! ==>
+
+		} // Set root properties.
+
+		//
+		// Handle scalar offset.
+		//
+		elseif( is_scalar( $theOffset ) )
+			$this->offsetSet( $theOffset, $theValue );
+
+		//
+		// Handle nested property.
+		//
+		elseif( is_array( $theOffset )
+			 || ($theOffset instanceof self)
+			 || ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Convert offsets to array.
+			//
+			if( ! is_array( $theOffset ) )
+				$theOffset = $theOffset->getArrayCopy();
+
+			//
+			// Root properties.
+			//
+			if( ! count( $theOffset ) )
+				$this->nestedSet( NULL, $theValue );
+
+			//
+			// Nested properties.
+			//
+			else
+			{
+				//
+				// Iterate offsets.
+				//
+				$reference = & $this->mProperties;
+				while( TRUE )
+				{
+					//
+					// Get current offset.
+					//
+					$offset = array_shift( $theOffset );
+
+					//
+					// Handle leaf.
+					//
+					if( ! count( $theOffset ) )
+						break;													// =>
+
+					//
+					// Allocate property.
+					//
+					if( is_array( $reference ) )
+					{
+						if( ! array_key_exists( $offset, $reference ) )
+							$reference[ $offset ] = [];
+					}
+					elseif( ! $reference->offsetExists( $offset ) )
+						$reference[ $offset ] = [];
+
+					//
+					// Reference property.
+					//
+					$reference = & $reference[ $offset ];
+
+				} // Traversing structure.
+
+				//
+				// Set value.
+				//
+				$reference[ $offset ] = $theValue;
+
+			} // Nested property.
+
+		} // Nested property.
+
+		else
+			throw new \InvalidArgumentException(
+				"Invalid offset type."
+			);																	// !@! ==>
+
+	} // nestedSet.
+
+
+	/*===================================================================================
+	 *	nestedPropertyReference															*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the reference of a nested property.</h4><p />
+	 *
+	 * This method expects a list of offsets that represents the depth levels of the
+	 * structure, the method will traverse the structure and return the reference of the
+	 * last matched property and strip from the provided offsets array all matched offsets.
+	 *
+	 * If all offsets match, the method will return the reference of the leaf offset and the
+	 * provided offsets list will be empty.
+	 *
+	 * If an offset doesn't match, the method will return the reference of the last matching
+	 * property and the provided list will start with the first non matching offset.
+	 *
+	 * If not offsets match, the method will return the reference to the properties
+	 * structure and the provided offsets list will remain untouched; <em>if you provide an
+	 * empty offsets list, the method will behave as if no offsets match</em>.
+	 *
+	 * If any of the elements of the offsets list is not a scalar, the method will raise an
+	 * exception.
+	 *
+	 * @param mixed				   &$theOffsets			Offsets list.
+	 * @return mixed				The property reference.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses offsetExists()
+	 *
+	 * @example
+	 * <code>
+	 * $test = & $object->nestedGet();              // Get reference to $object properties.
+	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
+	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
+	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
+	 * </code>
+	 */
+	protected function & nestedPropertyReference( array & $theOffsets )
+	{
+		//
+		// Init local storage.
+		//
+		$reference = & $this->mProperties;
+
+		//
+		// Scan offsets.
+		//
+		for( $i = 0; $i < count( $theOffsets ); $i++ )
+		{
+			//
+			// Init local storage.
+			//
+			$save = & $reference;
+			$offset = $theOffsets[ $i ];
+
+			//
+			// Check offset.
+			//
+			if( ! is_scalar( $offset ) )
+				throw new \InvalidArgumentException(
+					"Provided non scalar nested offset." );						// !@! ==>
+
+			//
+			// Check property.
+			//
+			if( ! array_key_exists( $offset, $reference ) )
+				break;															// =>
+
+			//
+			// Reference property.
+			//
+			$reference = & $reference[ $offset ];
+
+		} // Traversing structure.
+
+		//
+		// Update list.
+		//
+		$theOffsets = array_slice( $theOffsets, $i );
+
+		return $reference;															// ==>
+
+	} // nestedPropertyReference.
 
 
 
