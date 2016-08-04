@@ -381,6 +381,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // Will return "three".
 	 * $result = $test->offsetGet( [ "nested", 1, 2, 3 ] );
 	 *
+	 * // Get an object property.
+	 * $result = $test[ explode( '.', "object.property.path" ) ];
+	 *
 	 * // Will return NULL.
 	 * $result = $test->offsetGet( [ "nested", 1, 2, "UNKNOWN", 3 ] );
 	 * </code>
@@ -492,6 +495,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * // Set $test[1][2][3] with "value", $test[1][2] and $test[1] will be arrays.
 	 * $test->offsetSet( [ 1, 2, 3 ], "value" );
+	 *
+	 * // Set an object property.
+	 * $test[ explode( '.', "object.property.path" ) ] = "value";
 	 *
 	 * // Delete $test[ "offset' ].
 	 * $test->offsetSet( "offset", NULL );
