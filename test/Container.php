@@ -71,18 +71,132 @@ class test_Container extends Container
 	//
 	// Declare nested property setter accessor method.
 	//
-	function & test( array & $theOffset )
+	function & GetNestedPropertyReference( array & $theOffset, bool $getParent = FALSE )
 	{
-		return $this->nestedPropertyReference( $theOffset );
+		return $this->nestedPropertyReference( $theOffset, $getParent );
 	}
 }
 
 //
 // Instantiate object.
 //
-echo( '$test = new test_Container();' . "\n\n" );
-$test = new test_Container();
+echo( '$test = new test_Container( [ "uno", "due", "tre" ] );' . "\n" );
+$test = new test_Container( [ "uno", "due", "tre" ] );
+echo( '$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];' . "\n" );
+$test = new test_Container( [ "uno", "due", "tre" ] );
+$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];
+$test[ "nested" ] = [ "one" => new ArrayObject( [ "two" => [ "three" => 3 ] ] ) ];
 print_r( $test );
+
+echo( "\n====================================================================================\n" );
+echo(   "= Test ArrayAccess Interface                                                       =\n" );
+echo(   "====================================================================================\n\n" );
+
+echo( "Check offsetExists():\n" );
+echo( '$result = $test->offsetExists( 1 );         ==> ' );
+$result = $test->offsetExists( 1 );
+echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetExists( "UNKNOWN" ); ==> ' );
+$result = $test->offsetExists( "UNKNOWN" );
+echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetExists( NULL );      ==> ' );
+$result = $test->offsetExists( NULL );
+echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check nested offsetExists():\n" );
+echo( '$result = $test->offsetExists( [ "array", "obj", "obj", 1 ] );     ==> ' );
+$result = $test->offsetExists( [ "array", "obj", "obj", 1 ] );
+echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetExists( [ "array", "obj", "UNKNOWN", 1 ] ); ==> ' );
+$result = $test->offsetExists( [ "array", "obj", "UNKNOWN", 1 ] );
+echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetExists( [ "array", "obj", NULL, 1 ] );      ==> ' );
+$result = $test->offsetExists( [ "array", "obj", NULL, 1 ] );
+echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check offsetGet():\n" );
+echo( '$result = $test->offsetGet( 1 );         ==> ' );
+$result = $test->offsetGet( 1 );
+echo( ($result === "due") ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetGet( "UNKNOWN" ); ==> ' );
+$result = $test->offsetGet( "UNKNOWN" );
+echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetGet( NULL );      ==> ' );
+$result = $test->offsetGet( NULL );
+echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check nested offsetGet():\n" );
+echo( '$result = $test->offsetGet( [ "array", "obj", "obj", 1 ] );     ==> ' );
+$result = $test->offsetGet( [ "array", "obj", "obj", 1 ] );
+echo( ($result === (int)8) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetGet( [ "array", "obj", "UNKNOWN", 1 ] ); ==> ' );
+$result = $test->offsetGet( [ "array", "obj", "UNKNOWN", 1 ] );
+echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->offsetGet( [ "array", "obj", NULL, 1 ] );      ==> ' );
+$result = $test->offsetGet( [ "array", "obj", NULL, 1 ] );
+echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check offsetSet():\n" );
+echo( '$test->offsetSet( NULL, "ADDED" );    ==> ' );
+$test->offsetSet( NULL, "ADDED" );
+echo( ($test[ 3 ] === "ADDED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( 1, "CHANGED" );     ==> ' );
+$test->offsetSet( 1, "CHANGED" );
+echo( ($test[ 1 ] === "CHANGED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( "UNKNOWN", "NEW" ); ==> ' );
+$test->offsetSet( "UNKNOWN", "NEW" );
+echo( ($test[ "UNKNOWN" ] === "NEW") ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check nested offsetSet():\n" );
+echo( '$test->offsetSet( [ "array", "obj", NULL, "ADD" ], "ADDED NESTED" ); ==> ' );
+$test->offsetSet( [ "array", "obj", NULL, "ADD" ], "ADDED NESTED" );
+echo( ($test[ "array" ][ "obj" ][ 4 ][ "ADD" ] === "ADDED NESTED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( [ "array", "obj", "obj", 1 ], "CHANGED NESTED" );  ==> ' );
+$test->offsetSet( [ "array", "obj", "obj", 1 ], "CHANGED NESTED" );
+echo( ($test[ "array" ][ "obj" ][ "obj" ][ 1 ] === "CHANGED NESTED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( [ "array", "obj", "NEW OFFSET", 1 ], "NEW NESTED" );  ==> ' );
+$test->offsetSet( [ "array", "obj", "NEW OFFSET", 1 ], "NEW NESTED" );
+echo( ($test[ "array" ][ "obj" ][ "NEW OFFSET" ][ 1 ] === "NEW NESTED") ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check offsetUnset():\n" );
+echo( '$test->offsetUnset( 1 );         ==> ' );
+$test->offsetUnset( 1 );
+echo( (! $test->offsetExists( 1 )) ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetUnset( "UNKNOWN" ); ==> ' );
+$test->offsetUnset( "UNKNOWN" );
+echo( (! $test->offsetExists( "UNKNOWN" )) ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetUnset( NULL );      ==> ' );
+$test->offsetUnset( NULL );
+echo( (! $test->offsetExists( NULL )) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n" );
+
+echo( "Check nested offsetUnset():\n" );
+echo( '$test->offsetUnset( [ "array", "obj", "obj", "UNKNOWN" ] ); ==> Should not raise an alert' . "\n" );
+$test->offsetUnset( [ "array", "obj", "obj", "UNKNOWN" ] );
+echo( '$test->offsetUnset( [ "array", "obj", "obj", 1 ] );         ==> ' );
+$test->offsetUnset( [ "array", "obj", "obj", 1 ] );
+echo( (! $test->offsetExists( [ "array", "obj", "obj", 1 ] )) ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetUnset( [ "array", "obj", "NEW OFFSET", 1 ] );  ==> ' );
+$test->offsetUnset( [ "array", "obj", "NEW OFFSET", 1 ] );
+$ok = ! ( $test->offsetExists( [ "array", "obj", "NEW OFFSET", 1 ] ) && $test->offsetExists( [ "array", "obj", "NEW OFFSET" ] ) );
+echo( ($ok) ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetUnset( [ "array", "obj", NULL, 1 ] );          ==> ' );
+$test->offsetUnset( [ "array", "obj", NULL, 1 ] );
+echo( (! $test->offsetExists( [ "array", "obj", NULL, 1 ] )) ? "OK\n" : "ERROR!\n" );
+exit;
 
 echo( "\n====================================================================================\n\n" );
 
@@ -238,114 +352,125 @@ print_r( $test );
 echo( "\n====================================================================================\n\n" );
 
 //
-// Test nested properties.
+// Test nestedPropertyReference().
 //
-echo( "Build nested object:\n" );
+echo( "Test nestedPropertyReference(): build test object.\n" );
 echo( '$test = new test_Container();' . "\n" );
 $test = new test_Container();
 echo( '$test[ "array" ] = [ 1, 2, 3 ];' . "\n" );
-$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 1, 2, 3, "obj" => new ArrayObject( [9,8,7] ) ] ) ];
+$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];
 print_r( $test );
 
 echo( "\n" );
 
-echo( "Check nested offsetExists():\n" );
-echo( '$result = $test->offsetExists( ["array", "obj", "obj", 0] );' . "\n" );
-$result = $test->offsetExists( ["array", "obj", "obj", 0] );
-var_dump( $result );
-echo( '$result = $test->offsetExists( ["array", "obj", 9, 0] );' . "\n" );
-$result = $test->offsetExists( ["array", "obj", 9, 0] );
-var_dump( $result );
-
-echo( "\n" );
-
-echo( "Check nested offsetGet():\n" );
-echo( '$result = $test->offsetGet( ["array", "obj", "obj", 0] );' . "\n" );
-$result = $test->offsetGet( ["array", "obj", "obj", 0] );
-var_dump( $result );
-echo( '$result = $test->offsetGet( ["array", "obj", 9, 0] );' . "\n" );
-$result = $test->offsetGet( ["array", "obj", 9, 0] );
-var_dump( $result );
-
-echo( "\n" );
-
-echo( "Check nested offsetSet():\n" );
-echo( '$test->offsetSet( ["array", "obj", "obj", 0], "NEW VALUE" );' . "\n" );
-$test->offsetSet( ["array", "obj", "obj", 0], "NEW VALUE" );
-print_r( $test );
-echo( '$test->offsetSet( ["array", "obj", "NEW", NULL], "INSERTED VALUE" );' . "\n" );
-$test->offsetSet( ["array", "obj", "NEW", NULL], "INSERTED VALUE" );
-print_r( $test );
-exit;
-
-echo( "\n" );
-
-echo( "Get nested property:\n" );
-echo( '$result = $test[ "array" ][ "obj" ][ "obj" ][ 0 ];' . "\n" );
-$result = $test[ "array" ][ "obj" ][ "obj" ][ 0 ];
-var_dump( $result );
-
-echo( "\n" );
-
-echo( "Get root properties:\n" );
-echo( '$result = & $test->ReferenceProperty();' . "\n" );
-$result = & $test->ReferenceProperty();
+echo( "Check empty offsets list:\n" );
+echo( '$list = [];' . "\n" );
+$list = [];
+echo( '$result = $test->GetNestedPropertyReference( $list );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list );
+echo( "Reference: " );
 print_r( $result );
+echo( "List: " );
+var_dump( $list );
 
 echo( "\n" );
 
-echo( "Get top level property:\n" );
-echo( '$result = & $test->ReferenceProperty( "array" );' . "\n" );
-$result = & $test->ReferenceProperty( "array" );
-print_r( $result );
-
-echo( "\n" );
-
-echo( "Get second level property:\n" );
-echo( '$result = & $test->ReferenceProperty( [ "array", 0 ] );' . "\n" );
-$result = & $test->ReferenceProperty( [ "array", 0 ] );
-print_r( $result );
-echo( "\n" );
-
-echo( "\n" );
-
-echo( "Get third level property:\n" );
-echo( '$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );' . "\n" );
-$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );
-print_r( $result );
-echo( "\n" );
-
-echo( "\n" );
-
-echo( "Set third level property:\n" );
-echo( '$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );' . "\n" );
-$result = & $test->ReferenceProperty( [ "array", "obj", 1 ] );
-echo( '$result = "MODIFIED";' . "\n" );
-$result = "MODIFIED";
-print_r( $test );
-
-echo( "\n" );
-
-echo( "Set last level property:\n" );
-echo( '$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 2 ] );' . "\n" );
-$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 2 ] );
-echo( '$result = "ALSO MODIFIED";' . "\n" );
-$result = "ALSO MODIFIED";
-print_r( $test );
-
-echo( "\n" );
-
-echo( "Set last level property:\n" );
-echo( '$test->NestedPropertySet( [ "array", "obj", "new", 1 ], "YET ANOTHER VALUE" );' . "\n" );
-$test->NestedPropertySet( [ "array", "obj", "new", 1 ], "YET ANOTHER VALUE" );
-print_r( $test );
-
-echo( "\n" );
-
-echo( "Get unknown property:\n" );
-echo( '$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 9 ] );' . "\n" );
-$result = & $test->ReferenceProperty( [ "array", "obj", "obj", 9 ] );
+echo( "Check all offsets match:\n" );
+echo( '$list = [ "array", "obj", "obj", 0 ];' . "\n" );
+$list = [ "array", "obj", "obj", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list );
+echo( "Reference: " );
 var_dump( $result );
+echo( "List: " );
+print_r( $list );
+
+echo( "\n" );
+
+echo( "Check one offset unmatch:\n" );
+echo( '$list = [ "array", "obj", "UNKNOWN", 0 ];' . "\n" );
+$list = [ "array", "obj", "UNKNOWN", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+print_r( $list );
+
+echo( "\n" );
+
+echo( "Check all offsets unmatch:\n" );
+echo( '$list = [ "UNKNOWN", "obj", "obj", 0 ];' . "\n" );
+$list = [ "UNKNOWN", "obj", "obj", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+print_r( $list );
+
+echo( "\n====================================================================================\n\n" );
+
+//
+// Test nestedPropertyReference() with parent flag.
+//
+echo( "Test nestedPropertyReference() with parent flag ON: build test object.\n" );
+echo( '$test = new test_Container();' . "\n" );
+$test = new test_Container();
+echo( '$test[ "array" ] = [ 1, 2, 3 ];' . "\n" );
+$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];
+print_r( $test );
+
+echo( "\n" );
+
+echo( "Check empty offsets list:\n" );
+echo( '$list = [];' . "\n" );
+$list = [];
+echo( '$result = $test->GetNestedPropertyReference( $list, TRUE );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list, TRUE );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+var_dump( $list );
+
+echo( "\n" );
+
+echo( "Check all offsets match:\n" );
+echo( '$list = [ "array", "obj", "obj", 0 ];' . "\n" );
+$list = [ "array", "obj", "obj", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list, TRUE );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list, TRUE );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+print_r( $list );
+echo( "Value: " );
+echo( '$result[ $list[ 0 ] ];' . "\n" );
+var_dump( $result[ $list[ 0 ] ] );
+
+echo( "\n" );
+
+echo( "Check one offset unmatch:\n" );
+echo( '$list = [ "array", "obj", "UNKNOWN", 0 ];' . "\n" );
+$list = [ "array", "obj", "UNKNOWN", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list, TRUE );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list, TRUE );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+print_r( $list );
+
+echo( "\n" );
+
+echo( "Check all offsets unmatch:\n" );
+echo( '$list = [ "UNKNOWN", "obj", "obj", 0 ];' . "\n" );
+$list = [ "UNKNOWN", "obj", "obj", 0 ];
+echo( '$result = $test->GetNestedPropertyReference( $list, TRUE );' . "\n" );
+$result = $test->GetNestedPropertyReference( $list, TRUE );
+echo( "Reference: " );
+print_r( $result );
+echo( "List: " );
+print_r( $list );
 
 echo( "\n====================================================================================\n\n" );
 

@@ -76,11 +76,11 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 
 
-/*=======================================================================================
- *																						*
- *										MAGIC											*
- *																						*
- *======================================================================================*/
+	/*=======================================================================================
+	 *																						*
+	 *										MAGIC											*
+	 *																						*
+	 *======================================================================================*/
 
 
 
@@ -105,11 +105,20 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @example
 	 * <code>
-	 * $test = new Container();                                 // Empty container.
-	 * $test = new Container( [1,2,3] );                        // With array.
-	 * $test = new Container( [1,2,3], TRUE );                  // With array, flattened.
-	 * $test = new Container( new ArrayObject( [1,2,3] ) );     // With ArrayObject.
-	 * $test = new Container( new Container( [1,2,3] ), TRUE ); // With Container flattened.
+	 * // Empty container.
+	 * $test = new Container();
+	 *
+	 * // With array.
+	 * $test = new Container( [1,2,3] );
+	 *
+	 *  // With Container.
+	 * $test = new Container( new Container( [1,2,3] ) );
+	 *
+	 * // With ArrayObject.
+	 * $test = new Container( new ArrayObject( [1,2,3] ) );
+	 *
+	 * // With ArrayObject converted to array.
+	 * $test = new Container( new ArrayObject( [1,2,3] ), TRUE );
 	 * </code>
 	 */
 	public function __construct( $theProperties = NULL, bool $asArray = FALSE )
@@ -178,16 +187,18 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * The method expects a single parameter that represents the property offset to match:
 	 *
 	 * <ul>
+	 * 	<li><tt>NULL</tt>: Will return <tt>FALSE</tt>.
 	 * 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
 	 * 		level.
 	 * 	<li><i>list</i>: Will traverse the structure using the provided sequence of offsets.
 	 * 		If the list is empty it is assumed the offset doesn't exist. The list must be
-	 * 		provided as an array, Container or an ArrayObject, any other type will raise an
-	 * 		exception.
+	 * 		provided as an <tt>array</tt>, <tt>Container</tt> or an <tt>ArrayObject</tt>,
+	 * 		any other type will raise an exception. If any element of the list is not a
+	 * 		scalar or <tt>NULL</tt> the method will trigger an exception.
 	 * </ul>
 	 *
-	 * The method will raise an exception if the provided offset is not a scalar, array,
-	 * Container or ArrayObject and, if a list, if any element is not a scalar.
+	 * <em>The <tt>NULL</tt> offset is used to append an element in {@link offsetSet()}, it
+	 * is handled in this method for consistency.</em>
 	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return bool					<tt>TRUE</tt> the offset exists.
@@ -198,12 +209,60 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @example
 	 * <code>
-	 * $test->offsetExists( "offset" );  // Will return TRUE if the offset exists.
-	 * $test->offsetExists( [1, 2, 3] ); // Will return TRUE if $test[1][2][3] exists.
+	 * // Example structure.
+	 * $object = new Container( [
+	 * 	"offset" => "value",
+	 * 	"list" => [ 1, 2 ],
+	 * 	"nested" => [ 1 => [ 2 => new ArrayObject( [ 3 => "three" ] ) ] ]
+	 * ] );
+	 *
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [0] => 1
+	 * //                     [1] => 2
+	 * //                 )
+	 * //             [nested] => Array
+	 * //                 (
+	 * //                     [1] => Array
+	 * //                         (
+	 * //                             [2] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [3] => three
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Will return TRUE.
+	 * $test->offsetExists( "offset" );
+	 *
+	 * // Will return FALSE.
+	 * $test->offsetExists( "UNKNOWN" );
+	 *
+	 * // Will return TRUE.
+	 * $test->offsetExists( [ "nested", 1, 2, 3 ] );
+	 *
+	 * // Will return FALSE.
+	 * $test->offsetExists( [ "nested", 1, "UNKNOWN", 3 ] );
 	 * </code>
 	 */
 	public function offsetExists( $theOffset )
 	{
+		//
+		// Intercept append.
+		//
+		if( $theOffset === NULL )
+			return FALSE;															// ==>
+
 		//
 		// Handle scalar property.
 		//
@@ -258,31 +317,82 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * The method expects a single parameter that represents the property offset to match:
 	 *
 	 * <ul>
+	 * 	<li><tt>NULL</tt>: Will return <tt>NULL</tt>.
 	 * 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
 	 * 		level.
 	 * 	<li><i>list</i>: Will traverse the structure using the provided sequence of offsets.
 	 * 		If the list is empty it is assumed the offset doesn't exist. The list must be
-	 * 		provided as an array, Container or an ArrayObject, any other type will raise an
-	 * 		exception.
+	 * 		provided as an <tt>array</tt>, <tt>Container</tt> or an <tt>ArrayObject</tt>,
+	 * 		any other type will raise an exception. If any element of the list is not a
+	 * 		scalar or <tt>NULL</tt> the method will trigger an exception.
 	 * </ul>
 	 *
-	 * The method will raise an exception if the provided offset is not a scalar, array,
-	 * Container or ArrayObject and, if a list, if any element is not a scalar.
+	 * <em>The <tt>NULL</tt> offset is used to append an element in {@link offsetSet()}, it
+	 * is handled in this method for consistency.</em>
 	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				Offset value or <tt>NULL</tt>.
 	 *
+	 * @uses offsetExists()
 	 * @uses getArrayCopy()
 	 * @uses nestedPropertyReference()
 	 *
 	 * @example
 	 * <code>
-	 * $result = $test->offsetGet( "offset" );  // Will return the value at $test["offset"] or NULL.
-	 * $result = $test->offsetGet( [1, 2, 3] ); // Will return the value at $test[1][2][3] or NULL.
+	 * // Example structure.
+	 * $object = new Container( [
+	 * 	"offset" => "value",
+	 * 	"list" => [ 1, 2 ],
+	 * 	"nested" => [ 1 => [ 2 => new ArrayObject( [ 3 => "three" ] ) ] ]
+	 * ] );
+	 *
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [0] => 1
+	 * //                     [1] => 2
+	 * //                 )
+	 * //             [nested] => Array
+	 * //                 (
+	 * //                     [1] => Array
+	 * //                         (
+	 * //                             [2] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [3] => three
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Will return "value".
+	 * $result = $test->offsetGet( "offset" );
+	 *
+	 * // Will return NULL.
+	 * $result = $test->offsetGet( "UNKNOWN" );
+	 *
+	 * // Will return "three".
+	 * $result = $test->offsetGet( [ "nested", 1, 2, 3 ] );
+	 *
+	 * // Will return NULL.
+	 * $result = $test->offsetGet( [ "nested", 1, 2, "UNKNOWN", 3 ] );
 	 * </code>
 	 */
 	public function offsetGet( $theOffset )
 	{
+		//
+		// Intercept append.
+		//
+		if( $theOffset === NULL )
+			return NULL;															// ==>
+
 		//
 		// Handle scalar property.
 		//
@@ -295,8 +405,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		// Handle nested property.
 		//
 		if( is_array( $theOffset )
-			|| ($theOffset instanceof self)
-			|| ($theOffset instanceof \ArrayObject) )
+		 || ($theOffset instanceof self)
+		 || ($theOffset instanceof \ArrayObject) )
 		{
 			//
 			// Convert to array.
@@ -342,35 +452,56 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * The method expects the following parameters:
 	 *
 	 * <ul>
-	 * 	<li><b>$theOffset</b>: The offset to set.
+	 * 	<li><b>$theOffset</b>: The offset to set:
 	 *	 <ul>
 	 *	 	<li><tt>NULL</tt>: Will append the value to the structure.
-	 *	 	<li><tt>scalar</tt>: Will check whether the offset exists at the top structure
-	 *	 		level.
-	 *	 	<li><i>list</i>: Will traverse the structure using the provided sequence of
-	 * 			offsets. If the list is empty it is assumed the offset doesn't exist, in
-	 * 			which case the method will do nothing. The list must be provided as an
-	 * 			array, Container or an ArrayObject, any other type will raise an exception.
+	 *	 	<li><tt>scalar</tt>: Will create or set the offset at the top structure level
+	 * 			with the provided value.
+	 * 		<li><i>list</i>: Will traverse the structure using the provided sequence of
+	 * 			offsets and create or set the nested structure offset with the provided
+	 * 			value. <em>Any intermediate level offset that doesn't yet exist will be
+	 * 			initialised as an <tt>array</tt></em>. If the list is empty the method will
+	 * 			do nothing. The list must be provided as an <tt>array</tt>,
+	 * 			<tt>Container</tt> or an <tt>ArrayObject</tt>, any other type will raise an
+	 * 			exception. If any element of the list is not a scalar or <tt>NULL</tt> the
+	 * 			method will trigger an exception.
+	 *	 </ul>
+	 * 	<li><b>$theValue</b>: The value to set:
+	 *	 <ul>
+	 *	 	<li><tt>NULL</tt>: Will delete the property referenced by the provided offset,
+	 * 			if found: see {@link offsetUnset()}.
+	 *	 	<li><i>other</i>: Will set the property referenced by the provided offset with
+	 * 			the provided value.
 	 *	 </ul>
 	 * </ul>
-	 *
-	 * The method will raise an exception if the provided offset is not a scalar, array,
-	 * Container or ArrayObject and, if a list, if any element is not a scalar or NULL for
-	 * appending elements.
 	 *
 	 * @param string				$theOffset			Offset.
 	 * @param mixed					$theValue			Value to set at offset.
 	 *
+	 * @uses offsetUnset()
 	 * @uses getArrayCopy()
 	 * @uses nestedPropertyReference()
-	 * @uses offsetUnset()
 	 *
 	 * @example
 	 * <code>
-	 * $test->offsetSet( "offset", "value" );     // Will set $test["offset"] to "value".
-	 * $test->offsetSet( "offset", NULL );        // Will unset $test["offset"].
-	 * $test->offsetSet( [1, 2, 3], "value" );    // Will set $test[1][2][3] to "value".
-	 * $test->offsetSet( [1, 2, NULL], "value" ); // Will set $test[1][2][] to "value".
+	 * // Instantiate container.
+	 * $test = new Container();
+	 *
+	 * // Set $test[ "offset' ] with "value".
+	 * $test->offsetSet( "offset", "value" );
+	 *
+	 * // Set $test[1][2][3] with "value", $test[1][2] and $test[1] will be arrays.
+	 * $test->offsetSet( [ 1, 2, 3 ], "value" );
+	 *
+	 * // Delete $test[ "offset' ].
+	 * $test->offsetSet( "offset", NULL );
+	 * // Equivalent to offsetUnset( "offset" );
+	 *
+	 * // Delete $test[1][2][3],
+	 * // $test[1][2] and $test[1] will also be deleted,
+	 * // because they would become empty.
+	 * $test->offsetSet( [ 1, 2, 3 ], NULL );
+	 * // Equivalent to offsetUnset( [ 1, 2, 3 ] );
 	 * </code>
 	 */
 	public function offsetSet( $theOffset, $theValue )
@@ -429,7 +560,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 						//
 						// Iterate missing offsets.
 						//
-						while( TRUE )
+						do
 						{
 							//
 							// Get current offset.
@@ -445,8 +576,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 							//
 							if( $offset === NULL )
 								$offset = ( is_array( $reference ) )
-									? count( $reference )
-									: $reference->count();
+										? count( $reference )
+										: $reference->count();
 
 							//
 							// Not leaf offset.
@@ -465,13 +596,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 							} // Not leaf offset.
 
-							//
-							// Handle leaf.
-							//
-							else
-								break;											// =>
-
-						} // Traversing structure.
+						} while( count( $theOffset ) );
 
 						//
 						// Set value.
@@ -513,152 +638,207 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * We overload this method to prevent warnings when a non-existing offset is provided,
 	 * in that case we do nothing.
 	 *
-	 * The method expects the following parameters:
+	 * The method expects a single parameter that represents the property offset:
 	 *
 	 * <ul>
-	 * 	<li><b>$theOffset</b>: The offset to unset.
-	 *	 <ul>
-	 *	 	<li><tt>scalar</tt>: Will unset the offset exists at the top structure level.
-	 *	 	<li><i>list</i>: Will traverse the structure using the provided sequence of
-	 * 			offsets. If the list is empty it is assumed the offset doesn't exist, in
-	 * 			which case the method will do nothing. The list must be provided as an
-	 * 			array, Container or an ArrayObject, any other type will raise an exception.
-	 *	 </ul>
+	 * 	<li><tt>NULL</tt>: Will do nothing.
+	 * 	<li><tt>scalar</tt>: Will delete the property identified by the provided offset at
+	 * 		the top level of the structure.
+	 * 	<li><i>list</i>: Will traverse the structure using the provided sequence of
+	 *		offsets and delete the property identified by the leaf offset in the list. If
+	 * 		the list is empty or if any offset is not found, the method will do nothing. The
+	 *		list must be provided as an array, Container or an ArrayObject, any other type
+	 * 		will raise an exception. If any element of the list is not <tt>NULL</tt> or a
+	 * 		scalar, the method will fail with an exception.
 	 * </ul>
 	 *
-	 * The method will raise an exception if the provided offset is not a scalar, array,
-	 * Container or ArrayObject and, if a list, if any element is not a scalar.
+	 * <em>When deleting nested properties any structure or array that becomes empty will
+	 * also be deleted.</em>
+	 *
+	 * <em>The <tt>NULL</tt> offset is used to append an element in {@link offsetSet()}, it
+	 * is handled in this method for consistency.</em>
 	 *
 	 * @param string				$theOffset			Offset.
 	 *
+	 * @uses getArrayCopy()
+	 * @uses nestedPropertyReference()
+	 *
 	 * @example
 	 * <code>
-	 * $test->offsetUnset( "UNKNOWN" ); // Will not generate a warning.
+	 * // Example structure.
+	 * $object = new Container( [
+	 * 	"offset" => "value",
+	 * 	"list" => [ 1, 2 ],
+	 * 	"nested" => [ 1 => [ 2 => new ArrayObject( [ 3 => "three" ] ) ] ]
+	 * ] );
+	 *
+	 * * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [0] => 1
+	 * //                     [1] => 2
+	 * //                 )
+	 * //             [nested] => Array
+	 * //                 (
+	 * //                     [1] => Array
+	 * //                         (
+	 * //                             [2] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [3] => three
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Will delete the "offset" property.
+	 * $object->offsetUnset( "offset" );
+	 *
+	 * // Will not raise an alert.
+	 * $object->offsetUnset( "UNKNOWN" );
+	 *
+	 * // Will delete the $object[ "list" ][ 0 ] property.
+	 * $object->offsetUnset( [ "list", 0 ] );
+	 *
+	 * // Will delete the $object[ "nested" ][ 1 ][ 2 ][ 3 ] property
+	 * // and all properties including "nested", since they would be empty.
+	 * $object->offsetUnset( [ "nested", 1, 2, 3 ] );
+	 *
+	 * // Resulting object:
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [1] => 2
+	 * //                 )
+	 * //         )
+	 * // )
 	 * </code>
 	 */
 	public function offsetUnset( $theOffset )
 	{
 		//
-		// Top level property.
+		// Intercept append.
 		//
-		if( is_scalar( $theOffset ) )
+		if( $theOffset !== NULL )
 		{
 			//
-			// Delete value.
+			// Top level property.
 			//
-			if( array_key_exists( $theOffset, $this->mProperties ) )
-				unset( $this->mProperties[ $theOffset ] );
-
-		} // Scalar.
-
-		//
-		// Handle nested property.
-		//
-		elseif( is_array( $theOffset )
-			 || ($theOffset instanceof self)
-			 || ($theOffset instanceof \ArrayObject) )
-		{
-			//
-			// Convert to array.
-			//
-			if( ! is_array( $theOffset ) )
-				$theOffset = $theOffset->getArrayCopy();
-
-			//
-			// Handle list.
-			//
-			if( count( $theOffset ) )
+			if( is_scalar( $theOffset ) )
 			{
 				//
-				// Match offsets.
+				// Delete value.
 				//
-				@@@ MILKO - Need to get parent reference and leaf offset @@@
-				$reference = & $this->nestedPropertyReference( $theOffset, TRUE );
+				if( array_key_exists( $theOffset, $this->mProperties ) )
+					unset( $this->mProperties[ $theOffset ] );
+
+			} // Scalar.
+
+			//
+			// Handle nested property.
+			//
+			elseif( is_array( $theOffset )
+				|| ($theOffset instanceof self)
+				|| ($theOffset instanceof \ArrayObject) )
+			{
+				//
+				// Convert to array.
+				//
+				if( ! is_array( $theOffset ) )
+					$theOffset = $theOffset->getArrayCopy();
 
 				//
-				// Handle existing offset.
+				// Handle list.
 				//
-				if( ! count( $theOffset ) )
-				{
-
-				} // Existing offset.
-
-				//
-				// Set existing offset.
-				//
-				if( ! count( $theOffset ) )
-					$reference = $theValue;
-
-				//
-				// Initialise missing offsets.
-				//
-				else
+				if( count( $theOffset ) )
 				{
 					//
-					// Iterate missing offsets.
+					// Match offsets.
 					//
-					while( TRUE )
+					$ref = & $this->nestedPropertyReference( $theOffset, TRUE );
+
+					//
+					// Handle existing offset.
+					//
+					if( is_array( $theOffset )
+					 && count( $theOffset ) )
 					{
 						//
-						// Get current offset.
+						// Delete property and pop leaf offset.
 						//
-						$offset = array_shift( $theOffset );
-						if( ($offset !== NULL)
-							&& (! is_scalar( $offset )) )
-							throw new \InvalidArgumentException(
-								"Provided non scalar nested offset." );		// !@! ==>
+						unset( $ref[ array_pop( $theOffset ) ] );
 
 						//
-						// Handle append offset.
+						// Remove empty structures.
 						//
-						if( $offset === NULL )
-							$offset = ( is_array( $reference ) )
-								? count( $reference )
-								: $reference->count();
-
-						//
-						// Not leaf offset.
-						//
-						if( count( $theOffset ) )
+						while( count( $theOffset ) )
 						{
 							//
-							// Allocate property.
+							// Get parent property and leaf offset.
 							//
-							$reference[ $offset ] = [];
+							$ref = & $this->nestedPropertyReference( $theOffset, TRUE );
+							$key = array_pop( $theOffset );
 
 							//
-							// Reference property.
+							// Check if property is a structure.
 							//
-							$reference = & $reference[ $offset ];
+							if( is_array( $ref[ $key ] )
+							 || ($ref[ $key ] instanceof self)
+							 || ($ref[ $key ] instanceof \ArrayObject) )
+							{
+								//
+								// Get structure elements count.
+								//
+								$count = ( is_array( $ref[ $key ] ) )
+									   ? count( $ref[ $key ]  )
+									   : $ref[ $key ]->count();
 
-						} // Not leaf offset.
+								//
+								// Exit if not empty.
+								//
+								if( $count )
+									break;										// =>
 
-						//
-						// Handle leaf.
-						//
-						else
-							break;											// =>
+								//
+								// Delete property and pop leaf offset.
+								//
+								unset( $ref[ $key ] );
 
-					} // Traversing structure.
+							} // Is a structure.
 
-					//
-					// Set value.
-					//
-					$reference[ $offset ] = $theValue;
+							//
+							// Not a structure.
+							//
+							else
+								break;											// =>
 
-				} // Initialising missing offsets.
+						} // Removing empty structures.
 
-			} // Non empty list.
+					} // All levels match.
 
-		} // Nested offset.
+				} // Non empty list.
 
-		//
-		// Handle invalid offset type.
-		//
-		else
-			throw new \InvalidArgumentException(
-				"Invalid offset type."
-			);																// !@! ==>
+			} // Nested offset.
+
+			//
+			// Handle invalid offset type.
+			//
+			else
+				throw new \InvalidArgumentException(
+					"Invalid offset type."
+				);																// !@! ==>
+
+		} // Not append.
 
 	} // offsetUnset.
 
@@ -731,15 +911,14 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Return array keys.</h4><p />
+	 * <h4>Return the property offsets.</h4><p />
 	 *
-	 * This method is a proxy to the array data member.
+	 * This method will return an array with the list of property offsets at the top
+	 * structure level.
 	 *
 	 * <em>Note: I was unable to use the documented default parameters of the array_keys()
 	 * function: whenever added, the function would not return any keys.</em>
 	 *
-	 * @param mixed					$theSearch			Search value.
-	 * @param bool					$doStrict			Strict comparaison flag.
 	 * @return array				List of keys.
 	 */
 	public function array_keys()
@@ -754,9 +933,10 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Return array values.</h4><p />
+	 * <h4>Return the property values as an array.</h4><p />
 	 *
-	 * This method is a proxy to the array data member.
+	 * This method will return an array with all the property values, the property offsets
+	 * at the top level will be replaced with the <tt>0 .. n-1</tt> array keys.
 	 *
 	 * @return array				List of values.
 	 */
@@ -774,7 +954,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Return a copy of the object properties.</h4><p />
 	 *
-	 * This method will return an array copy containing the properties of the object.
+	 * This method will return an array containing a copy of the properties of the object.
 	 *
 	 * @return array				Array copy.
 	 */
@@ -783,6 +963,160 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		return $this->mProperties;													// ==>
 
 	} // getArrayCopy.
+
+
+	/*===================================================================================
+	 *	propertyReference																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return a property reference.</h4><p />
+	 *
+	 * This method functions as the <tt>offsetGet()</tt> method, except that it returns the
+	 * property reference instead of its value. If the offset is not matched, the method
+	 * will return a reference to a <tt>NULL</tt> value: <em>in that case you should
+	 * <b>ignore</b> the reference and <b>not use it</b></em>.
+	 *
+	 * The only difference with <tt>offsetGet()</tt> is that if you provide <tt>NULL</tt>,
+	 * or an empty list, the method will return the reference to the root properties
+	 * structure.
+	 *
+	 * For more information on the parameter, please refer to the {@link offsetGet()}
+	 * method documentation.
+	 *
+	 * <em><b>Important</b>: When you retrieve a reference to a property you are on your
+	 * own, it is your responsibility not to make a mess: this is especially important when
+	 * retrieving the reference to the {@link mProperties} data member, setting it to
+	 * anything other than an array will render the object unusable without warning.</em>
+	 *
+	 * @param mixed					$theOffset			Offset.
+	 * @return mixed				The property reference.
+	 * @throws \InvalidArgumentException
+	 *
+	 * @uses getArrayCopy()
+	 * @uses nestedPropertyReference()
+	 *
+	 * @example
+	 * <code>
+	 * // Example structure.
+	 * $object = new Container( [
+	 * 	"offset" => "value",
+	 * 	"list" => [ 1, 2 ],
+	 * 	"nested" => [ 1 => [ 2 => new ArrayObject( [ 3 => "three" ] ) ] ]
+	 * ] );
+	 *
+	 * * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [0] => 1
+	 * //                     [1] => 2
+	 * //                 )
+	 * //             [nested] => Array
+	 * //                 (
+	 * //                     [1] => Array
+	 * //                         (
+	 * //                             [2] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [3] => three
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Will return a reference to $test->mProperties.
+	 * $result = & $test->propertyReference();
+	 * $result = & $test->propertyReference( NULL );
+	 * $result = & $test->propertyReference( [] );
+	 *
+	 * // Will return a reference to $test[ "offset" ].
+	 * $result = & $test->propertyReference( "offset" );
+	 * if( $result !== NULL )
+	 * {
+	 *     // Will set $test[ "offset" ] to "changed".
+	 *     $result = "changed";
+	 * }
+	 *
+	 * // $result will be NULL.
+	 * $result = & $test->propertyReference( "UNKNOWN" );
+	 * // Never use $result in this case!
+	 *
+	 * // Will return a reference to $test["nested"][1][2][3].
+	 * $result = $test->offsetGet( [ "nested", 1, 2, 3 ] );
+	 * if( $result !== NULL )
+	 * {
+	 *     // Will set $test["nested"][1][2][3] to "changed".
+	 *     $result = "changed";
+	 * }
+	 *
+	 * // Will return NULL.
+	 * $result = $test->offsetGet( [ "nested", 1, 2, "UNKNOWN", 3 ] );
+	 * // Never use $result in this case!
+	 * </code>
+	 */
+	public function & propertyReference( $theOffset = NULL )
+	{
+		//
+		// Intercept append.
+		//
+		if( $theOffset === NULL )
+			return $this->mProperties;												// ==>
+
+		//
+		// Init not found value.
+		//
+		$scrap = NULL;
+
+		//
+		// Handle scalar property.
+		//
+		if( is_scalar( $theOffset ) )
+			return ( $this->offsetExists( $theOffset ) )
+				 ? $this->mProperties[ $theOffset ]									// ==>
+				 : $scrap;															// ==>
+
+		//
+		// Handle nested property.
+		//
+		if( is_array( $theOffset )
+		 || ($theOffset instanceof self)
+		 || ($theOffset instanceof \ArrayObject) )
+		{
+			//
+			// Convert to array.
+			//
+			if( ! is_array( $theOffset ) )
+				$theOffset = $theOffset->getArrayCopy();
+
+			//
+			// Handle empty list.
+			//
+			if( ! count( $theOffset ) )
+				return $this->mProperties;											// ==>
+
+			//
+			// Match offsets.
+			//
+			$value = & $this->nestedPropertyReference( $theOffset );
+
+			return ( ! (bool)count( $theOffset ) )
+				 ? $value															// ==>
+				 : $scrap;															// ==>
+
+		} // Nested offset.
+
+		throw new \InvalidArgumentException(
+			"Invalid offset type."
+		);																		// !@! ==>
+
+	} // propertyReference.
 
 
 
@@ -840,8 +1174,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * This method can be used to convert any embedded ArrayObject property to an array.
 	 *
-	 * @uses referenceGet()
 	 * @uses convertToArray()
+	 * @uses propertyReference()
 	 *
 	 * @example
 	 * <code>
@@ -850,7 +1184,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function toArray()
 	{
-		self::convertToArray( $this->nestedGet() );
+		self::convertToArray( $this->propertyReference() );
 
 	} // toArray.
 
@@ -871,14 +1205,17 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Convert embedded ArrayObjects to array.</h4><p />
 	 *
-	 * This method can be used to convert any embedded ArrayObject to an array in the
-	 * provided parameter, if the parameter is not an array or ArrayObject, the method will
+	 * This method can be used to convert any embedded <tt>Container</tt> or
+	 * <tt>ArrayObject</tt> instance in the provided parameter to an array, if the parameter
+	 * is not an <tt>array</tt>,<tt>Container</tt> or <tt>ArrayObject</tt>, the method will
 	 * do nothing.
 	 *
-	 * Note that the conversion is in place, if you want to get a converted copy, provide
-	 * a copy.
+	 * Note that the conversion is performed on the provided reference, if you need the
+	 * original value you must provide a copy to this method.
 	 *
 	 * @param mixed				   &$theStructure		Structure to convert.
+	 *
+	 * @uses getArrayCopy()
 	 *
 	 * @example
 	 * <code>
@@ -993,6 +1330,69 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 
 	/*===================================================================================
+	 *	manageFlagAttribute																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Manage a flag attribute.</h4><p />
+	 *
+	 * This method can be used to manage a bitfield attribute, the method expects the
+	 * following parameters:
+	 *
+	 * <ul>
+	 * 	<li><b>&$theAttribute</b>: Reference of the attribute.
+	 * 	<li><b>$theValue</b>: The switch new value or operation:
+	 * 	 <ul>
+	 * 		<li><tt>NULL</tt>: Retrieve the current state.
+	 * 		<li><tt>TRUE</tt> Set the current state and return the previous state.
+	 * 		<li><tt>FALSE</tt>: Reset the current state and return the previous state.
+	 * 	 </ul>
+	 * 	<li><b>$theMask</b>: The flag mask.
+	 * </ul>
+	 *
+	 * @param bitfield			   &$theAttribute		Bitfield attribute reference.
+	 * @param bitfield				$theMask			Flag mask.
+	 * @param mixed					$theValue			New value or operation.
+	 * @return boolean				Current or previous attribute switch value.
+	 *
+	 * @example
+	 * <code>
+	 * $this->manageFlagAttribute( $attribute, $mask );     // Will return TRUE if any bit in $attribute matches $mask.
+	 * $this->manageFlagAttribute( $offset, $mask, TRUE );  // Will set $attribute bits matching set $mask bits.
+	 * $this->manageFlagAttribute( $offset, $mask, FALSE ); // Will reset $attribute bits matching set $mask bits.
+	 * </code>
+	 */
+	protected function manageFlagAttribute( &$theAttribute, $theMask, $theValue = NULL )
+	{
+		//
+		// Return state.
+		//
+		if( $theValue === NULL )
+			return ($theAttribute & $theMask);										// ==>
+
+		//
+		// Save previous value.
+		//
+		$save = (bool)($theAttribute & $theMask);
+
+		//
+		// Set flag.
+		//
+		if( $theValue )
+			$theAttribute |= $theMask;
+
+		//
+		// Reset flag.
+		//
+		else
+			$theAttribute &= (~$theMask);
+
+		return $save;																// ==>
+
+	} // manageFlag.
+
+
+	/*===================================================================================
 	 *	manageProperty																	*
 	 *==================================================================================*/
 
@@ -1004,7 +1404,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * implements this interface:
 	 *
 	 * <ul>
-	 *	<li><tt>$theOffset</tt>: Property offset.
+	 *	<li><tt>$theOffset</tt>: Property offset, see the <tt>$theOffset</tt> parameter of
+	 * 		{@link offsetGet()}, {@link offsetSet()} and {@link offsetUnset()}.
 	 *	<li><tt>$theValue</tt>: The property value or operation:
 	 *	 <ul>
 	 *		<li><tt>NULL</tt>: Return the current value.
@@ -1082,638 +1483,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	} // manageProperty.
 
 
-	/*===================================================================================
-	 *	manageIndexedProperty															*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Manage an indexed property</h4><p />
-	 *
-	 * This method can be used to manage a property structured as an associative array, the
-	 * method accepts the following parameters:
-	 *
-	 * <ul>
-	 *	<li><tt>$theOffset</tt>: Property offset.
-	 *	<li><tt>$theKey</tt>: The property key or operation:
-	 *	 <ul>
-	 *		<li><tt>NULL</tt>: Return the full array, the next parameter is ignored.
-	 *		<li><tt>FALSE</tt>: Delete the full array, the next parameter is ignored.
-	 *		<li><tt>scalar</tt>: Use the value as the associative array key, the next
-	 * 			parameter will be considered the value or operation.
-	 *		<li><em>other</em>: Will raise an exception.
-	 *	 </ul>
-	 *	<li><tt>$theValue</tt>: The property value or operation:
-	 *	 <ul>
-	 *		<li><tt>NULL</tt>: Return the property value at the provided key.
-	 *		<li><tt>FALSE</tt>: Delete the property at the provided key.
-	 *		<li><em>other</em>: Set the property at the provided key with the value.
-	 *	 </ul>
-	 *	<li><tt>$doOld</tt>: Return value switch:
-	 *	 <ul>
-	 *		<li><tt>TRUE</tt>: Return the current value.
-	 *		<li><tt>FALSE</tt>: Return the old value; irrelevant when returning current.
-	 *	 </ul>
-	 * </ul>
-	 *
-	 * If an indexed property becomes empty, it will be deleted.
-	 *
-	 * @param string				$theOffset			Property offset.
-	 * @param string				$theKey				Key or operation.
-	 * @param mixed					$theValue			Value or operation.
-	 * @return mixed				Old or current property value.
-	 * @throws \InvalidArgumentException
-	 *
-	 * @uses manageProperty()
-	 * @uses offsetExists()
-	 *
-	 * @example
-	 * <code>
-	 * $this->manageIndexedProperty( $offset );                 // Will retrieve the property at offset.
-	 * $this->manageIndexedProperty( $offset, FALSE );          // Will remove the property at offset.
-	 * $this->manageIndexedProperty( $offset, 'key', 'value' ); // Will set the property at key "key" to "value".
-	 * $this->manageIndexedProperty( $offset, 'key' );          // Will retrieve the property value at key "key".
-	 * $this->manageIndexedProperty( $offset, 'key', FALSE );   // Will reset the property at key "key".
-	 * </code>
-	 */
-	protected function manageIndexedProperty( $theOffset,
-											  $theKey = NULL, $theValue = NULL,
-											  bool $doOld = FALSE )
-	{
-		//
-		// Return or reset full array.
-		//
-		if( ($theKey === NULL)
-		 || ($theKey === FALSE) )
-			return $this->manageProperty( $theOffset, $theKey, $doOld );			// ==>
-
-		//
-		// Assert key type.
-		//
-		if( is_scalar( $theKey ) )
-		{
-			//
-			// Init local storage.
-			//
-			$has_key = ( $has_property = $this->offsetExists( $theOffset ) )
-					 ? array_key_exists( $theKey, $this->mProperties[ $theOffset ] )
-					 : FALSE;
-
-			//
-			// Return current value.
-			//
-			if( $theValue === NULL )
-			{
-				//
-				// Handle found key.
-				//
-				if( $has_key )
-					return $this->mProperties[ $theOffset ][ $theKey ];				// ==>
-
-				return NULL;														// ==>
-
-			} // Return current value.
-
-			//
-			// Save current value.
-			//
-			$save = ( $has_key )
-				? $this->mProperties[ $theOffset ][ $theKey ]
-				: NULL;
-
-			//
-			// Set value.
-			//
-			if( $theValue !== FALSE )
-			{
-				//
-				// Init property.
-				//
-				if( ! $has_property )
-					$this->mProperties[ $theOffset ] = [];
-
-				//
-				// Set value.
-				//
-				$this->mProperties[ $theOffset ][ $theKey ] = $theValue;
-
-				if( ! $doOld )
-					return $theValue;												// ==>
-
-			} // Set value.
-
-			//
-			// Reset.
-			//
-			else
-			{
-				//
-				// Unset element.
-				//
-				if( $has_key )
-				{
-					unset( $this->mProperties[ $theOffset ][ $theKey ] );
-					if( ! count( $this->mProperties[ $theOffset ] ) )
-						unset( $this->mProperties[ $theOffset ] );
-				}
-
-				//
-				// Return old value.
-				//
-				if( ! $doOld )
-					return NULL;													// ==>
-
-			} // Reset.
-
-			return $save;															// ==>
-
-		} // Scalar key.
-
-		throw new \InvalidArgumentException(
-			"Unable to manage indexed property [$theOffset]: " .
-			"expecting a scalar key."
-		);																		// !@! ==>
-
-	} // manageIndexedProperty.
-
-
-	/*===================================================================================
-	 *	manageFlagAttribute																*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Manage a flag attribute.</h4><p />
-	 *
-	 * This method can be used to manage a bitfield attribute, the method expects the
-	 * following parameters:
-	 *
-	 * <ul>
-	 * 	<li><b>&$theAttribute</b>: Reference of the attribute.
-	 * 	<li><b>$theValue</b>: The switch new value or operation:
-	 * 	 <ul>
-	 * 		<li><tt>NULL</tt>: Retrieve the current state.
-	 * 		<li><tt>TRUE</tt> Set the current state and return the previous state.
-	 * 		<li><tt>FALSE</tt>: Reset the current state and return the previous state.
-	 * 	 </ul>
-	 * 	<li><b>$theMask</b>: The flag mask.
-	 * </ul>
-	 *
-	 * @param bitfield			   &$theAttribute		Bitfield attribute reference.
-	 * @param bitfield				$theMask			Flag mask.
-	 * @param mixed					$theValue			New value or operation.
-	 * @return boolean				Current or previous attribute switch value.
-	 *
-	 * @example
-	 * <code>
-	 * $this->manageFlagAttribute( $attribute, $mask );     // Will return TRUE if any bit in $attribute matches $mask.
-	 * $this->manageFlagAttribute( $offset, $mask, TRUE );  // Will set $attribute bits matching set $mask bits.
-	 * $this->manageFlagAttribute( $offset, $mask, FALSE ); // Will reset $attribute bits matching set $mask bits.
-	 * </code>
-	 */
-	protected function manageFlagAttribute( &$theAttribute, $theMask, $theValue = NULL )
-	{
-		//
-		// Return state.
-		//
-		if( $theValue === NULL )
-			return ($theAttribute & $theMask);										// ==>
-
-		//
-		// Save previous value.
-		//
-		$save = (bool)($theAttribute & $theMask);
-
-		//
-		// Set flag.
-		//
-		if( $theValue )
-			$theAttribute |= $theMask;
-
-		//
-		// Reset flag.
-		//
-		else
-			$theAttribute &= (~$theMask);
-
-		return $save;																// ==>
-
-	} // manageFlag.
-
-
 
 /*=======================================================================================
  *																						*
- *							PROTECTED SERIALISATION INTERFACE							*
+ *									PROTECTED INTERFACE									*
  *																						*
  *======================================================================================*/
 
-
-
-	/*===================================================================================
-	 *	propertyReference																*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return a property reference.</h4><p />
-	 *
-	 * This method will return a reference to the property identified by the provided
-	 * offset, the method accepts a single parameter:
-	 *
-	 * <ul>
-	 * 	<li><tt>NULL</tt>: Return a reference of the root object properties.
-	 * 	<li><tt>scalar</tt>: Return a reference of the property identified by the provided
-	 * 		offset.
-	 * 	<li><i>list</i>: Return a reference of the nested property identified by the
-	 * 		provided sequence of offsets; if the list is empty, the method will return the
-	 * 		reference to the root object properties. The provided value must be an array,
-	 * 		Container or an ArrayObject.
-	 * 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
-	 * </ul>
-	 *
-	 * If the offset does not exist, the method will return a reference to a <tt>NULL</tt>
-	 * value: <em>if you get this type of result, you should never try to use the
-	 * reference</em>.
-	 *
-	 * @param mixed					$theOffset			Offset.
-	 * @return mixed				The property reference.
-	 * @throws \InvalidArgumentException
-	 *
-	 * @uses offsetExists()
-	 *
-	 * @example
-	 * <code>
-	 * $test = & $object->nestedGet();              // Get reference to $object properties.
-	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
-	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
-	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
-	 * </code>
-	 */
-	protected function & propertyReference( $theOffset = NULL )
-	{
-		//
-		// Init local storage.
-		//
-		$scrap = NULL;
-
-		//
-		// Get root properties reference.
-		//
-		if( $theOffset === NULL )
-			return $this->mProperties;												// ==>
-
-		//
-		// Handle scalar offset.
-		//
-		if( is_scalar( $theOffset ) )
-		{
-			//
-			// Check property.
-			//
-			if( ! $this->offsetExists( $theOffset ) )
-				return $scrap;														// ==>
-
-			return $this->mProperties[ $theOffset ];								// ==>
-
-		} // Scalar offset.
-
-		//
-		// Handle nested property.
-		//
-		if( is_array( $theOffset )
-			|| ($theOffset instanceof self)
-			|| ($theOffset instanceof \ArrayObject) )
-		{
-			//
-			// Get offsets count.
-			//
-			$count = ( is_array( $theOffset ) )
-				? count( $theOffset )
-				: $theOffset->count();
-
-			//
-			// Handle root properties.
-			//
-			if( ! $count )
-				return $this->mProperties;											// ==>
-
-			//
-			// Iterate offsets.
-			//
-			$reference = & $this->mProperties;
-			foreach( $theOffset as $offset )
-			{
-				//
-				// Check offset.
-				//
-				if( ! is_scalar( $offset ) )
-					throw new \InvalidArgumentException(
-						"Provided non scalar nested offset."
-					);															// !@! ==>
-
-				//
-				// Check property.
-				//
-				if( is_array( $reference ) )
-				{
-					if( ! array_key_exists( $offset, $reference ) )
-						return $scrap;												// ==>
-				}
-				elseif( ! $reference->offsetExists( $offset ) )
-					return $scrap;													// ==>
-
-				//
-				// Reference property.
-				//
-				$reference = & $reference[ $offset ];
-
-			} // Traversing structure.
-
-			return $reference;														// ==>
-
-		} // Nested property.
-
-		throw new \InvalidArgumentException(
-			"Invalid offset type."
-		);																		// !@! ==>
-
-	} // propertyReference.
-
-
-	/*===================================================================================
-	 *	nestedGet																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return a nested property reference.</h4><p />
-	 *
-	 * This method will return a reference to a specific property, if the property offset
-	 * does not exist, the method will raise an exception.
-	 *
-	 * The method accepts a single parameter that represents the property offset:
-	 *
-	 * <ul>
-	 * 	<li><tt>NULL</tt>: Return a reference of the root object properties.
-	 * 	<li><tt>scalar</tt>: Return a reference of the property identified by the provided
-	 * 		offset.
-	 * 	<li><i>list</i>: Return a reference of the nested property identified by the
-	 * 		provided sequence of offsets; if the list is empty, the method will return the
-	 * 		reference to the root object properties. The provided value must be an array,
-	 * 		Container or an ArrayObject.
-	 * 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
-	 * </ul>
-	 *
-	 * If the offset does not exist, the method will return a reference to a <tt>NULL</tt>
-	 * value: <em>if you get this type of result, you should never try to use the
-	 * reference</em>.
-	 *
-	 * @param mixed					$theOffset			Offset.
-	 * @return mixed				The property reference.
-	 * @throws \InvalidArgumentException
-	 *
-	 * @uses offsetExists()
-	 *
-	 * @example
-	 * <code>
-	 * $test = & $object->nestedGet();              // Get reference to $object properties.
-	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
-	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
-	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
-	 * </code>
-	 */
-	protected function & nestedGet( $theOffset = NULL )
-	{
-		//
-		// Init local storage.
-		//
-		$scrap = NULL;
-
-		//
-		// Get root properties reference.
-		//
-		if( $theOffset === NULL )
-			return $this->mProperties;												// ==>
-
-		//
-		// Handle scalar offset.
-		//
-		if( is_scalar( $theOffset ) )
-		{
-			//
-			// Check property.
-			//
-			if( ! $this->offsetExists( $theOffset ) )
-				return $scrap;														// ==>
-
-			return $this->mProperties[ $theOffset ];								// ==>
-
-		} // Scalar offset.
-
-		//
-		// Handle nested property.
-		//
-		if( is_array( $theOffset )
-		 || ($theOffset instanceof self)
-		 || ($theOffset instanceof \ArrayObject) )
-		{
-			//
-			// Get offsets count.
-			//
-			$count = ( is_array( $theOffset ) )
-				? count( $theOffset )
-				: $theOffset->count();
-
-			//
-			// Handle root properties.
-			//
-			if( ! $count )
-				return $this->mProperties;											// ==>
-
-			//
-			// Iterate offsets.
-			//
-			$reference = & $this->mProperties;
-			foreach( $theOffset as $offset )
-			{
-				//
-				// Check offset.
-				//
-				if( ! is_scalar( $offset ) )
-					throw new \InvalidArgumentException(
-						"Provided non scalar nested offset."
-					);															// !@! ==>
-
-				//
-				// Check property.
-				//
-				if( is_array( $reference ) )
-				{
-					if( ! array_key_exists( $offset, $reference ) )
-						return $scrap;												// ==>
-				}
-				elseif( ! $reference->offsetExists( $offset ) )
-					return $scrap;													// ==>
-
-				//
-				// Reference property.
-				//
-				$reference = & $reference[ $offset ];
-
-			} // Traversing structure.
-
-			return $reference;														// ==>
-
-		} // Nested property.
-
-		throw new \InvalidArgumentException(
-			"Invalid offset type."
-		);																		// !@! ==>
-
-	} // nestedGet.
-
-
-	/*===================================================================================
-	 *	nestedSet																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Set a nested property.</h4><p />
-	 *
-	 * This method can be used to set a nested property value. A specific method is required
-	 * since it is not possible to use multiple level indexation when setting values.
-	 *
-	 * The method accepts two parameters:
-	 *
-	 * <ul>
-	 * 	<li><b>$theOffset</b>: The property offset:
-	 *	 <ul>
-	 *	 	<li><tt>NULL</tt>: Set the object root properties with the value; the value must
-	 * 			be an array, Container or ArrayObject.
-	 *	 	<li><tt>scalar</tt>: Set the property identified by the provided offset.
-	 *	 	<li><tt>array</tt>: Set the nested property identified by the provided sequence
-	 * 			of offsets; if the array is empty, the method will set the root object
-	 * 			properties; in the latter case the value must be an array, Container or
-	 * 			ArrayObject.
-	 *	 	<li><i>other</i>: The method will raise an <tt>InvalidArgumentException</tt>.
-	 *	 </ul>
-	 * 	<li><b>$theValue</b>: The property value.
-	 * </ul>
-	 *
-	 * If the offset does not exist, the method will create it; intermediate offsets will be
-	 * set as arrays by default.
-	 *
-	 * @param mixed					$theOffset			Property offset.
-	 * @param mixed					$theValue			Property value.
-	 * @throws \InvalidArgumentException
-	 *
-	 * @uses offsetExists()
-	 *
-	 * @example
-	 * <code>
-	 * $test = & $object->nestedGet( "offset" ); // Get reference to "offset" property.
-	 * $test = "new";                               // Sets "offset" property in $object to "new".
-	 * </code>
-	 */
-	protected function nestedSet( $theOffset, $theValue )
-	{
-		//
-		// Set root properties.
-		//
-		if( $theOffset === NULL )
-		{
-			//
-			// Check value.
-			//
-			if( is_array( $theValue ) )
-				$this->mProperties = $theValue;
-			elseif( ($theValue instanceof self)
-				 || ($theValue instanceof \ArrayObject) )
-				$this->mProperties = $theValue->getArrayCopy();
-			else
-				throw new \InvalidArgumentException(
-					"Invalid value type."
-				);																// !@! ==>
-
-		} // Set root properties.
-
-		//
-		// Handle scalar offset.
-		//
-		elseif( is_scalar( $theOffset ) )
-			$this->offsetSet( $theOffset, $theValue );
-
-		//
-		// Handle nested property.
-		//
-		elseif( is_array( $theOffset )
-			 || ($theOffset instanceof self)
-			 || ($theOffset instanceof \ArrayObject) )
-		{
-			//
-			// Convert offsets to array.
-			//
-			if( ! is_array( $theOffset ) )
-				$theOffset = $theOffset->getArrayCopy();
-
-			//
-			// Root properties.
-			//
-			if( ! count( $theOffset ) )
-				$this->nestedSet( NULL, $theValue );
-
-			//
-			// Nested properties.
-			//
-			else
-			{
-				//
-				// Iterate offsets.
-				//
-				$reference = & $this->mProperties;
-				while( TRUE )
-				{
-					//
-					// Get current offset.
-					//
-					$offset = array_shift( $theOffset );
-
-					//
-					// Handle leaf.
-					//
-					if( ! count( $theOffset ) )
-						break;													// =>
-
-					//
-					// Allocate property.
-					//
-					if( is_array( $reference ) )
-					{
-						if( ! array_key_exists( $offset, $reference ) )
-							$reference[ $offset ] = [];
-					}
-					elseif( ! $reference->offsetExists( $offset ) )
-						$reference[ $offset ] = [];
-
-					//
-					// Reference property.
-					//
-					$reference = & $reference[ $offset ];
-
-				} // Traversing structure.
-
-				//
-				// Set value.
-				//
-				$reference[ $offset ] = $theValue;
-
-			} // Nested property.
-
-		} // Nested property.
-
-		else
-			throw new \InvalidArgumentException(
-				"Invalid offset type."
-			);																	// !@! ==>
-
-	} // nestedSet.
 
 
 	/*===================================================================================
@@ -1727,23 +1503,64 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * structure, the method will traverse the structure and return the reference of the
 	 * last matched property and strip from the provided offsets array all matched offsets.
 	 *
-	 * If all offsets match, the method will return the reference of the leaf offset and the
-	 * provided offsets list will be empty.
+	 * The method will function as follows:
 	 *
-	 * If an offset doesn't match, the method will return the reference of the last matching
-	 * property and the provided list will start with the first non matching offset.
+	 * <ul>
+	 * 	<li><em>Provided an empty list</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Root properties structure.
+	 * 		<li><em>List</em>: Will be set to <tt>NULL</tt>.
+	 * 	 </ul>
+	 * 	<li><em>All offsets match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Reference to leaf offset property.
+	 * 		<li><em>List</em>: Will be an empty array.
+	 * 	 </ul>
+	 * 	<li><em>At least one offset doesn't match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Reference to the last matching property.
+	 * 		<li><em>List</em>: Will start with the first non matching offset (matching
+	 * 			offsets stripped from list).
+	 * 	 </ul>
+	 * 	<li><em>The first offset doesn't match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Root properties structure.
+	 * 		<li><em>List</em>: Will remain unchanged.
+	 * 	 </ul>
+	 * </ul>
 	 *
-	 * If not offsets match, the method will return the reference to the properties
-	 * structure and the provided offsets list will remain untouched; <em>if you provide an
-	 * empty offsets list, the method will behave as if no offsets match</em>.
+	 * If the second parameter is set to <tt>TRUE</tt>, the method will return the parent
+	 * reference and set the list to the leaf offset:
 	 *
-	 * If the second parameter is <tt>TRUE</tt> and all offsets are matched, the method will
-	 * return the leaf offset in the offsets leaf and return a reference to the parent
-	 * property; if any offset is not matched the method will return an empty offsets list
-	 * and the returned reference is to be ignored.
+	 * <ul>
+	 * 	<li><em>Provided an empty list</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Root properties structure.
+	 * 		<li><em>List</em>: Will be set to <tt>NULL</tt>.
+	 * 	 </ul>
+	 * 	<li><em>All offsets match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Reference to parent offset property.
+	 * 		<li><em>List</em>: Will remain unchanged.
+	 * 	 </ul>
+	 * 	<li><em>At least one offset doesn't match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Reference to the last matching property.
+	 * 		<li><em>List</em>: Will be set to an empty array.
+	 * 	 </ul>
+	 * 	<li><em>The first offset doesn't match</em>:
+	 * 	 <ul>
+	 * 		<li><em>Reference</em>: Root properties structure.
+	 * 		<li><em>List</em>: Will be set to an empty array.
+	 * 	 </ul>
+	 * </ul>
 	 *
-	 * If any of the elements of the offsets list is not a scalar, the method will raise an
-	 * exception.
+	 * Essentially, when the second parameter is <tt>FALSE</tt> you have a full match if
+	 * the list is set to an empty array; when the second parameter is set to <tt>TRUE</tt>,
+	 * if the list is set to an array and it is not empty.
+	 *
+	 * If any of the elements of the offsets list is not a scalar or <tt>NULL</tt>, the
+	 * method will raise an exception.
 	 *
 	 * @param mixed				   &$theOffsets			Offsets list.
 	 * @param bool					$getParent			<tt>TRUE</tt> return parent.
@@ -1754,10 +1571,15 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @example
 	 * <code>
-	 * $test = & $object->nestedGet();              // Get reference to $object properties.
-	 * $test = & $object->nestedGet( "offset" );    // Get reference to "offset" property.
-	 * $test = & $object->nestedGet( [ 1, 2, 3 ] ); // Get reference to $object[1][2][3].
-	 * $test = "new";                               // Sets $object[1][2][3] property to "new".
+	 * // Get reference to $object properties.
+	 * $test = & $object->nestedGet( $list = [] );
+	 *
+	 * // Get reference to "offset" property.
+	 * $test = & $object->nestedGet( $list = [ "offset" ] );
+	 *
+	 * // Get reference to $object[1][2][3].
+	 * $test = & $object->nestedGet( [ 1, 2, 3 ] );
+	 * $test = "new"; // Sets $object[1][2][3] property to "new".
 	 * </code>
 	 */
 	protected function & nestedPropertyReference( array & $theOffsets,
@@ -1767,6 +1589,17 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		// Init local storage.
 		//
 		$reference = & $this->mProperties;
+		$save = & $this->mProperties;
+
+		//
+		// Handle empty list.
+		//
+		if( ! count( $theOffsets ) )
+		{
+			$theOffsets = NULL;
+
+			return $reference;														// ==>
+		}
 
 		//
 		// Scan offsets.
@@ -1778,6 +1611,12 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			//
 			$save = & $reference;
 			$offset = $theOffsets[ $i ];
+
+			//
+			// Check append.
+			//
+			if( $offset === NULL )
+				break;															// =>
 
 			//
 			// Check offset.
@@ -1800,16 +1639,15 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		} // Traversing structure.
 
 		//
-		// Return parent reference.
+		// Handle parent reference.
 		//
-		if( $getParent
-		 && count( $theOffsets )
-		 && ($i >= count( $theOffsets )) )
+		if( $getParent )
 		{
 			//
 			// Update list.
 			//
-			$theOffsets = array_slice( $theOffsets, $i - 1 );
+			if( $i < count( $theOffsets ) )
+				$theOffsets = [];
 
 			return $save;															// ==>
 
