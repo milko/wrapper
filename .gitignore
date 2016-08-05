@@ -1,6 +1,5 @@
 # IntelliJ project files
 .idea
-*.iml
 out
 gen
 
@@ -10,4 +9,3 @@ composer.lock
 
 # Project files
 /docs
-/test/generic_*

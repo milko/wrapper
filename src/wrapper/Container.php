@@ -56,6 +56,12 @@ namespace Milko\wrapper;
  *   </ul>
  * </ul>
  *
+ * @example
+ * <code>
+ * // Instantiate class.
+ * $object = new Container();
+ * </code>
+ *
  *	@package	Core
  *
  *	@author		Milko Škofič <skofic@gmail.com>
@@ -2206,88 +2212,88 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * <code>
 	 * // Example class.
 	 * class Test extends Container {
-	 * 	public function Property( $off = NULL, $val = NULL, bool $old = FALSE ) {
-	 * 		return $this->manageBitfieldProperty( $off, $val, $old );
+	 * 	public function Property( $off,
+	 * 							  string $mask = NULL,
+	 * 							  bool  $value = NULL,
+	 * 							  bool $old = FALSE ) {
+	 * 		return $this->manageBitfieldProperty( $off, $mask, $value, $old );
 	 * 	}
 	 * }
 	 *
-	 * // Instantiate class.
+	 * // Example structure.
 	 * $object = new Test();
 	 *
-	 * // Set "offset" to "value".
-	 * $result = $object->Property( "offset", "value" );
-	 * // $result = string(5) "value";
+	 * // Return current value.
+	 * $state = $object->Property( "flag" );
+	 * // $state === NULL;
+	 *
+	 * // Set property with mask and return current value.
+	 * $state = $object->Property( "flag", hex2bin( 'ff0000ff' ), TRUE );
+	 * // $state == 0xff0000ff;
 	 * // Test Object
 	 * // (
 	 * // 	[mProperties:protected] => Array
 	 * // 		(
-	 * // 			[offset] => value
+	 * //			[flag] => 0xff0000ff
 	 * // 		)
 	 * // )
 	 *
-	 * // Set "offset" to "new" and return old value.
-	 * $result = $object->Property( "offset", "new", TRUE );
-	 * // $result = string(5) "value";
+	 * // Set property with inverted mask and return old value.
+	 * $state = $object->Property( "flag", hex2bin( '00ffff00' ), FALSE, TRUE );
+	 * // $state == 0xff0000ff;
 	 * // Test Object
 	 * // (
 	 * // 	[mProperties:protected] => Array
 	 * // 		(
-	 * // 			[offset] => new
+	 * //			[flag] => 0xff0000ff
 	 * // 		)
 	 * // )
 	 *
-	 * // Get "offset" property.
-	 * $result = $object->Property( "offset" );
-	 * // $result = string(3) "new";
-	 *
-	 * // Get all properties.
-	 * $result = $object->Property();
-	 * // Array
-	 * // (
-	 * // 	[offset] => new
-	 * // )
-	 *
-	 * // Set $object[1][2] to "nested" and return old value.
-	 * $result = $object->Property( [ 1, 2 ], "nested", TRUE );
-	 * // $result === NULL;
+	 * // Turn on masked bits in attribute and return old value.
+	 * $state = $object->Property( "flag", hex2bin( '000ff000' ), TRUE, TRUE );
+	 * // $state == 0xff0000ff;
 	 * // Test Object
 	 * // (
-	 * //     [mProperties:protected] => Array
-	 * //         (
-	 * //             [offset] => new
-	 * //             [1] => Array
-	 * //                 (
-	 * //                     [2] => nested
-	 * //                 )
-	 * //         )
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * //			[flag] => 0xff0ff0ff
+	 * // 		)
 	 * // )
 	 *
-	 * // Delete $object[1][2].
-	 * $result = $object->Property( [ 1, 2 ], FALSE );
-	 * // $result === NULL;
+	 * // Match attribute with mask.
+	 * $state = $object->Property( "flag", hex2bin( '0000000f' ) );
+	 * // $state == bool(true);
+	 *
+	 * // Match attribute with mask.
+	 * $state = $object->Property( "flag", hex2bin( '00f00f00' ) );
+	 * // $state == bool(false);
+	 *
+	 * // Match attribute with non existant offset.
+	 * $state = $object->Property( "UNKNOWN", hex2bin( '00f00f00' ) );
+	 * // $state === NULL;
+	 *
+	 * // Turn off masked bits in attribute and return old value.
+	 * $state = $object->Property( "flag", hex2bin( '00ffff00' ), FALSE, TRUE );
+	 * // $state == 0xff0ff0ff;
 	 * // Test Object
 	 * // (
-	 * //     [mProperties:protected] => Array
-	 * //         (
-	 * //             [offset] => new
-	 * //         )
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * //			[flag] => 0xff0000ff
+	 * // 		)
 	 * // )
 	 *
-	 * // Delete $object[ "offset" ] and return old value.
-	 * $result = $object->Property( "offset", FALSE, TRUE );
-	 * // $result === string(3) "new";
-	 * // Test Object
-	 * // (
-	 * //     [mProperties:protected] => Array
-	 * //         (
-	 * //         )
-	 * // )
+	 * //
+	 * // Note how I use hex functions: passing hex values will convert them to integers:
+	 * // Depending on the machine byte order you will not be able to use the integer sign
+	 * // bit.
+	 * //
 	 * </code>
 	 */
 	protected function manageBitfieldProperty( 		  $theOffset,
-														string $theMask = NULL,
-														$theValue = NULL,
-														bool	  $doOld = FALSE )
+											   string $theMask = NULL,
+													  $theValue = NULL,
+											   bool	  $doOld = FALSE )
 	{
 		//
 		// Save current value.
@@ -2336,7 +2342,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		}
 
 		return ( $doOld )
-			? $save																// ==>
+			? $save																	// ==>
 			: $this->offsetGet( $theOffset );										// ==>
 
 	} // manageBitfieldProperty.
