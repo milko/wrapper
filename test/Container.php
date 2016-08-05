@@ -489,8 +489,8 @@ echo( "\n" );
 echo( "Get array copy:\n" );
 echo( '$converted = $copy = $test->getArrayCopy();' . "\n" );
 $converted = $copy = $test->getArrayCopy();
-echo( 'test_Container::convertToArray( $converted );' . "\n" );
-test_Container::convertToArray( $converted );
+echo( 'test_Container::ConvertToArray( $converted );' . "\n" );
+test_Container::ConvertToArray( $converted );
 print_r( $converted );
 
 echo( "\n" );

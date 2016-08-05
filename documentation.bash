@@ -13,7 +13,7 @@ echo "**************************************************************************
 directory=`dirname $0`
 script=$directory/vendor/apigen/apigen/bin/apigen
 cd $directory
-$script generate --config apigen.conf
+$script generate --annotation-groups todo,deprecated --config apigen.conf
 
 echo
 echo "=> Done"
