@@ -1,0 +1,13 @@
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
+# Composer
+/vendor
+composer.lock
+
+# Project files
+/docs
+/test/generic_*

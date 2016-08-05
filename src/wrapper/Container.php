@@ -2176,10 +2176,15 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * 	 </ul>
 	 * 	<li><b>$theValue</b>: The new value or operation:
 	 * 	 <ul>
-	 * 		<li><tt>TRUE</tt> Turn on property bits corresponding to mask set bits.
-	 * 		<li><tt>FALSE</tt>: Turn off property bits corresponding to mask set bits.
+	 * 		<li><tt>TRUE</tt> If the offset exists turn on property bits corresponding to
+	 * 			mask set bits; if the offset doesn't exist create a property with the mask
+	 * 			set bits.
+	 * 		<li><tt>FALSE</tt> If the offset exists turn off property bits corresponding to
+	 * 			mask set bits; if the offset doesn't exist create a property with the mask
+	 * 			inverted bits.
 	 * 		<li><tt>NULL</tt>: Match property with mask bits and return <tt>TRUE</tt> if
-	 * 			any bit of the combination is set, or <tt>FALSE</tt>.
+	 * 			any bit of the combination is set, <tt>FALSE</tt> if not and <tt>NULL</tt>
+	 * 			if the offset doesn't exist.
 	 * 	 </ul>
 	 *	<li><tt>$doOld</tt>: Return value switch:
 	 *	 <ul>
