@@ -112,19 +112,78 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @example
 	 * <code>
 	 * // Empty container.
-	 * $test = new Container();
+	 * $object = new Container();
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 		)
+	 * // )
 	 *
 	 * // With array.
-	 * $test = new Container( [1,2,3] );
-	 *
-	 *  // With Container.
-	 * $test = new Container( new Container( [1,2,3] ) );
-	 *
+	 * $object = new Container( [1,2,3] );
+	 * // With Container.
+	 * $object = new Container( new Container( [1,2,3] ) );
 	 * // With ArrayObject.
-	 * $test = new Container( new ArrayObject( [1,2,3] ) );
+	 * $object = new Container( new ArrayObject( [1,2,3] ) );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * //			[0] => 1
+	 * //			[1] => 2
+	 * //			[2] => 3
+	 * // 		)
+	 * // )
 	 *
-	 * // With ArrayObject converted to array.
-	 * $test = new Container( new ArrayObject( [1,2,3] ), TRUE );
+	 * // With embedded objects.
+	 * $object = new Container(
+	 * 	[ 1 => new Container(
+	 * 		[ 2 => new ArrayObject(
+	 * 			[ 1, 2, 3 ] ) ] ) ] );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 			[1] => Milko\wrapper\Container Object
+	 * // 				(
+	 * // 					[mProperties:protected] => Array
+	 * // 						(
+	 * // 							[2] => ArrayObject Object
+	 * // 								(
+	 * // 									[storage:ArrayObject:private] => Array
+	 * // 										(
+	 * // 											[0] => 1
+	 * // 											[1] => 2
+	 * // 											[2] => 3
+	 * // 										)
+	 * // 								)
+	 * // 						)
+	 * // 				)
+	 * // 		)
+	 * // )
+	 *
+	 * // With embedded objects converted to array.
+	 * $object = new Container(
+	 * 	[ 1 => new Container(
+	 * 		[ 2 => new ArrayObject(
+	 * 			[ 1, 2, 3 ] ) ] ) ],
+	 * 	TRUE );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 			[1] => Array
+	 * // 				(
+	 * // 					[2] => Array
+	 * // 						(
+	 * // 							[0] => 1
+	 * // 							[1] => 2
+	 * // 							[2] => 3
+	 * // 						)
+	 * // 				)
+	 * // 		)
+	 * // )
 	 * </code>
 	 */
 	public function __construct( $theProperties = NULL, bool $asArray = FALSE )
@@ -971,8 +1030,47 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @example
 	 * <code>
+	 * // Example structure.
+	 * $object = new Container( [
+	 * 	"offset" => "value",
+	 * 	"list" => [ 1, 2 ],
+	 * 	"nested" => [
+	 * 		1 => [
+	 * 			2 => new ArrayObject( [
+	 * 				3 => "three" ] )
+	 * 		]
+	 * 	]
+	 * ] );
+	 *
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 			[offset] => value
+	 * // 			[list] => Array
+	 * // 				(
+	 * // 					[0] => 1
+	 * // 					[1] => 2
+	 * // 				)
+	 * // 			[nested] => Array
+	 * // 				(
+	 * // 					[1] => Array
+	 * // 						(
+	 * // 							[2] => ArrayObject Object
+	 * // 								(
+	 * // 									[storage:ArrayObject:private] => Array
+	 * // 										(
+	 * // 											[3] => three
+	 * // 										)
+	 * // 								)
+	 * // 						)
+	 * // 				)
+	 * // 		)
+	 * // )
+	 *
 	 * // Get number of object properties.
-	 * $iterator = $object->count();
+	 * $count = $object->count();
+	 * // (int)3
 	 * </code>
 	 */
 	public function count()
@@ -1141,6 +1239,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // 				)
 	 * // 		)
 	 * // )
+	 * </code>
 	 */
 	public function array_values()
 	{
@@ -1226,6 +1325,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // 				)
 	 * // 		)
 	 * // )
+	 * </code>
 	 */
 	public function getArrayCopy()
 	{

@@ -22,28 +22,8 @@ $object = new Container();
 
 // With array.
 $object = new Container( [1,2,3] );
-// Milko\wrapper\Container Object
-// (
-// 	[mProperties:protected] => Array
-// 		(
-//			[0] => 1
-//			[1] => 2
-//			[2] => 3
-// 		)
-// )
-
 // With Container.
 $object = new Container( new Container( [1,2,3] ) );
-// Milko\wrapper\Container Object
-// (
-// 	[mProperties:protected] => Array
-// 		(
-//			[0] => 1
-//			[1] => 2
-//			[2] => 3
-// 		)
-// )
-
 // With ArrayObject.
 $object = new Container( new ArrayObject( [1,2,3] ) );
 // Milko\wrapper\Container Object
@@ -56,9 +36,54 @@ $object = new Container( new ArrayObject( [1,2,3] ) );
 // 		)
 // )
 
-// With ArrayObject converted to array.
-$object = new Container([ 1 => ]);
-print_r($object);
+// With embedded objects.
+$object = new Container(
+	[ 1 => new Container(
+		[ 2 => new ArrayObject(
+			[ 1, 2, 3 ] ) ] ) ] );
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+// 			[1] => Milko\wrapper\Container Object
+// 				(
+// 					[mProperties:protected] => Array
+// 						(
+// 							[2] => ArrayObject Object
+// 								(
+// 									[storage:ArrayObject:private] => Array
+// 										(
+// 											[0] => 1
+// 											[1] => 2
+// 											[2] => 3
+// 										)
+// 								)
+// 						)
+// 				)
+// 		)
+// )
+
+// With embedded objects converted to array.
+$object = new Container(
+	[ 1 => new Container(
+		[ 2 => new ArrayObject(
+			[ 1, 2, 3 ] ) ] ) ],
+	TRUE );
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+// 			[1] => Array
+// 				(
+// 					[2] => Array
+// 						(
+// 							[0] => 1
+// 							[1] => 2
+// 							[2] => 3
+// 						)
+// 				)
+// 		)
+// )
 
 exit;
 
