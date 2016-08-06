@@ -10,6 +10,60 @@ require_once(dirname(__DIR__) . "/includes.local.php");
 //
 use Milko\wrapper\Container;
 
+
+// Empty container.
+$object = new Container();
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+// 		)
+// )
+
+// With array.
+$object = new Container( [1,2,3] );
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+//			[0] => 1
+//			[1] => 2
+//			[2] => 3
+// 		)
+// )
+
+// With Container.
+$object = new Container( new Container( [1,2,3] ) );
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+//			[0] => 1
+//			[1] => 2
+//			[2] => 3
+// 		)
+// )
+
+// With ArrayObject.
+$object = new Container( new ArrayObject( [1,2,3] ) );
+// Milko\wrapper\Container Object
+// (
+// 	[mProperties:protected] => Array
+// 		(
+//			[0] => 1
+//			[1] => 2
+//			[2] => 3
+// 		)
+// )
+
+// With ArrayObject converted to array.
+$object = new Container([ 1 => ]);
+print_r($object);
+
+exit;
+
+
+
 // Example class.
 class Test extends Container {
 	private $status = NULL;
