@@ -2737,8 +2737,18 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			//
 			// Check property.
 			//
-			if( ! array_key_exists( $offset, $reference ) )
-				break;															// =>
+//			if( ! array_key_exists( $offset, $reference ) )
+//				break;															// =>
+			if( $reference instanceof self )
+				$reference = & $reference->mProperties;
+			if( is_array( $reference ) )
+				$found = array_key_exists( $offset, $reference );
+			elseif( $reference instanceof \ArrayObject )
+				$found = $reference->offsetExists( $offset );
+			else
+				$found = FALSE;
+			if( ! $found )
+				break;															// ==>
 
 			//
 			// Reference property.
