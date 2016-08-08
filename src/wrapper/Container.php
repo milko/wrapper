@@ -56,12 +56,6 @@ namespace Milko\wrapper;
  *   </ul>
  * </ul>
  *
- * @example
- * <code>
- * // Instantiate class.
- * $object = new Container();
- * </code>
- *
  *	@package	Core
  *
  *	@author		Milko Škofič <skofic@gmail.com>
@@ -1255,8 +1249,12 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Return a copy of the object properties.</h4><p />
 	 *
-	 * This method will return a copy of the object containing its properties as an array;
-	 * <em>subdocuments will not be converted to arrays</em>.
+	 * This method will return a copy of the object properties array.
+	 *
+	 * <em>Subdocuments will not be converted to arrays, this means that if you modify the
+	 * contents of an embedded object in the copy, the modifications will be also made on
+	 * the source object: if you need a safe copy you will have to flatten the structure
+	 * into an array with {@link asArray()}</em>.
 	 *
 	 * @return array				Array copy.
 	 *
@@ -1358,6 +1356,22 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * retrieving the reference to the {@link mProperties} data member, setting it to
 	 * anything other than an array will render the object unusable without warning.</em>
 	 *
+	 * <em><b>Important</b>: when you use references, such as:</em>
+	 * <code>
+	 * $reference = & $object->propertyReference( $offset );
+	 * $reference = "X";
+	 * </code>
+	 * <em>The object property $object[ $offset ] will contain a reference to the string
+	 * "X". If you use other methods that handle references you might encur into problems,
+	 * so, once you are done with the reference, you should dispose of it:</em>
+	 * <code>
+	 * $reference = & $object->propertyReference( $offset );
+	 * $reference = "X";
+	 * unset( $reference );
+	 * </code>
+	 * <em>that way $object[ $offset ] will contain a string rather than a reference; you
+	 * can set the reference to another reference before needing to clear it.</em>
+	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				The property reference.
 	 * @throws \InvalidArgumentException
@@ -1406,11 +1420,19 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 *
 	 * // Will return a reference to $object->mProperties.
-	 * $result = & $object->propertyReference();
-	 * $result = & $object->propertyReference( NULL );
-	 * $result = & $object->propertyReference( [] );
+	 * $properties = & $object->propertyReference();
+	 * $properties = & $object->propertyReference( NULL );
+	 * $properties = & $object->propertyReference( [] );
 	 * // You should only set the reference to an array!
-	 * $result = [ 1, 2, 3 ];
+	 * // $properties = [ 1, 2, 3 ];
+	 *
+	 * // Clear reference once you are done with it.
+	 * unset( $properties );
+	 * // Hadn't you done it, the object would look like that:
+	 * // object(Milko\wrapper\Container)#3 (1) {
+	 * //   ["mProperties":protected]=>
+	 * //   &array(3) {
+	 * //		...
 	 *
 	 * // Will return a reference to $object[ "offset" ].
 	 * $result = & $object->propertyReference( "offset" );
@@ -1435,6 +1457,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // Will return NULL.
 	 * $result = $object->offsetGet( [ "nested", 1, 2, "UNKNOWN", 3 ] );
 	 * // Never use $result in this case!
+	 *
+	 * // Clear reference once you are done with it.
+	 * unset( $result );
 	 * </code>
 	 */
 	public function & propertyReference( $theOffset = NULL )
@@ -1456,9 +1481,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		if( is_scalar( $theOffset ) )
 		{
 			if( $this->offsetExists( $theOffset ) )
-				return $this->mProperties[ $theOffset ];
+				return $this->mProperties[ $theOffset ];							// ==>
 
-			return $scrap;
+			return $scrap;															// ==>
 		}
 
 		//
@@ -1485,9 +1510,10 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			//
 			$value = & $this->nestedPropertyReference( $theOffset );
 
-			return ( ! (bool)count( $theOffset ) )
-				 ? $value															// ==>
-				 : $scrap;															// ==>
+			if( ! (bool)count( $theOffset ) )
+				return $value;														// ==>
+
+			return $scrap;															// ==>
 
 		} // Nested offset.
 
@@ -1561,7 +1587,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 *
 	 * // Return a copy converted to array.
-	 * $object->asArray();
+	 * $result = $object->asArray();
 	 *
 	 * // Milko\wrapper\Container Object
 	 * // (
@@ -1586,9 +1612,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	public function asArray()
 	{
 		//
-		// Make copy.
+		// Make a copy.
 		//
-		$copy = $this->getArrayCopy();
+		$copy = $this->mProperties;
 
 		//
 		// Convert to array.
@@ -1701,8 +1727,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * do nothing. <em>The provided structure itself will also be converted to an
 	 * array.</em>
 	 *
-	 * Note that the conversion is performed on the provided reference, if you need the
-	 * original value you must provide a copy to this method.
+	 * <em>Note that the conversion is performed on the provided reference, if you need the
+	 * original value you must provide a copy to this method.</em>
 	 *
 	 * @param mixed				   &$theStructure		Structure to convert.
 	 *
@@ -1771,8 +1797,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		// Handle structures.
 		//
 		if( is_array( $theStructure )
-		 || ($theStructure instanceof \ArrayObject)
-		 || ($theStructure instanceof self) )
+			|| ($theStructure instanceof \ArrayObject)
+			|| ($theStructure instanceof self) )
 		{
 			//
 			// Convert to array.
@@ -1954,6 +1980,11 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *	 </ul>
 	 * </ul>
 	 *
+	 * When setting bits, if the size of the mask is <em>greater</em> than the current
+	 * value, the resulting bitfield will have the size of the mask. When resetting bits, if
+	 * the size of the mask is <em>smaller</em> than the current value, the resulting
+	 * bitfield will have the size of the mask.
+	 *
 	 * @param string			   &$theAttribute		Bitfield attribute reference.
 	 * @param string				$theMask			Flag mask.
 	 * @param bool					$theValue			New value or operation.
@@ -2029,6 +2060,26 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // Test Object
 	 * // (
 	 * // 	[attr:Test:private] => 0xff0000ff
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 		)
+	 * // )
+	 *
+	 * // Reduce mask size.
+	 * $state = $object->Attribute( hex2bin( '00ff' ), FALSE );
+	 * // Test Object
+	 * // (
+	 * // 	[attr:Test:private] => 0xff00
+	 * // 	[mProperties:protected] => Array
+	 * // 		(
+	 * // 		)
+	 * // )
+	 *
+	 * // Increase mask size.
+	 * $state = $object->Attribute( hex2bin( '00ff0000' ), TRUE );
+	 * // Test Object
+	 * // (
+	 * // 	[attr:Test:private] => 0xffff0000
 	 * // 	[mProperties:protected] => Array
 	 * // 		(
 	 * // 		)
@@ -2710,6 +2761,11 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			return $save;															// ==>
 
 		} // Return parent reference.
+
+		//
+		// Clear save.
+		//
+		unset( $save );
 
 		//
 		// Update list.
