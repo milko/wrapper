@@ -17,9 +17,9 @@ namespace Milko\wrapper;
 /**
  * <h4>Container base object.</h4><p />
  *
- * This class is a custom implementation of ArrayObject that uses an array data member
- * rather than the ArrayObject private member. This is because we need references to array
- * members, a thing that ArrayObject does not provide.
+ * This class is the ancestor of objects that act as document containers, the object
+ * functions as <tt>ArrayObject</tt>, except that it implements an array data member which,
+ * unlike <tt>ArrayObject</tt>, allows access by reference to its elements.
  *
  * The <em>attributes</em> of the object represent transient information which is private
  * to the object itself, this data is stored in the object's data members and is not
@@ -27,8 +27,8 @@ namespace Milko\wrapper;
  *
  * The <em>properties</em> of the object represent the persistent information carried by
  * the object, this data is stored in the array data member and are accessed through the
- * various interfaces implemented by this class. The persistence framework of this
- * library uses this data.
+ * various interfaces implemented by this class. The persistence framework of this library
+ * uses this data.
  *
  * Properties cannot hold the <tt>NULL</tt> value, setting a property to that value will
  * result in that property being deleted.
@@ -61,6 +61,360 @@ namespace Milko\wrapper;
  *	@author		Milko Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		02/08/2016
+ *
+ * @example
+ * <code>
+ * // Test class
+ * class Test extends Container {
+ * 	private $attribute = NULL;
+ * 	private $flag = NULL;
+ *
+ * 	// Constructor
+ * 	public function __construct( $properties = NULL, bool $as_array = FALSE ) {
+ * 		parent::__construct( $properties, $as_array );
+ * 		$this->flag = hex2bin( '00000000' );
+ * 	}
+ *
+ * 	// Attribute manager.
+ * 	function Attribute( $value = NULL, $old = FALSE ) {
+ * 		return $this->manageAttribute( $this->attribute, $value, $old );
+ * 	}
+ *
+ * 	// Flag attribute manager.
+ * 	function FlagAttribute(
+ * 		string $mask = NULL, bool $value = NULL, bool $old = FALSE ) {
+ * 		return $this->manageBitfieldAttribute( $this->flag, $mask, $value, $old );
+ * 	}
+ *
+ * 	// Property manager.
+ * 	function Property( $offset, $value = NULL, $old = FALSE ) {
+ * 		return $this->manageProperty( $offset, $value, $old );
+ * 	}
+ *
+ * 	// Flag property manager.
+ * 	function FlagProperty(
+ * 		$offset, string $mask = NULL, bool $value = NULL, bool $old = FALSE ) {
+ * 		return $this->manageBitfieldProperty( $offset, $mask, $value, $old );
+ * 	}
+ * }
+ *
+ * // Instantiate empty object.
+ * $object = new Test();
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //         )
+ * // )
+ *
+ * // Instantiate object with data.
+ * $object = new Test( [1, 2, 3] );
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => 1
+ * //             [1] => 2
+ * //             [2] => 3
+ * //         )
+ * // )
+ *
+ * // Get a property.
+ * $result = $object[ 0 ];
+ * // (int)1
+ *
+ * // Get a non existing property.
+ * $result = $object[ "UNKNOWN" ];
+ * // NULL - will not trigger an alert.
+ *
+ * // Replace a property.
+ * $object[ 0 ] = "REPLACED";
+ *
+ * // Create a new property.
+ * $object[ "NEW" ] = "NEW PROPERTY";
+ *
+ * // Create a nested property.
+ * $object[ [ "nested", "string" ] ] = "a string";
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => REPLACED
+ * //             [1] => 2
+ * //             [2] => 3
+ * //             [NEW] => NEW PROPERTY
+ * //             [nested] => Array
+ * //                 (
+ * //                     [string] => a string
+ * //                 )
+ * //         )
+ * // )
+ *
+ * // Get nested property.
+ * $result = $object[ [ "nested", "string" ] ];
+ * $result = $object[ "nested" ][ "string" ];
+ * // (string)"a string"
+ *
+ * // Set nested property.
+ * $object[ [ "nested", "string" ] ] = "changed";
+ * // ...
+ * //             [nested] => Array
+ * //                 (
+ * //                     [string] => changed
+ * //                 )
+ * // Cannot use: $object[ "nested" ][ "string" ] = "changed"; - Sorry...
+ *
+ *
+ * // Get property reference.
+ * $reference = & $object->propertyReference( 0 );
+ * $reference = "CHANGED";
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => CHANGED
+ * // ...
+ *
+ * // Get nested property reference.
+ * $reference = & $object->propertyReference( [ "nested", "string" ] );
+ * $reference = "modified";
+ * // ...
+ * //             [nested] => Array
+ * //                 (
+ * //                     [string] => modified
+ * //                 )
+ *
+ * // Works also with ArrayObject and Container objects.
+ * $object[ 0 ] = new ArrayObject([ "container" => new Container([ "number" => 46 ]) ]);
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => ArrayObject Object
+ * //                 (
+ * //                     [storage:ArrayObject:private] => Array
+ * //                         (
+ * //                             [container] => Milko\wrapper\Container Object
+ * //                                 (
+ * //                                     [mProperties:protected] => Array
+ * //                                         (
+ * //                                             [number] => 46
+ * //                                         )
+ * //                                 )
+ * //                         )
+ * //                 )
+ * // ...
+ * $result = $object[ [ 0, "container", "number" ] ];
+ * $result = $object[ 0 ][ "container" ][ "number" ];
+ * // (int)46
+ * $reference = & $object->propertyReference( [ 0, "container", "number" ] );
+ * $reference = 88;
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => ArrayObject Object
+ * //                 (
+ * //                     [storage:ArrayObject:private] => Array
+ * //                         (
+ * //                             [container] => Milko\wrapper\Container Object
+ * //                                 (
+ * //                                     [mProperties:protected] => Array
+ * //                                         (
+ * //                                             [number] => 88
+ * //                                         )
+ * //                                 )
+ * //                         )
+ * //                 )
+ * // ...
+ *
+ * // Should dispose of reference once you are done using it.
+ * unset( $reference );
+ *
+ * // Append an element to a structure.
+ * $object[ [ 0, "container", NULL, "appended" ] ] = "value";
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0x00000000
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => ArrayObject Object
+ * //                 (
+ * //                     [storage:ArrayObject:private] => Array
+ * //                         (
+ * //                             [container] => Milko\wrapper\Container Object
+ * //                                 (
+ * //                                     [mProperties:protected] => Array
+ * //                                         (
+ * //                                             [number] => 88
+ * //                                             [0] => Array
+ * //                                                 (
+ * //                                                     [appended] => value
+ * //                                                 )
+ * //                                         )
+ * //                                 )
+ * //                         )
+ * //                 )
+ * // ...
+ *
+ * // Delete property and all resulting empty collections.
+ * $result = $object[ [ "nested", "string" ] ] = NULL;
+ * // The following property will be deleted.
+ * //             [nested] => Array
+ * //                 (
+ * //                     [string] => modified
+ * //                 )
+ *
+ * // Set attribute.
+ * $result = $object->Attribute( "first" );
+ * // $result == "first";
+ * //     [attribute:Test:private] => first
+ *
+ * // Set attribute and return old value.
+ * $result = $object->Attribute( "second", TRUE );
+ * // $result == "first";
+ * //     [attribute:Test:private] => second
+ *
+ * // Retrieve attribute.
+ * $result = $object->Attribute();
+ * // $result == "second";
+ *
+ * // Reset attribute.
+ * $result = $object->Attribute( FALSE, TRUE );
+ * // $result == "second";
+ * //     [attribute:Test:private] => NULL
+ *
+ * // Get current flag attribute value.
+ * $result = $object->FlagAttribute();
+ * // $result == 0x00000000;
+ *
+ * // Turn on masked bits.
+ * $result = $object->FlagAttribute( hex2bin("ff0000ff"), TRUE );
+ * // $result == 0xff0000ff;
+ * //     [flag:Test:private] => 0xff0000ff
+ *
+ * // Turn off masked bits.
+ * $result = $object->FlagAttribute( hex2bin("ff000000"), FALSE );
+ * // $result == 0x000000ff;
+ * //     [flag:Test:private] => 0x000000ff
+ *
+ * // Turn on masked bits and return old value.
+ * $result = $object->FlagAttribute( hex2bin("ff000000"), TRUE, TRUE );
+ * // $result == 0x000000ff;
+ * //     [flag:Test:private] => 0xff0000ff
+ *
+ * // Check flag with mask.
+ * $result = $object->FlagAttribute( hex2bin("0000000f") );
+ * // $result === (bool)TRUE;
+ * $result = $object->FlagAttribute( hex2bin("0000f000") );
+ * // $result === (bool)FALSE;
+ *
+ * // Flatten to array.
+ * $object->toArray();
+ * // Before:
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0xff0000ff
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => ArrayObject Object
+ * //                 (
+ * //                     [storage:ArrayObject:private] => Array
+ * //                         (
+ * //                             [container] => Milko\wrapper\Container Object
+ * //                                 (
+ * //                                     [mProperties:protected] => Array
+ * //                                         (
+ * //                                             [number] => 88
+ * //                                             [0] => Array
+ * //                                                 (
+ * //                                                     [appended] => value
+ * //                                                 )
+ * //                                         )
+ * //                                 )
+ * //                         )
+ * //                 )
+ * //             [1] => 2
+ * //             [2] => 3
+ * //             [NEW] => NEW PROPERTY
+ * //         )
+ * // )
+ * // After:
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0xff0000ff
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [0] => Array
+ * //                 (
+ * //                     [container] => Array
+ * //                         (
+ * //                             [number] => 88
+ * //                             [0] => Array
+ * //                                 (
+ * //                                     [appended] => value
+ * //                                 )
+ * //                         )
+ * //                 )
+ * //             [1] => 2
+ * //             [2] => 3
+ * //             [NEW] => NEW PROPERTY
+ * //         )
+ * // )
+ *
+ * // Get property.
+ * $result = $object->Property( 1 );
+ * // $result == (int)2
+ *
+ * // Get nested property.
+ * $result = $object->Property( [ 0, "container", "number" ] );
+ * // $result == (int)88
+ *
+ * // Set property.
+ * $result = $object->Property( 1, 99 );
+ * // $result == (int)2
+ * // $object[ 1 ] == (int)99
+ *
+ * // Set nested property and return old value.
+ * $result = $object->Property( [ 0, "container", "number" ], 100, TRUE );
+ * // $result == (int)2
+ * // $object[ 1 ] == (int)100
+ *
+ * // Reset nested property.
+ * $result = $object->Property( [ 0, "container", 0, "appended" ], FALSE );
+ * // $result == (string)"value"
+ * // $object[ 0 ][ "container" ][ 0 ] will also be deleted.
+ *
+ * // Reset nested property with all resulting empty structures and return old value.
+ * $result = $object->Property( [ 0, "container" ], FALSE, TRUE );
+ * // $result == (int)100
+ * // Test Object
+ * // (
+ * //     [attribute:Test:private] => NULL
+ * //     [flag:Test:private] => 0xff0000ff
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [1] => 99
+ * //             [2] => 3
+ * //             [NEW] => NEW PROPERTY
+ * //         )
+ * // )
+ * </code>
  */
 class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 {
@@ -256,6 +610,9 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * 		scalar or <tt>NULL</tt> the method will trigger an exception.
 	 * </ul>
 	 *
+	 * When providing a list of offsets, <tt>[ 1, 2, 3 ]</tt> is equivalent to
+	 * <tt>$object[1][2][3]</tt>.
+	 *
 	 * <em>The <tt>NULL</tt> offset is used to append an element in {@link offsetSet()}, it
 	 * is handled in this method for consistency.</em>
 	 *
@@ -375,7 +732,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Return a value at a given offset.</h4><p />
 	 *
-	 * We overload this method to handle the case in which the offset does not exist: if
+	 * We implement this method to handle the case in which the offset does not exist: if
 	 * that is the case we return <tt>NULL</tt> instead of issuing a warning.
 	 *
 	 * The method expects a single parameter that represents the property offset to match:
@@ -391,11 +748,16 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * 		scalar or <tt>NULL</tt> the method will trigger an exception.
 	 * </ul>
 	 *
+	 * When providing a list of offsets, <tt>[ 1, 2, 3 ]</tt> is equivalent to
+	 * <tt>$object[1][2][3]</tt>; the latter form can also be used to retrieve properties,
+	 * <em>but not to set them</em>.
+	 *
 	 * <em>The <tt>NULL</tt> offset is used to append an element in {@link offsetSet()}, it
 	 * is handled in this method for consistency.</em>
 	 *
 	 * @param mixed					$theOffset			Offset.
 	 * @return mixed				Offset value or <tt>NULL</tt>.
+	 * @throws \InvalidArgumentException
 	 *
 	 * @uses offsetExists()
 	 * @uses getArrayCopy()
@@ -449,6 +811,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * // Will return "three".
 	 * $result = $test->offsetGet( [ "nested", 1, 2, 3 ] );
+	 * $result = $test[ "nested" ][ 1 ][ 2 ][ 3 ];
 	 *
 	 * // Get an object property.
 	 * $result = $test[ explode( '.', "object.property.path" ) ];
@@ -517,7 +880,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Set a value at a given offset.</h4><p />
 	 *
-	 * We overload this method to handle the <tt>NULL</tt> value in the <tt>$theValue</tt>
+	 * We implement this method to handle the <tt>NULL</tt> value in the <tt>$theValue</tt>
 	 * parameter: if the offset exists it will be deleted, if not, the method will do
 	 * nothing.
 	 *
@@ -526,22 +889,24 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * <ul>
 	 * 	<li><b>$theOffset</b>: The offset to set:
 	 *	 <ul>
-	 *	 	<li><tt>NULL</tt>: Will append the value to the structure.
+	 *	 	<li><tt>NULL</tt>: Will append the value to the structure; if the parent
+	 * 			property is not a structure, the method will raise an exception.
 	 *	 	<li><tt>scalar</tt>: Will create or set the offset at the top structure level
 	 * 			with the provided value.
 	 * 		<li><i>list</i>: Will traverse the structure using the provided sequence of
 	 * 			offsets and create or set the nested structure offset with the provided
-	 * 			value. <em>Any intermediate level offset that doesn't yet exist will be
-	 * 			initialised as an <tt>array</tt></em>. If the list is empty the method will
-	 * 			do nothing. The list must be provided as an <tt>array</tt>,
+	 * 			value. <em>Any intermediate level offset that doesn't yet exist, or that is
+	 * 			not an <tt>array</tt>, <tt>Container</tt> or an <tt>ArrayObject</tt>, will
+	 * 			be initialised as an <tt>array</tt></em>. If the list is empty the method
+	 * 			will do nothing. The list must be provided as an <tt>array</tt>,
 	 * 			<tt>Container</tt> or an <tt>ArrayObject</tt>, any other type will raise an
 	 * 			exception. If any element of the list is not a scalar or <tt>NULL</tt> the
 	 * 			method will trigger an exception.
 	 *	 </ul>
 	 * 	<li><b>$theValue</b>: The value to set:
 	 *	 <ul>
-	 *	 	<li><tt>NULL</tt>: Will delete the property referenced by the provided offset,
-	 * 			if found: see {@link offsetUnset()}.
+	 *	 	<li><tt>NULL</tt>: If the offset is matched, the method will delete the property
+	 * 			referenced by the provided offset: see {@link offsetUnset()}.
 	 *	 	<li><i>other</i>: Will set the property referenced by the provided offset with
 	 * 			the provided value.
 	 *	 </ul>
@@ -549,6 +914,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @param string				$theOffset			Offset.
 	 * @param mixed					$theValue			Value to set at offset.
+	 * @throws \RuntimeException
+	 * @throws \InvalidArgumentException
 	 *
 	 * @uses offsetUnset()
 	 * @uses getArrayCopy()
@@ -566,30 +933,148 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // $object[1][2] and $object[1] will be arrays.
 	 * $object->offsetSet( [ 1, 2, 3 ], "value" );
 	 *
-	 * // Set an object property.
+	 * // Add object structures.
 	 * // $object[ explode( '.', "object.property.path" ) ] = "value";
-	 * $object->offsetSet( explode( '.', "object.property.path" ), "value" );
+	 * $object->offsetSet(
+	 * 	"object",
+	 * 	new Container([
+	 * 		"property" => new ArrayObject([
+	 * 			"path" => "value" ])
+	 * 		]) );
 	 *
 	 * // Milko\wrapper\Container Object
 	 * // (
-	 * // 	[mProperties:protected] => Array
-	 * // 		(
-	 * // 			[offset] => value
-	 * // 			[1] => Array
-	 * // 				(
-	 * // 					[2] => Array
-	 * // 						(
-	 * // 							[3] => value
-	 * // 						)
-	 * // 				)
-	 * // 			[object] => Array
-	 * // 				(
-	 * // 					[property] => Array
-	 * // 						(
-	 * // 							[path] => value
-	 * // 						)
-	 * // 				)
-	 * // 		)
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [2] => Array
+	 * //                         (
+	 * //                             [3] => value
+	 * //                         )
+	 * //                 )
+	 * //             [object] => Milko\wrapper\Container Object
+	 * //                 (
+	 * //                     [mProperties:protected] => Array
+	 * //                         (
+	 * //                             [property] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [path] => value
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Convert a scalar to an array.
+	 * // $object[ explode( '.', "object.property.path.leaf" ) ] = "value";
+	 * $object->offsetSet( explode( '.', "object.property.path.leaf" ), "value" );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [2] => Array
+	 * //                         (
+	 * //                             [3] => value
+	 * //                         )
+	 * //                 )
+	 * //             [object] => Milko\wrapper\Container Object
+	 * //                 (
+	 * //                     [mProperties:protected] => Array
+	 * //                         (
+	 * //                             [property] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [path] => Array
+	 * //                                                 (
+	 * //                                                     [leaf] => value
+	 * //                                                 )
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Append an element.
+	 * $object->offsetSet( [ 1, 2, NULL ], "appended" );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [2] => Array
+	 * //                         (
+	 * //                             [3] => value
+	 * //                             [4] => appended
+	 * //                         )
+	 * //                 )
+	 * //             [object] => Milko\wrapper\Container Object
+	 * //                 (
+	 * //                     [mProperties:protected] => Array
+	 * //                         (
+	 * //                             [property] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [path] => Array
+	 * //                                                 (
+	 * //                                                     [leaf] => value
+	 * //                                                 )
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 * // $object->offsetSet( [ 1, 2, 3, NULL ], "appended" ) would raise an exception.
+	 *
+	 * // Append an element to a structure.
+	 * $object->offsetSet( [ "object", "property", NULL, "leaf" ], "appended" );
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [offset] => value
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [2] => Array
+	 * //                         (
+	 * //                             [3] => value
+	 * //                             [4] => appended
+	 * //                         )
+	 * //                 )
+	 * //             [object] => Milko\wrapper\Container Object
+	 * //                 (
+	 * //                     [mProperties:protected] => Array
+	 * //                         (
+	 * //                             [property] => ArrayObject Object
+	 * //                                 (
+	 * //                                     [storage:ArrayObject:private] => Array
+	 * //                                         (
+	 * //                                             [path] => Array
+	 * //                                                 (
+	 * //                                                     [leaf] => value
+	 * //                                                 )
+	 * //                                             [0] => Array
+	 * //                                                 (
+	 * //                                                     [leaf] => appended
+	 * //                                                 )
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //         )
 	 * // )
 	 *
 	 * // Delete $object[ "offset' ].
@@ -604,12 +1089,16 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * $object->offsetSet( [ 1, 2, 3 ], NULL );
 	 * // Equivalent to offsetUnset( [ 1, 2, 3 ] );
 	 *
-	 * // Delete $object["object"]["property"]["path"],
-	 * // $object["property"]["path"] and $object["object"] will also be deleted,
+	 * // Delete $object["object"]["property"],
+	 * // $object["object"] will also be deleted because it would become empty.
+	 * $object->offsetSet( [ "object", "property" ], NULL );
+	 * // Equivalent to $object[ [ "object", "property" ] ] = NULL;
+	 * // Equivalent to offsetUnset( [ "object", "property" ] );
+	 *
+	 * // Delete $object[ 1 ][ 2 ][ 4 ],
+	 * // all structures under $object[ 1 ] will also be deleted
 	 * // because they would become empty.
-	 * // $object[ explode( '.', "object.property.path" ) ] = NULL;
-	 * $object->offsetSet( explode( '.', "object.property.path" ), NULL );
-	 * // Equivalent to offsetUnset( explode( '.', "object.property.path" ) );
+	 * $object[ [ 1, 2, 4 ] ] = NULL;
 	 *
 	 * // Milko\wrapper\Container Object
 	 * // (
@@ -690,9 +1179,51 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 							// Handle append offset.
 							//
 							if( $offset === NULL )
-								$offset = ( is_array( $reference ) )
-										? count( $reference )
-										: $reference->count();
+							{
+								//
+								// Assert structures.
+								//
+								if( is_array( $reference )
+								 || ($reference instanceof self)
+								 || ($reference instanceof \ArrayObject) )
+								{
+									//
+									// Handle containers.
+									//
+									if( $reference instanceof self )
+										$reference = & $reference->mProperties;
+
+									//
+									// Append an array.
+									// We need to do this to get the appended offset,
+									// the value will eventually be replaced.
+									//
+									$reference[] = [];
+
+									//
+									// Handle arrays.
+									//
+									if( is_array( $reference ) )
+										$offset
+											= array_keys( $reference )
+												[ count( $reference ) - 1 ];
+
+									//
+									// Handle structures.
+									//
+									else
+										$offset
+											= array_keys( $reference->getArrayCopy() )
+												[ $reference->count() - 1 ];
+
+								} // Reference is an array.
+
+								else
+									throw new \RuntimeException(
+										"Unable to append element: " .
+										"the target is not a structure." );		// !@! ==>
+
+							} // Append element.
 
 							//
 							// Not leaf offset.
@@ -712,6 +1243,14 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 							} // Not leaf offset.
 
 						} while( count( $theOffset ) );
+
+						//
+						// Overwrite scalar with array.
+						//
+						if( (! is_array( $reference ))
+						 && (! ($reference instanceof self))
+						 && (! ($reference instanceof \ArrayObject)) )
+							$reference = [];
 
 						//
 						// Set value.
@@ -750,7 +1289,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	/**
 	 * <h4>Reset a value at a given offset.</h4><p />
 	 *
-	 * We overload this method to prevent warnings when a non-existing offset is provided,
+	 * We implement this method to prevent warnings when a non-existing offset is provided,
 	 * in that case we do nothing.
 	 *
 	 * The method expects a single parameter that represents the property offset:
@@ -777,6 +1316,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @uses getArrayCopy()
 	 * @uses nestedPropertyReference()
+	 * @throws \InvalidArgumentException
 	 *
 	 * @example
 	 * <code>
@@ -992,7 +1532,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * $iterator = $object->getIterator();
 	 *
 	 * // Work with iterator.
-	 * ...
+	 * foreach( $iterator as $key => $value )
+	 * 	...
 	 * </code>
 	 */
 	public function getIterator()
@@ -1081,165 +1622,6 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
  *																						*
  *======================================================================================*/
 
-
-
-	/*===================================================================================
-	 *	array_keys																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return the property offsets.</h4><p />
-	 *
-	 * This method will return an array with the list of property offsets at the top
-	 * structure level.
-	 *
-	 * <em>Note: I was unable to use the documented default parameters of the array_keys()
-	 * function: whenever added, the function would not return any keys.</em>
-	 *
-	 * @return array				List of keys.
-	 *
-	 * @example
-	 * <code>
-	 * // Example structure.
-	 * $object = new Container( [
-	 * 	"offset" => "value",
-	 * 	"list" => [ 1, 2 ],
-	 * 	"nested" => [
-	 * 		1 => [
-	 * 			2 => new ArrayObject( [
-	 * 				3 => "three" ] )
-	 * 		]
-	 * 	]
-	 * ] );
-	 *
-	 * // Milko\wrapper\Container Object
-	 * // (
-	 * // 	[mProperties:protected] => Array
-	 * // 		(
-	 * // 			[offset] => value
-	 * // 			[list] => Array
-	 * // 				(
-	 * // 					[0] => 1
-	 * // 					[1] => 2
-	 * // 				)
-	 * // 			[nested] => Array
-	 * // 				(
-	 * // 					[1] => Array
-	 * // 						(
-	 * // 							[2] => ArrayObject Object
-	 * // 								(
-	 * // 									[storage:ArrayObject:private] => Array
-	 * // 										(
-	 * // 											[3] => three
-	 * // 										)
-	 * // 								)
-	 * // 						)
-	 * // 				)
-	 * // 		)
-	 * // )
-	 *
-	 * // Get property offsets.
-	 * $offsets = $object->array_keys();
-	 *
-	 * // Array
-	 * // (
-	 * // 	[0] => offset
-	 * // 	[1] => list
-	 * // 	[2] => nested
-	 * // )
-	 * </code>
-	 */
-	public function array_keys()
-	{
-		return array_keys( $this->mProperties );									// ==>
-
-	} // array_keys.
-
-
-	/*===================================================================================
-	 *	array_values																	*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return the property values as an array.</h4><p />
-	 *
-	 * This method will return an array with all the property values, the property offsets
-	 * at the top level will be replaced with the <tt>0 .. n-1</tt> array keys.
-	 *
-	 * @return array				List of values.
-	 *
-	 * @example
-	 * <code>
-	 * // Example structure.
-	 * $object = new Container( [
-	 * 	"offset" => "value",
-	 * 	"list" => [ 1, 2 ],
-	 * 	"nested" => [
-	 * 		1 => [
-	 * 			2 => new ArrayObject( [
-	 * 				3 => "three" ] )
-	 * 		]
-	 * 	]
-	 * ] );
-	 *
-	 * // Milko\wrapper\Container Object
-	 * // (
-	 * // 	[mProperties:protected] => Array
-	 * // 		(
-	 * // 			[offset] => value
-	 * // 			[list] => Array
-	 * // 				(
-	 * // 					[0] => 1
-	 * // 					[1] => 2
-	 * // 				)
-	 * // 			[nested] => Array
-	 * // 				(
-	 * // 					[1] => Array
-	 * // 						(
-	 * // 							[2] => ArrayObject Object
-	 * // 								(
-	 * // 									[storage:ArrayObject:private] => Array
-	 * // 										(
-	 * // 											[3] => three
-	 * // 										)
-	 * // 								)
-	 * // 						)
-	 * // 				)
-	 * // 		)
-	 * // )
-	 *
-	 * // Get property values.
-	 * $values = $object->array_values();
-	 *
-	 * // Array
-	 * // (
-	 * // 	[0] => value
-	 * // 	[1] => Array
-	 * // 		(
-	 * // 			[0] => 1
-	 * // 			[1] => 2
-	 * // 		)
-	 * // 	[2] => Array
-	 * // 		(
-	 * // 			[1] => Array
-	 * // 				(
-	 * // 					[2] => ArrayObject Object
-	 * // 						(
-	 * // 							[storage:ArrayObject:private] => Array
-	 * // 								(
-	 * // 									[3] => three
-	 * // 								)
-	 * // 						)
-	 * // 				)
-	 * // 		)
-	 * // )
-	 * </code>
-	 */
-	public function array_values()
-	{
-		return array_values( $this->mProperties );									// ==>
-
-	} // array_values.
 
 
 	/*===================================================================================
@@ -1376,6 +1758,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @return mixed				The property reference.
 	 * @throws \InvalidArgumentException
 	 *
+	 * @uses offsetExists()
 	 * @uses getArrayCopy()
 	 * @uses nestedPropertyReference()
 	 *
@@ -1546,19 +1929,19 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @return array				Converted array copy.
 	 *
-	 * @uses getArrayCopy()
 	 * @uses ConvertToArray()
 	 *
 	 * @example
 	 * <code>
+	 * // Test object
 	 * $object = new Container( [
-	 * 	"container" => new ArrayObject( [
-	 * 		"array" => [
-	 * 			"object" => new Container( [
-	 * 				1, 2, 3
-	 * 			] )
-	 * 		]
-	 * 	] )
+	 *     "container" => new ArrayObject( [
+	 *         "array" => [
+	 *             "object" => new Container( [
+	 *                 1, 2, 3
+	 *             ] )
+	 *         ]
+	 *     ] )
 	 * ] );
 	 *
 	 * // Milko\wrapper\Container Object
@@ -1588,21 +1971,17 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * // Return a copy converted to array.
 	 * $result = $object->asArray();
-	 *
-	 * // Milko\wrapper\Container Object
+	 * // Array
 	 * // (
-	 * //     [mProperties:protected] => Array
+	 * //     [container] => Array
 	 * //         (
-	 * //             [container] => Array
+	 * //             [array] => Array
 	 * //                 (
-	 * //                     [array] => Array
+	 * //                     [object] => Array
 	 * //                         (
-	 * //                             [object] => Array
-	 * //                                 (
-	 * //                                     [0] => 1
-	 * //                                     [1] => 2
-	 * //                                     [2] => 3
-	 * //                                 )
+	 * //                             [0] => 1
+	 * //                             [1] => 2
+	 * //                             [2] => 3
 	 * //                         )
 	 * //                 )
 	 * //         )
@@ -1636,18 +2015,18 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * This method can be used to convert any embedded ArrayObject property to an array.
 	 *
 	 * @uses ConvertToArray()
-	 * @uses propertyReference()
 	 *
 	 * @example
 	 * <code>
+	 * // Test object
 	 * $object = new Container( [
-	 * 	"container" => new ArrayObject( [
-	 * 		"array" => [
-	 * 			"object" => new Container( [
-	 * 				1, 2, 3
-	 * 			] )
-	 * 		]
-	 * 	] )
+	 *     "container" => new ArrayObject( [
+	 *         "array" => [
+	 *             "object" => new Container( [
+	 *                 1, 2, 3
+	 *             ] )
+	 *         ]
+	 *     ] )
 	 * ] );
 	 *
 	 * // Milko\wrapper\Container Object
@@ -1677,7 +2056,6 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * // Convert to array.
 	 * $object->toArray();
-	 *
 	 * // Milko\wrapper\Container Object
 	 * // (
 	 * //     [mProperties:protected] => Array
@@ -1700,7 +2078,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function toArray()
 	{
-		self::ConvertToArray( $this->propertyReference() );
+		self::ConvertToArray( $this->mProperties );
 
 	} // toArray.
 
@@ -1797,8 +2175,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		// Handle structures.
 		//
 		if( is_array( $theStructure )
-			|| ($theStructure instanceof \ArrayObject)
-			|| ($theStructure instanceof self) )
+		 || ($theStructure instanceof \ArrayObject)
+		 || ($theStructure instanceof self) )
 		{
 			//
 			// Convert to array.
@@ -1987,7 +2365,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @param string			   &$theAttribute		Bitfield attribute reference.
 	 * @param string				$theMask			Flag mask.
-	 * @param bool					$theValue			New value or operation.
+	 * @param bool					$theValue			Switch sense or operation.
 	 * @param bool					$doOld				<tt>TRUE</tt> return old value.
 	 * @return string				Current or previous attribute switch value.
 	 *
@@ -2352,7 +2730,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @param string				$theOffset			Property offset.
 	 * @param string				$theMask			Flag mask.
-	 * @param bool					$theValue			New value or operation.
+	 * @param bool					$theValue			Switch sense or operation.
 	 * @param bool					$doOld				<tt>TRUE</tt> return old value.
 	 * @return string				Current or previous property switch value.
 	 *
@@ -2443,7 +2821,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	protected function manageBitfieldProperty( 		  $theOffset,
 											   string $theMask = NULL,
-													  $theValue = NULL,
+											   bool	  $theValue = NULL,
 											   bool	  $doOld = FALSE )
 	{
 		//
@@ -2582,8 +2960,6 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param bool					$getParent			<tt>TRUE</tt> return parent.
 	 * @return mixed				The property reference.
 	 * @throws \InvalidArgumentException
-	 *
-	 * @uses offsetExists()
 	 *
 	 * @example
 	 * <code>
@@ -2735,18 +3111,24 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 					"Provided non scalar nested offset." );						// !@! ==>
 
 			//
-			// Check property.
+			// Handle containers.
 			//
-//			if( ! array_key_exists( $offset, $reference ) )
-//				break;															// =>
 			if( $reference instanceof self )
 				$reference = & $reference->mProperties;
+
+			//
+			// Check property offset.
+			//
 			if( is_array( $reference ) )
 				$found = array_key_exists( $offset, $reference );
 			elseif( $reference instanceof \ArrayObject )
 				$found = $reference->offsetExists( $offset );
 			else
 				$found = FALSE;
+
+			//
+			// Handle unknown offset.
+			//
 			if( ! $found )
 				break;															// ==>
 

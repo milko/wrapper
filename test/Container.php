@@ -85,22 +85,66 @@ class test_Container extends Container
 	}
 }
 
+echo( "\n====================================================================================\n" );
+echo(   "= Test nestedPropertyReference()                                                   =\n" );
+echo(   "====================================================================================\n\n" );
+
+//
+// Instantiate object.
+//
+echo( '$test = new test_Container();' . "\n" );
+$test = new test_Container([
+	"nested" => new ArrayObject([
+		"container" => new Container([
+			"array" => [
+				"string" => "a string"
+			]
+		])
+	]),
+	"one" => new test_Container([
+		"two" => 3
+	]),
+	1 => "uno"
+]);
+print_r( $test );
+echo( "\n" );
+
+echo( '$offsets = [ 1 ];' . "\n" );
+echo( '$result = $test->NestedProperty( $offsets ); ==> ' );
+$offsets = [ 1 ];
+$result = & $test->NestedProperty( $offsets );
+echo( (($result === "uno") && ($result === $test[ 1 ]) && ($offsets === [])) ? "OK\n" : "ERROR!\n" );
+echo( '$offsets = [ "nested", "container", "array", "string" ];' . "\n" );
+echo( '$result = $test->NestedProperty( $offsets ); ==> ' );
+$offsets = [ "nested", "container", "array", "string" ];
+$result = & $test->NestedProperty( $offsets );
+echo( (($result === "a string") && ($result === $test[ "nested" ][ "container" ][ "array" ][ "string" ]) && ($offsets === [])) ? "OK\n" : "ERROR!\n" );
+echo( '$offsets = [ "nested", "container", "array", "UNKNOWN" ];' . "\n" );
+echo( '$result = $test->NestedProperty( $offsets ); ==> ' );
+$offsets = [ "nested", "container", "array", "UNKNOWN" ];
+$result = & $test->NestedProperty( $offsets );
+echo( (($result === [ "string" => "a string" ]) && ($result === $test[ "nested" ][ "container" ][ "array" ]) && ($offsets === [ "UNKNOWN" ])) ? "OK\n" : "ERROR!\n" );
+echo( '$offsets = [ "nested", "container", "array", "UNKNOWN" ];' . "\n" );
+echo( '$result = $test->NestedProperty( $offsets ); ==> ' );
+$offsets = [ "UNKNOWN" ];
+$result = & $test->NestedProperty( $offsets );
+echo( (($result === $test->propertyReference()) && ($offsets === [ "UNKNOWN" ])) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n====================================================================================\n" );
+echo(   "= Test ArrayAccess Interface                                                       =\n" );
+echo(   "====================================================================================\n\n" );
+
 //
 // Instantiate object.
 //
 echo( '$test = new test_Container( [ "uno", "due", "tre" ] );' . "\n" );
 $test = new test_Container( [ "uno", "due", "tre" ] );
 echo( '$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];' . "\n" );
-$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];
-//$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new Container( [ 9, 8, 7 ] ) ] ) ];
+$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new test_Container( [ 9, 8, 7 ] ) ] ) ];
 $test[ "nested" ] = [ "one" => new ArrayObject( [ "two" => [ "three" => 3 ] ] ) ];
 print_r( $test );
 
-echo( "\n====================================================================================\n" );
-echo(   "= Test ArrayAccess Interface                                                       =\n" );
-echo(   "====================================================================================\n\n" );
-
-echo( "Check offsetExists():\n" );
+echo( "\nCheck offsetExists():\n" );
 echo( '$result = $test->offsetExists( 1 );         ==> ' );
 $result = $test->offsetExists( 1 );
 echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
@@ -111,9 +155,7 @@ echo( '$result = $test->offsetExists( NULL );      ==> ' );
 $result = $test->offsetExists( NULL );
 echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check nested offsetExists():\n" );
+echo( "\nCheck nested offsetExists():\n" );
 echo( '$result = $test->offsetExists( [ "array", "obj", "obj", 1 ] );     ==> ' );
 $result = $test->offsetExists( [ "array", "obj", "obj", 1 ] );
 echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
@@ -124,9 +166,7 @@ echo( '$result = $test->offsetExists( [ "array", "obj", NULL, 1 ] );      ==> ' 
 $result = $test->offsetExists( [ "array", "obj", NULL, 1 ] );
 echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check offsetGet():\n" );
+echo( "\nCheck offsetGet():\n" );
 echo( '$result = $test->offsetGet( 1 );         ==> ' );
 $result = $test->offsetGet( 1 );
 echo( ($result === "due") ? "OK\n" : "ERROR!\n" );
@@ -137,9 +177,7 @@ echo( '$result = $test->offsetGet( NULL );      ==> ' );
 $result = $test->offsetGet( NULL );
 echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check nested offsetGet():\n" );
+echo( "\nCheck nested offsetGet():\n" );
 echo( '$result = $test->offsetGet( [ "array", "obj", "obj", 1 ] );     ==> ' );
 $result = $test->offsetGet( [ "array", "obj", "obj", 1 ] );
 echo( ($result === (int)8) ? "OK\n" : "ERROR!\n" );
@@ -150,9 +188,7 @@ echo( '$result = $test->offsetGet( [ "array", "obj", NULL, 1 ] );      ==> ' );
 $result = $test->offsetGet( [ "array", "obj", NULL, 1 ] );
 echo( ($result === NULL) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check offsetSet():\n" );
+echo( "\nCheck offsetSet():\n" );
 echo( '$test->offsetSet( NULL, "ADDED" );    ==> ' );
 $test->offsetSet( NULL, "ADDED" );
 echo( ($test[ 3 ] === "ADDED") ? "OK\n" : "ERROR!\n" );
@@ -163,22 +199,21 @@ echo( '$test->offsetSet( "UNKNOWN", "NEW" ); ==> ' );
 $test->offsetSet( "UNKNOWN", "NEW" );
 echo( ($test[ "UNKNOWN" ] === "NEW") ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check nested offsetSet():\n" );
-echo( '$test->offsetSet( [ "array", "obj", NULL, "ADD" ], "ADDED NESTED" ); ==> ' );
+echo( "\nCheck nested offsetSet():\n" );
+echo( '$test->offsetSet( [ "array", "obj", NULL, "ADD" ], "ADDED NESTED" );         ==> ' );
 $test->offsetSet( [ "array", "obj", NULL, "ADD" ], "ADDED NESTED" );
-echo( ($test[ "array" ][ "obj" ][ 4 ][ "ADD" ] === "ADDED NESTED") ? "OK\n" : "ERROR!\n" );
-echo( '$test->offsetSet( [ "array", "obj", "obj", 1 ], "CHANGED NESTED" );  ==> ' );
+echo( ($test[ "array" ][ "obj" ][ 3 ][ "ADD" ] === "ADDED NESTED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( [ "array", "obj", "obj", 1 ], "CHANGED NESTED" );          ==> ' );
 $test->offsetSet( [ "array", "obj", "obj", 1 ], "CHANGED NESTED" );
 echo( ($test[ "array" ][ "obj" ][ "obj" ][ 1 ] === "CHANGED NESTED") ? "OK\n" : "ERROR!\n" );
-echo( '$test->offsetSet( [ "array", "obj", "NEW OFFSET", 1 ], "NEW NESTED" );  ==> ' );
+echo( '$test->offsetSet( [ "array", "obj", "NEW OFFSET", 1 ], "NEW NESTED" );       ==> ' );
 $test->offsetSet( [ "array", "obj", "NEW OFFSET", 1 ], "NEW NESTED" );
 echo( ($test[ "array" ][ "obj" ][ "NEW OFFSET" ][ 1 ] === "NEW NESTED") ? "OK\n" : "ERROR!\n" );
+echo( '$test->offsetSet( [ "array", "obj", "obj", 1, "nested" ], "OTHER NESTED" );  ==> ' );
+$test->offsetSet( [ "array", "obj", "NEW OFFSET", 1, "nested" ], "OTHER NESTED" );
+echo( ($test[ "array" ][ "obj" ][ "NEW OFFSET" ][ 1 ][ "nested" ] === "OTHER NESTED") ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check offsetUnset():\n" );
+echo( "\nCheck offsetUnset():\n" );
 echo( '$test->offsetUnset( 1 );         ==> ' );
 $test->offsetUnset( 1 );
 echo( (! $test->offsetExists( 1 )) ? "OK\n" : "ERROR!\n" );
@@ -189,9 +224,7 @@ echo( '$test->offsetUnset( NULL );      ==> ' );
 $test->offsetUnset( NULL );
 echo( (! $test->offsetExists( NULL )) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check nested offsetUnset():\n" );
+echo( "\nCheck nested offsetUnset():\n" );
 echo( '$test->offsetUnset( [ "array", "obj", "obj", "UNKNOWN" ] ); ==> Should not raise an alert' . "\n" );
 $test->offsetUnset( [ "array", "obj", "obj", "UNKNOWN" ] );
 echo( '$test->offsetUnset( [ "array", "obj", "obj", 1 ] );         ==> ' );
@@ -205,9 +238,7 @@ echo( '$test->offsetUnset( [ "array", "obj", NULL, 1 ] );          ==> ' );
 $test->offsetUnset( [ "array", "obj", NULL, 1 ] );
 echo( (! $test->offsetExists( [ "array", "obj", NULL, 1 ] )) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check getIterator()():\n" );
+echo( "\nCheck getIterator()():\n" );
 echo( '$result = $test->getIterator(); ==> ' );
 $result = $test->getIterator();
 $i = 0;
@@ -298,44 +329,6 @@ echo( "\n=======================================================================
 echo(   "= Test custom array Interface                                                      =\n" );
 echo(   "====================================================================================\n\n" );
 
-echo( "Check array_keys():\n" );
-echo( '$result = $test->array_keys(); ==> ' );
-$result = $test->array_keys();
-echo( ($result === [ 0, 2, "array", "nested", 3 ]) ? "OK\n" : "ERROR!\n" );
-
-echo( "\n" );
-
-echo( "Check array_values():\n" );
-echo( '$result = $test->array_values(); ==> ' );
-$result = $test->array_values();
-echo( ($result == [
-		0 => "uno",
-		1 => "tre",
-		2 => [
-			0 => 1,
-			1 => 2,
-			2 => 3,
-			"obj" => new ArrayObject([
-				0 => 3,
-				1 => 4,
-				2 => 5,
-				"obj" => new ArrayObject([
-					0 => 9,
-					2 => 7
-				]),
-				4 => [ "ADD" => "ADDED NESTED" ]
-			])
-		],
-		3 => [
-			"one" => new ArrayObject([
-				"two" => [ "three" => 3]
-			])
-		],
-		4 => "ADDED"
-	]) ? "OK\n" : "ERROR!\n" );
-
-echo( "\n" );
-
 echo( "Check getArrayCopy():\n" );
 echo( '$result = $test->getArrayCopy(); ==> ' );
 $result = $test->getArrayCopy();
@@ -350,11 +343,11 @@ echo( ($result == [
 				0 => 3,
 				1 => 4,
 				2 => 5,
-				"obj" => new ArrayObject([
+				"obj" => new test_Container([
 					0 => 9,
 					2 => 7
 				]),
-				4 => [ "ADD" => "ADDED NESTED" ]
+				3 => [ "ADD" => "ADDED NESTED" ]
 			])
 		],
 		"nested" => [
@@ -387,7 +380,7 @@ unset($result);
 
 echo( "\n" );
 
-echo( "Check asArray():\n" );
+echo( "Check asArray() and toArray():\n" );
 echo( '$result = $test->asArray(); ==> ' );
 $result = $test->asArray();
 echo( ($result == [
@@ -405,7 +398,7 @@ echo( ($result == [
 					0 => "X",
 					2 => 7
 				],
-				4 => [ "ADD" => "ADDED NESTED" ]
+				3 => [ "ADD" => "ADDED NESTED" ]
 			]
 		],
 		"nested" => [
@@ -415,11 +408,7 @@ echo( ($result == [
 		],
 		3 => "ADDED"
 	]) ? "OK\n" : "ERROR!\n" );
-
-echo( "\n" );
-
-echo( "Check toArray():\n" );
-echo( '$test->toArray(); ==> ' );
+echo( '$test->toArray();           ==> ' );
 $test->toArray();
 echo( ($test->getArrayCopy() == [
 		0 => 3,
@@ -436,7 +425,7 @@ echo( ($test->getArrayCopy() == [
 					0 => "X",
 					2 => 7
 				],
-				4 => [ "ADD" => "ADDED NESTED" ]
+				3 => [ "ADD" => "ADDED NESTED" ]
 			]
 		],
 		"nested" => [
@@ -463,7 +452,9 @@ $object = new Container([
 		]
 	])
 ]);
-echo( "Check ConvertToArray():\n" );
+print_r( $object );
+
+echo( "\nCheck ConvertToArray():\n" );
 echo( 'Container::ConvertToArray( $struct ); ==> ' );
 Container::ConvertToArray( $object );
 echo( ($object == [
@@ -487,7 +478,7 @@ echo( '$test = new test_Container();' . "\n" );
 $test = new test_Container();
 print_r( $test );
 
-echo( "Check manageAttribute():\n" );
+echo( "\nCheck manageAttribute():\n" );
 echo( '$result = $test->Attribute( "NEW" );         ==> ' );
 $result = $test->Attribute( "NEW" );
 echo( (($test->attribute === "NEW") && ($result == "NEW")) ? "OK\n" : "ERROR!\n" );
@@ -501,9 +492,7 @@ echo( '$result = $test->Attribute( FALSE, TRUE );   ==> ' );
 $result = $test->Attribute( FALSE, TRUE );
 echo( (($test->attribute === NULL) && ($result == "OTHER")) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check manageFlagAttribute():\n" );
+echo( "\nCheck manageFlagAttribute():\n" );
 echo( '$result = $test->BitfieldAttribute();                                    ==> ' );
 $result = $test->BitfieldAttribute();
 echo( ((bin2hex($result) == "00000000") && ($result === $test->flag)) ? "OK\n" : "ERROR!\n" );
@@ -550,11 +539,14 @@ $test = new test_Container([
 				"string" => "a string"
 			]
 		])
+	]),
+	"one" => new test_Container([
+		"two" => 3
 	])
 ]);
 print_r( $test );
 
-echo( "Check manageProperty():\n" );
+echo( "\nCheck manageProperty():\n" );
 echo( '$result = $test->Property( "prop", "NEW" );         ==> ' );
 $result = $test->Property( "prop", "NEW" );
 echo( (($test[ "prop" ] === "NEW") && ($result == "NEW")) ? "OK\n" : "ERROR!\n" );
@@ -568,9 +560,7 @@ echo( '$result = $test->Property( "prop", FALSE, TRUE );   ==> ' );
 $result = $test->Property( "prop", FALSE, TRUE );
 echo( (($test->offsetGet( "prop" ) === NULL) && ($result == "OTHER")) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check nested manageProperty():\n" );
+echo( "\nCheck nested manageProperty():\n" );
 echo( '$result = $test->Property( [ "nested", "container", "array", "string" ] );                       ==> ' );
 $result = $test->Property( [ "nested", "container", "array", "string" ] );
 echo( ($result == "a string") ? "OK\n" : "ERROR!\n" );
@@ -590,44 +580,41 @@ echo( '$result = $test->Property( [ "nested", "container", "array", "string" ], 
 $result = $test->Property( [ "nested", "container", "array", "string" ], FALSE, TRUE );
 echo( (($result == "OTHER STRING") && ($test->offsetExists("nested") === FALSE)) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check manageFlagProperty):\n" );
+echo( "\nCheck manageFlagProperty():\n" );
 echo( '$test[ "flag" ] = hex2bin( "00000000" );' . "\n" );
 $test[ "flag" ] = hex2bin( "00000000" );
-echo( '$result = $test->BitfieldProperty( "flag" ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag" );                                    ==> ' );
 $result = $test->BitfieldProperty( "flag" );
 echo( ((bin2hex($result) == "00000000") && ($result === $test[ "flag" ])) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE );        ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE );
 echo( ((bin2hex($result) == "ff000000") && ($result === $test[ "flag" ])) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE );      ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE );
 echo( ((bin2hex($result) == "ff000000") && (bin2hex($test[ "flag" ]) == "ff0f0000")) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) );              ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) );
 echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) );                    ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("0f" ) );
 echo( ($result === TRUE) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) );              ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) );
 echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) );                  ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) );
 echo( ($result === FALSE) ? "OK\n" : "ERROR!\n" );
 echo( '$result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE ); ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE );
 echo( ((bin2hex($result) == "ff0f0000") && (bin2hex($test[ "flag" ]) == "0f0f0000")) ? "OK\n" : "ERROR!\n" );
-echo( '$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE ); ==> ' );
+echo( '$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE );     ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE );
 echo( ((bin2hex($result) == "0f0f0000") && (bin2hex($test[ "flag" ]) == "000f")) ? "OK\n" : "ERROR!\n" );
 echo( '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE );  ==> ' );
 $result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE );
 echo( ((bin2hex($result) == "000f") && (bin2hex($test[ "flag" ]) == "ff0f0000")) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
+echo( "\nCheck nested manageFlagProperty():\n" );
 echo( '$test[  [ "nested", "switch", "flag" ]  ] = hex2bin( "00000000" );' . "\n" );
 $test[  [ "nested", "switch", "flag" ]  ] = hex2bin( "00000000" );
 echo( '$result = $test->BitfieldProperty(  [ "nested", "switch", "flag" ]  ); ==> ' );
