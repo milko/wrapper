@@ -56,6 +56,46 @@ namespace Milko\wrapper;
  *   </ul>
  * </ul>
  *
+ * The class implements the {@link \ArrayAccess}, {@link \IteratorAggregate} and
+ * {@link \Countable} interfaces and implements a set of selected array functions as object
+ * methods:
+ *
+ * <ul>
+ * 	<li><em>Array key and value functions</em>:
+ * 	 <ul>
+ * 		<li>array <b>array_keys</b>():
+ * 			Return all the property offsets at the top level.
+ * 		<li>array <b>array_values</b>():
+ * 			Return all the property values (equivalent to {@link getArrayCopy()}.
+ * 	 </ul>
+ * 	<li><em>Array sorting functions</em> (mProperties will be modified):
+ * 	 <ul>
+ * 		<li>bool <b>asort</b>( [int $sort_flags = SORT_REGULAR ] ):
+ * 			Sort the properties and maintain index association.
+ * 		<li>bool <b>ksort</b>( [int $sort_flags = SORT_REGULAR ] ):
+ * 			Sort the properties by offset.
+ * 		<li>bool <b>krsort</b>( [int $sort_flags = SORT_REGULAR ] ):
+ * 			Sort the properties by offset in reverse order.
+ * 		<li>bool <b>natcasesort</b>():
+ * 			Sort the properties using a case insensitive "natural order" algorithm.
+ * 		<li>bool <b>natsort</b>():
+ * 			Sort the properties using a "natural order" algorithm.
+ * 		<li>bool <b>arsort</b>( [int $sort_flags = SORT_REGULAR ] ):
+ * 			Sort the properties in reverse order and maintain index association.
+ * 	 </ul>
+ * 	<li><em>Array stack and list functions</em> (mProperties will be modified):
+ * 	 <ul>
+ * 		<li>mixed <b>array_push</b>( mixed $value1 [, mixed $... ] ):
+ * 			Push one or more elements onto the end of the properties.
+ * 		<li>mixed <b>array_pop</b>():
+ * 			Pop the element off the end of the properties.
+ * 		<li>int <b>array_unshift</b>( mixed $value1 [, mixed $... ] ):
+ * 			Prepend one or more elements to the beginning of the properties.
+ * 		<li>mixed <b>array_shift</b>():
+ * 			Shift an element off the beginning of the properties.
+ * 	 </ul>
+ * </ul>
+ *
  *	@package	Core
  *
  *	@author		Milko Škofič <skofic@gmail.com>
@@ -1143,6 +1183,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 				//
 				// Handle list.
 				//
+				$theOffset = (array)$theOffset;
 				if( count( $theOffset ) )
 				{
 					//
@@ -1423,6 +1464,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 				//
 				// Handle list.
 				//
+				$theOffset = (array)$theOffset;
 				if( count( $theOffset ) )
 				{
 					//
@@ -1613,6 +1655,153 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		return count( $this->mProperties );											// ==>
 
 	} // count.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								CALLABLE ARRAY INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	__call																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Use array functions with object.</h4><p />
+	 *
+	 * This method will allow using array functions as class methods, it supports the
+	 * following functions in which the array input parameter is implicitly the object
+	 * properties array:
+	 *
+	 * <ul>
+	 * 	<li><em>Array key and value functions</em>:
+	 * 	 <ul>
+	 * 		<li>array <b>array_keys</b>():
+	 * 			Return all the property offsets at the top level.
+	 * 		<li>array <b>array_values</b>():
+	 * 			Return all the property values (equivalent to {@link getArrayCopy()}.
+	 * 	 </ul>
+	 * 	<li><em>Array sorting functions</em> (mProperties will be modified):
+	 * 	 <ul>
+	 * 		<li>bool <b>asort</b>( [int $sort_flags = SORT_REGULAR ] ):
+	 * 			Sort the properties and maintain index association.
+	 * 		<li>bool <b>ksort</b>( [int $sort_flags = SORT_REGULAR ] ):
+	 * 			Sort the properties by offset.
+	 * 		<li>bool <b>krsort</b>( [int $sort_flags = SORT_REGULAR ] ):
+	 * 			Sort the properties by offset in reverse order.
+	 * 		<li>bool <b>natcasesort</b>():
+	 * 			Sort the properties using a case insensitive "natural order" algorithm.
+	 * 		<li>bool <b>natsort</b>():
+	 * 			Sort the properties using a "natural order" algorithm.
+	 * 		<li>bool <b>arsort</b>( [int $sort_flags = SORT_REGULAR ] ):
+	 * 			Sort the properties in reverse order and maintain index association.
+	 * 	 </ul>
+	 * 	<li><em>Array stack and list functions</em> (mProperties will be modified):
+	 * 	 <ul>
+	 * 		<li>mixed <b>array_push</b>( mixed $value1 [, mixed $... ] ):
+	 * 			Push one or more elements onto the end of the properties.
+	 * 		<li>mixed <b>array_pop</b>():
+	 * 			Pop the element off the end of the properties.
+	 * 		<li>int <b>array_unshift</b>( mixed $value1 [, mixed $... ] ):
+	 * 			Prepend one or more elements to the beginning of the properties.
+	 * 		<li>mixed <b>array_shift</b>():
+	 * 			Shift an element off the beginning of the properties.
+	 * 	 </ul>
+	 * </ul>
+	 *
+	 * If the function is not supported, the method will raise an exception.
+	 *
+	 * The method only checks for required arguments and casts when possible: any invalid
+	 * argument will trigger an error in the function itself.
+	 *
+	 * @param string				$theFunction		Function name.
+	 * @param array					$theArguments		Function arguments.
+	 * @return mixed				Function result.
+	 * @throws \BadMethodCallException
+	 * @throws \InvalidArgumentException
+	 */
+	public function __call( string $theFunction , array $theArguments  )
+	{
+		//
+		// Accept only callable functions.
+		//
+		if( is_callable( $theFunction ) )
+		{
+			//
+			// Parse by function name.
+			//
+			switch( $theFunction )
+			{
+				case "array_keys":
+					return array_keys( $this->mProperties );						// ==>
+
+				case "array_values":
+					return array_values( $this->mProperties );						// ==>
+
+				case "asort":
+					if( ! count( $theArguments ) )
+						return asort(
+							$this->mProperties, SORT_REGULAR );						// ==>
+					return asort(
+						$this->mProperties, $theArguments[ 0 ] );					// ==>
+
+				case "ksort":
+					if( ! count( $theArguments ) )
+						return ksort(
+							$this->mProperties, SORT_REGULAR );						// ==>
+					return ksort(
+						$this->mProperties, $theArguments[ 0 ] );					// ==>
+
+				case "krsort":
+					if( ! count( $theArguments ) )
+						return krsort(
+							$this->mProperties, SORT_REGULAR );						// ==>
+					return krsort(
+						$this->mProperties, $theArguments[ 0 ] );					// ==>
+
+				case "arsort":
+					if( ! count( $theArguments ) )
+						return arsort(
+							$this->mProperties, SORT_REGULAR );						// ==>
+					return arsort(
+						$this->mProperties, $theArguments[ 0 ] );					// ==>
+
+				case "natcasesort":
+					return natcasesort( $this->mProperties );						// ==>
+
+				case "natsort":
+					return natsort( $this->mProperties );							// ==>
+
+				case "array_pop":
+					return array_pop( $this->mProperties );							// ==>
+
+				case "array_push":
+					return array_push( $this->mProperties, $theArguments );			// ==>
+
+				case "array_shift":
+					return array_shift( $this->mProperties );						// ==>
+
+				case "array_unshift":
+					if( count( $theArguments ) )
+						return array_unshift( $this->mProperties, $theArguments );	// ==>
+					throw new \InvalidArgumentException(
+						__CLASS__ . "->" . $theFunction .
+						"() ==> Missing required arguments."
+					);															// !@! ==>
+
+			} // Parsing by function name.
+
+		} // Callable function.
+
+		throw new \BadMethodCallException(
+			__CLASS__ . "->" . $theFunction . "()"
+		);																		// !@! ==>
+
+	} // getArrayCopy.
 
 
 
@@ -1910,10 +2099,249 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 /*=======================================================================================
  *																						*
- *							PUBLIC SERIALISATION INTERFACE								*
+ *								PUBLIC STRUCTURE INTERFACE								*
  *																						*
  *======================================================================================*/
 
+
+
+	/*===================================================================================
+	 *	propertySchema																	*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the properties schema.</h4><p />
+	 *
+	 * This method can be used to get the object's property schema, the method will return
+	 * an array that lists all the leaf offsets with the relative paths where they are used:
+	 *
+	 * <ul>
+	 *	<li><i>key</i>: The leaf offset name.
+	 *	<li><i>value</i>: An array of paths as:
+	 * 	 <ul>
+	 * 		<li><em>$theToken is NULL</em>: arrays containing all the offsets used in the
+	 * 			path in level order.
+	 * 		<li><em>$theToken is string</em>: strings containing the sequence of offsets
+	 * 			concatenated by the provided token.
+	 * 	 </ul>
+	 * </ul>
+	 *
+	 * This method will be used by the persistence framework to determine descriptor
+	 * structures and scalar descriptors usage.
+	 *
+	 * @param string				$theToken			Optional token to return paths.
+	 * @return array				Properties schema.
+	 *
+	 * @uses traverseSchema()
+	 *
+	 * @example
+	 * <code>
+	 * // Test object
+	 * $object = new Container( [
+	 *     "container" => new ArrayObject( [
+	 *         "array" => [
+	 *             "object" => new Container( [
+	 *                 1, 2, 3
+	 *             ] )
+	 *         ]
+	 *     ] ),
+	 *     "array" => [
+	 *     	new ArrayObject([
+	 *     		new Container([
+	 *     			"one" => 1,
+	 *     			"two" => 2
+	 *     		]),
+	 *     		new Container([
+	 *     			"one" => 3,
+	 *     			"two" => 4
+	 *     		])
+	 *     	]),
+	 *     ],
+	 * 	"object" => 3,
+	 *     "list" => [
+	 *     	[ "one" => 1 ],
+	 *     	[ "two" => 2 ],
+	 *     	[ "object" => "o" ]
+	 *     ]
+	 * ] );
+	 *
+	 * // Milko\wrapper\Container Object
+	 * // (
+	 * //     [mProperties:protected] => Array
+	 * //         (
+	 * //             [container] => ArrayObject Object
+	 * //                 (
+	 * //                     [storage:ArrayObject:private] => Array
+	 * //                         (
+	 * //                             [array] => Array
+	 * //                                 (
+	 * //                                     [object] => Milko\wrapper\Container Object
+	 * //                                         (
+	 * //                                             [mProperties:protected] => Array
+	 * //                                                 (
+	 * //                                                     [0] => 1
+	 * //                                                     [1] => 2
+	 * //                                                     [2] => 3
+	 * //                                                 )
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //             [array] => Array
+	 * //                 (
+	 * //                     [0] => ArrayObject Object
+	 * //                         (
+	 * //                             [storage:ArrayObject:private] => Array
+	 * //                                 (
+	 * //                                     [0] => Milko\wrapper\Container Object
+	 * //                                         (
+	 * //                                             [mProperties:protected] => Array
+	 * //                                                 (
+	 * //                                                     [one] => 1
+	 * //                                                     [two] => 2
+	 * //                                                 )
+	 * //                                         )
+	 * //                                     [1] => Milko\wrapper\Container Object
+	 * //                                         (
+	 * //                                             [mProperties:protected] => Array
+	 * //                                                 (
+	 * //                                                     [one] => 3
+	 * //                                                     [two] => 4
+	 * //                                                 )
+	 * //                                         )
+	 * //                                 )
+	 * //                         )
+	 * //                 )
+	 * //             [object] => 3
+	 * //             [list] => Array
+	 * //                 (
+	 * //                     [0] => Array
+	 * //                         (
+	 * //                             [one] => 1
+	 * //                         )
+	 * //                     [1] => Array
+	 * //                         (
+	 * //                             [two] => 2
+	 * //                         )
+	 * //                     [2] => Array
+	 * //                         (
+	 * //                             [object] => o
+	 * //                         )
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Get as arrays.
+	 * $result = $object->propertySchema();
+	 * // Array
+	 * // (
+	 * //     [object] => Array
+	 * //         (
+	 * //             [0] => Array
+	 * //                 (
+	 * //                     [0] => object
+	 * //                 )
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [0] => list
+	 * //                     [1] => object
+	 * //                 )
+	 * //             [2] => Array
+	 * //                 (
+	 * //                     [0] => container
+	 * //                     [1] => array
+	 * //                     [2] => object
+	 * //                 )
+	 * //         )
+	 * //     [one] => Array
+	 * //         (
+	 * //             [0] => Array
+	 * //                 (
+	 * //                     [0] => array
+	 * //                     [1] => one
+	 * //                 )
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [0] => list
+	 * //                     [1] => one
+	 * //                 )
+	 * //         )
+	 * //     [two] => Array
+	 * //         (
+	 * //             [0] => Array
+	 * //                 (
+	 * //                     [0] => array
+	 * //                     [1] => two
+	 * //                 )
+	 * //             [1] => Array
+	 * //                 (
+	 * //                     [0] => list
+	 * //                     [1] => two
+	 * //                 )
+	 * //         )
+	 * // )
+	 *
+	 * // Get as paths.
+	 * $result = $object->propertySchema( '->' );
+	 * print_r( $result );
+	 * // Array
+	 * // (
+	 * //     [object] => Array
+	 * //         (
+	 * //             [0] => object
+	 * //             [1] => list->object
+	 * //             [2] => container->array->object
+	 * //         )
+	 * //     [one] => Array
+	 * //         (
+	 * //             [0] => array->one
+	 * //             [1] => list->one
+	 * //         )
+	 * //     [two] => Array
+	 * //         (
+	 * //             [0] => array->two
+	 * //             [1] => list->two
+	 * //         )
+	 * // )
+	 * </code>
+	 */
+	public function propertySchema( string $theToken = NULL )
+	{
+		//
+		// Init local storage.
+		//
+		$is_array = FALSE;
+		$schema = $path = [];
+
+		//
+		// Iterate properties.
+		//
+		foreach( $this->asArray() as $key => $value )
+			$this->traverseSchema( $schema, $path, $is_array, $key, $value );
+
+		//
+		// Sort schema.
+		//
+		ksort( $schema );
+		foreach( array_keys( $schema ) as $offset )
+			usort( $schema[ $offset ], function( $a, $b ) {
+				if( count( $a ) == count( $b ) ) return 0;
+				return ( count( $a ) > count( $b ) ) ? 1 : -1;
+			});
+
+		//
+		// Convert to paths.
+		//
+		if( $theToken !== NULL )
+			array_walk( $schema, function( & $element, $key, $token ){
+				foreach( $element as $key => $value )
+					$element[ $key ]
+						= implode( $token, $value );
+			}, $theToken);
+
+		return $schema;																// ==>
+
+	} // propertySchema.
 
 
 	/*===================================================================================
@@ -2367,7 +2795,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string				$theMask			Flag mask.
 	 * @param bool					$theValue			Switch sense or operation.
 	 * @param bool					$doOld				<tt>TRUE</tt> return old value.
-	 * @return string				Current or previous attribute switch value.
+	 * @return string|bool			Switch value or mask boolean.
 	 *
 	 * @example
 	 * <code>
@@ -2486,7 +2914,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		//
 		if( $theValue === NULL )
 			return
-				! ( ($result = $theAttribute & $theMask)
+				! ( ($result = ($theAttribute & $theMask))
 					== str_repeat( "\0", strlen( $result ) ) );						// ==>
 
 		//
@@ -2702,7 +3130,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * <ul>
 	 *	<li><tt>$theOffset</tt>: Property offset in the same format as for
-	 * 		{@link offsetGet()} and {@link offsetSet()}.
+	 * 		{@link offsetGet()} and {@link offsetSet()}; if the offset is not found, the
+	 * 		method will return <tt>NULL</tt>.
 	 * 	<li><b>$theMask</b>: The flag mask or operation:
 	 * 	 <ul>
 	 * 		<li><tt>NULL</tt> Return the current property value (<em>binary string</em>),
@@ -2732,7 +3161,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string				$theMask			Flag mask.
 	 * @param bool					$theValue			Switch sense or operation.
 	 * @param bool					$doOld				<tt>TRUE</tt> return old value.
-	 * @return string				Current or previous property switch value.
+	 * @return string|bool|NULL		Switch value, mask boolean or <tt>NULL</tt>.
 	 *
 	 * @uses offsetGet()
 	 * @uses offsetSet()
@@ -2842,7 +3271,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		{
 			if( $save !== NULL )
 				return
-					! ( ($result = $save & $theMask)
+					! ( ($result = ($save & $theMask))
 						== str_repeat( "\0", strlen( $result ) ) );					// ==>
 
 			return NULL;															// ==>
@@ -3167,6 +3596,180 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		return $reference;															// ==>
 
 	} // nestedPropertyReference.
+
+
+	/*===================================================================================
+	 *	traverseSchema																	*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Traverse schema and load property offsets.</h4><p />
+	 *
+	 * This method can be used to return the list of leaf offset paths, that is, the path
+	 * to the structure offsets that represent scalar leaf values in the structure.
+	 *
+	 * The method expects the following parameters:
+	 *
+	 * <ul>
+	 * 	<li><b>$theSchema</b>: It is an array that will be populated bu the method, the
+	 * 		first time the method is called it should be empty, its elements will be
+	 * 		structured as follows:
+	 * 	 <ul>
+	 * 		<li><i>key</i>: The leaf offset name.
+	 * 		<li><i>value</i>: An array of arrays containing all the paths in the structure
+	 * 			leading to the offset in the key.
+	 * 	 </ul>
+	 * 	<li><b>$thePath</b>: It is a stack that will be used by the method to collect path
+	 * 		elements, it should be empty the first time the method is called.
+	 * 	<li><b>$isArray</b>: It is a boolean value indicating whether the parent structure
+	 * 		is a strict array or not. By strict we mean an array whose keys are a
+	 * 		consecutive sequence of numbers with the <tt>0 .. n-1</tt> range.
+	 * 	<li><b>$theKey</b>: The current structure element key.
+	 * 	<li><b>$theValue</b>: The current structure element value.
+	 * </ul>
+	 *
+	 * The resulting paths will contain only offsets from structure elements and offsets of
+	 * scalar values.
+	 *
+	 * The method is used by {@link propertySchema()} to retrieve the object's properties
+	 * schema, you can use this method to traverse other structures if needed.
+	 *
+	 * See {@link propertySchema()} for an example of how it functions.
+	 *
+	 * @param array				   &$theSchema			Receives schema.
+	 * @param array				   &$thePath			Receives offsets path.
+	 * @param bool					$isArray			<tt>TRUE</tt> parent is array.
+	 * @param mixed					$theKey				Current property offset.
+	 * @param mixed					$theValue			Current property value.
+	 *
+	 * @uses is_array()
+	 */
+	protected function traverseSchema( array & $theSchema,
+									   array & $thePath,
+									   bool	   $isArray,
+									   		   $theKey,
+									   		   $theValue )
+	{
+		//
+		// Convert structures.
+		//
+		if( ($theValue instanceof self)
+		 || ($theValue instanceof \ArrayObject) )
+			$theValue = $theValue->getArrayCopy();
+
+		//
+		// Handle structures.
+		//
+		if( is_array( $theValue ) )
+		{
+			//
+			// Save path.
+			//
+			$path = $thePath;
+
+			//
+			// Add key to path.
+			//
+			if( ! $isArray )
+				$thePath[] = $theKey;
+
+			//
+			// Iterate array.
+			//
+			foreach( $theValue as $key => $value )
+				$this->traverseSchema(
+					$theSchema, $thePath, $this->is_array( $theValue ), $key, $value );
+
+			//
+			// Reset path.
+			//
+			$thePath = $path;
+
+		} // Structure.
+
+		//
+		// Handle leaf.
+		//
+		else
+		{
+			//
+			// Determine final path.
+			//
+			$path = ( $isArray )
+				  ? $thePath
+				  : array_merge( $thePath, [ $theKey ] );
+
+			//
+			// Determine leaf offset.
+			//
+			$offset = $path[ count( $path ) - 1 ];
+
+			//
+			// Add path to schema.
+			//
+			if( ! array_key_exists( $offset, $theSchema ) )
+				$theSchema[ $offset ] = [ $path ];
+			elseif( array_search( $path, $theSchema[ $offset ], TRUE ) === FALSE )
+				$theSchema[ $offset ][] = $path;
+
+		} // Leaf offset.
+
+	} // traverseSchema.
+
+
+	/*===================================================================================
+	 *	is_array																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Determine whether the parameter is an array.</h4><p />
+	 *
+	 * This method can be used to determine whether the provided parameter is an array: the
+	 * method will return <tt>TRUE</tt> if the value is an <tt>array</tt> in the strict
+	 * sense, meaning that the keys are an increasing <tt>0 .. n-1</tt> number series.
+	 *
+	 * @param mixed					$theValue			Value to probe.
+	 * @return bool					<tt>TRUE</tt> means array.
+	 *
+	 * @example
+	 * <code>
+	 * // Will return TRUE.
+	 * $result = $object->is_array( [ 1, 2, 3 ] );
+	 * $result = $object->is_array( [ 0 => 1, 1 => 2, 2 => 3 ] );
+	 * $result = $object->is_array( new ArrayObject( [ 1, 2, 3 ] ) );
+	 * $result = $object->is_array( new Container( [ 1, 2, 3 ] ) );
+	 * $result = $object->is_array( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) );
+	 *
+	 * // Will return FALSE.
+	 * $result = $object->is_array( [ 1 => 1 ] );
+	 * $result = $object->is_array( [ 0 => 1, 2 => 2 ] );
+	 * $result = $object->is_array( [ "one" => 1 ] );
+	 * any scalar value...
+	 * </code>
+	 */
+	protected function is_array( $theValue  )
+	{
+		//
+		// Convert structures.
+		//
+		if( ($theValue instanceof self)
+		 || ($theValue instanceof \ArrayObject) )
+			$theValue = $theValue->getArrayCopy();
+
+		//
+		// Handle arrays.
+		//
+		if( is_array( $theValue ) )
+		{
+			$keys = array_keys( $theValue );
+
+			return ( $keys === array_keys( $keys ) );								// ==>
+
+		} // Was a structure.
+
+		return FALSE;																// ==>
+
+	} // is_array.
 
 
 

@@ -20,6 +20,7 @@
 	},
 	"require": {
 		"apigen/apigen": ">=4.1-dev",
+		"etsy/phan": "dev-master",
 		"mongodb/mongodb": ">=1.0-dev",
 		"triagens/arangodb": ">=2.8-stable",
 		"devster/ubench": ">=1.2-stable",

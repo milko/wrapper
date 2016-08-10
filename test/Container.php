@@ -106,7 +106,7 @@ $test = new test_Container([
 	]),
 	1 => "uno"
 ]);
-print_r( $test );
+//print_r( $test );
 echo( "\n" );
 
 echo( '$offsets = [ 1 ];' . "\n" );
@@ -142,7 +142,7 @@ $test = new test_Container( [ "uno", "due", "tre" ] );
 echo( '$test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new ArrayObject( [ 9, 8, 7 ] ) ] ) ];' . "\n" );
 $test[ "array" ] = [ 1, 2, 3, "obj" => new ArrayObject( [ 3, 4, 5, "obj" => new test_Container( [ 9, 8, 7 ] ) ] ) ];
 $test[ "nested" ] = [ "one" => new ArrayObject( [ "two" => [ "three" => 3 ] ] ) ];
-print_r( $test );
+//print_r( $test );
 
 echo( "\nCheck offsetExists():\n" );
 echo( '$result = $test->offsetExists( 1 );         ==> ' );
@@ -326,6 +326,49 @@ $result = $test->count();
 echo( ($result == 5) ? "OK\n" : "ERROR!\n" );
 
 echo( "\n====================================================================================\n" );
+echo(   "= Test array Interface                                                             =\n" );
+echo(   "====================================================================================\n\n" );
+
+echo( "Check array interface():\n" );
+$temp = new Container( [ "uno" => 1, "due" => 2, "tre" => 3 ] );
+echo( '$result = $temp->array_keys();    ==> ' );
+$result = $temp->array_keys();
+echo( ($result === ["uno", "due", "tre"]) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $temp->array_values();  ==> ' );
+$result = $temp->array_values();
+echo( ($result === [1, 2, 3]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->asort();                   ==> ' );
+$temp->asort();
+echo( ($temp->getArrayCopy() === [ "uno" => 1, "due" => 2, "tre" => 3 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->ksort();                   ==> ' );
+$temp->ksort();
+echo( ($temp->getArrayCopy() === [ "due" => 2, "tre" => 3, "uno" => 1 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->krsort();                  ==> ' );
+$temp->krsort();
+echo( ($temp->getArrayCopy() === [ "uno" => 1, "tre" => 3, "due" => 2 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->natcasesort();             ==> ' );
+$temp->natcasesort();
+echo( ($temp->getArrayCopy() === [ "uno" => 1, "due" => 2, "tre" => 3 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->natsort();                 ==> ' );
+$temp->natsort();
+echo( ($temp->getArrayCopy() === [ "uno" => 1, "due" => 2, "tre" => 3 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->arsort();                  ==> ' );
+$temp->arsort();
+echo( ($temp->getArrayCopy() === [ "tre" => 3, "due" => 2, "uno" => 1 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->array_push( "A", "B" );    ==> ' );
+$temp->array_push( "A", "B" );
+echo( ($temp->getArrayCopy() === [ "tre" => 3, "due" => 2, "uno" => 1, 0 => [ "A", "B" ] ]) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $temp->array_pop();     ==> ' );
+$result = $temp->array_pop();
+echo( (($temp->getArrayCopy() === [ "tre" => 3, "due" => 2, "uno" => 1 ]) && ($result = [ "A", "B" ])) ? "OK\n" : "ERROR!\n" );
+echo( '$temp->array_unshift( "A", "B" ); ==> ' );
+$temp->array_unshift( "A", "B" );
+echo( ($temp->getArrayCopy() === [ 0 => [ "A", "B" ], "tre" => 3, "due" => 2, "uno" => 1 ]) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $temp->array_shift();   ==> ' );
+$result = $temp->array_shift();
+echo( (($temp->getArrayCopy() === [ "tre" => 3, "due" => 2, "uno" => 1 ]) && ($result = [ "A", "B" ])) ? "OK\n" : "ERROR!\n" );
+
+echo( "\n====================================================================================\n" );
 echo(   "= Test custom array Interface                                                      =\n" );
 echo(   "====================================================================================\n\n" );
 
@@ -358,9 +401,7 @@ echo( ($result == [
 		3 => "ADDED"
 	]) ? "OK\n" : "ERROR!\n" );
 
-echo( "\n" );
-
-echo( "Check propertyReference():\n" );
+echo( "\nCheck propertyReference():\n" );
 echo( '$result1 = & $test->propertyReference();' . "\n" );
 $result1 = & $test->propertyReference();
 echo( '$result2 = & $test->propertyReference( NULL );' . "\n" );
@@ -378,9 +419,67 @@ $result = & $test->propertyReference( [ "array", "obj", "obj", 0 ] ); $result = 
 echo( ($test[ "array" ][ "obj" ][ "obj" ][ 0 ] == "X") ? "OK\n" : "ERROR!\n" );
 unset($result);
 
-echo( "\n" );
+echo( "\nCheck propertySchema():\n" );
+echo( '$result = $test->propertySchema();      ==> ' );
+$result = $test->propertySchema();
+echo( ($result === [
+		0 => [
+			[ 0 ],
+			[ "array", 0 ],
+			[ "array", "obj", 0 ],
+			[ "array", "obj", "obj", 0 ]
+		],
+		"ADD" => [
+			[ "array", "obj", 3, "ADD" ]
+		],
+		"three" => [
+			[ "nested", "one", "two", "three" ]
+		],
+		1 => [
+			[ "array", 1 ],
+			[ "array", "obj", 1 ]
+		],
+		2 => [
+			[ 2 ],
+			[ "array", 2 ],
+			[ "array", "obj", 2 ],
+			[ "array", "obj", "obj", 2 ]
+		],
+		3 => [
+			[ 3 ]
+		]
+	]) ? "OK\n" : "ERROR!\n" );
+echo( '$result = $test->propertySchema( "." ); ==> ' );
+$result = $test->propertySchema( "." );
+echo( ($result === [
+		0 => [
+			"0",
+			"array.0",
+			"array.obj.0",
+			"array.obj.obj.0"
+		],
+		"ADD" => [
+			"array.obj.3.ADD"
+		],
+		"three" => [
+			"nested.one.two.three"
+		],
+		1 => [
+			"array.1",
+			"array.obj.1"
+		],
+		2 => [
+			"2",
+			"array.2",
+			"array.obj.2",
+			"array.obj.obj.2"
+		],
+		3 => [
+			"3"
+		]
+	]) ? "OK\n" : "ERROR!\n" );
 
-echo( "Check asArray() and toArray():\n" );
+echo( "\nCheck asArray() and toArray():\n" );
 echo( '$result = $test->asArray(); ==> ' );
 $result = $test->asArray();
 echo( ($result == [
@@ -452,7 +551,7 @@ $object = new Container([
 		]
 	])
 ]);
-print_r( $object );
+//print_r( $object );
 
 echo( "\nCheck ConvertToArray():\n" );
 echo( 'Container::ConvertToArray( $struct ); ==> ' );
@@ -476,7 +575,7 @@ echo(   "=======================================================================
 //
 echo( '$test = new test_Container();' . "\n" );
 $test = new test_Container();
-print_r( $test );
+//print_r( $test );
 
 echo( "\nCheck manageAttribute():\n" );
 echo( '$result = $test->Attribute( "NEW" );         ==> ' );
@@ -544,7 +643,7 @@ $test = new test_Container([
 		"two" => 3
 	])
 ]);
-print_r( $test );
+//print_r( $test );
 
 echo( "\nCheck manageProperty():\n" );
 echo( '$result = $test->Property( "prop", "NEW" );         ==> ' );

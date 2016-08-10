@@ -7,5 +7,9 @@ gen
 /vendor
 composer.lock
 
-# Project files
+# Project directories
 /docs
+
+# Project files
+analysis.txt
+files
