@@ -19,11 +19,13 @@
 		"psr-4": { "Milko\\": "src/" }
 	},
 	"require": {
-		"apigen/apigen": ">=4.1-dev",
 		"etsy/phan": "dev-master",
+		"apigen/apigen": ">=4.1-dev",
+		"devster/ubench": ">=1.2-stable",
+		"phpunit/phpunit": ">=5.6-dev",
+
 		"mongodb/mongodb": ">=1.0-dev",
 		"triagens/arangodb": ">=2.8-stable",
-		"devster/ubench": ">=1.2-stable",
 		"phpoffice/phpexcel": ">=1.8.1-stable"
 	}
 }
