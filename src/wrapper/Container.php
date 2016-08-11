@@ -2603,8 +2603,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		// Handle structures.
 		//
 		if( is_array( $theStructure )
-		 || ($theStructure instanceof \ArrayObject)
-		 || ($theStructure instanceof self) )
+			|| ($theStructure instanceof \ArrayObject)
+			|| ($theStructure instanceof self) )
 		{
 			//
 			// Convert to array.
@@ -2632,7 +2632,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * This method can be used to determine whether the provided parameter is an array: the
 	 * method will return <tt>TRUE</tt> if the value is an <tt>array</tt> in the strict
-	 * sense, meaning that the keys are an increasing <tt>0 .. n-1</tt> number series.
+	 * sense, meaning that the keys are an increasing <tt>0 .. n-1</tt> number series, this
+	 * is also valid for <tt>ArrayObject</tt> and <tt>Container</tt> instances.
 	 *
 	 * @param mixed					$theValue			Value to probe.
 	 * @return bool					<tt>TRUE</tt> means array.
