@@ -2623,6 +2623,61 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	} // ConvertToArray.
 
 
+	/*===================================================================================
+	 *	IsArray																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Determine whether the parameter is an array.</h4><p />
+	 *
+	 * This method can be used to determine whether the provided parameter is an array: the
+	 * method will return <tt>TRUE</tt> if the value is an <tt>array</tt> in the strict
+	 * sense, meaning that the keys are an increasing <tt>0 .. n-1</tt> number series.
+	 *
+	 * @param mixed					$theValue			Value to probe.
+	 * @return bool					<tt>TRUE</tt> means array.
+	 *
+	 * @example
+	 * <code>
+	 * // Will return TRUE.
+	 * $result = Container::IsArray( [ 1, 2, 3 ] );
+	 * $result = Container::IsArray( [ 0 => 1, 1 => 2, 2 => 3 ] );
+	 * $result = Container::IsArray( new ArrayObject( [ 1, 2, 3 ] ) );
+	 * $result = Container::IsArray( new Container( [ 1, 2, 3 ] ) );
+	 * $result = Container::IsArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) );
+	 *
+	 * // Will return FALSE.
+	 * $result = Container::IsArray( [ 1 => 1 ] );
+	 * $result = Container::IsArray( [ 0 => 1, 2 => 2 ] );
+	 * $result = Container::IsArray( [ "one" => 1 ] );
+	 * any scalar value...
+	 * </code>
+	 */
+	static function IsArray( $theValue  )
+	{
+		//
+		// Convert structures.
+		//
+		if( ($theValue instanceof self)
+			|| ($theValue instanceof \ArrayObject) )
+			$theValue = $theValue->getArrayCopy();
+
+		//
+		// Handle arrays.
+		//
+		if( is_array( $theValue ) )
+		{
+			$keys = array_keys( $theValue );
+
+			return ( $keys === array_keys( $keys ) );								// ==>
+
+		} // Was a structure.
+
+		return FALSE;																// ==>
+
+	} // IsArray.
+
+
 
 /*=======================================================================================
  *																						*
@@ -3678,7 +3733,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			//
 			foreach( $theValue as $key => $value )
 				$this->traverseSchema(
-					$theSchema, $thePath, $this->is_array( $theValue ), $key, $value );
+					$theSchema, $thePath, static::IsArray( $theValue ), $key, $value );
 
 			//
 			// Reset path.
@@ -3715,61 +3770,6 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		} // Leaf offset.
 
 	} // traverseSchema.
-
-
-	/*===================================================================================
-	 *	is_array																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Determine whether the parameter is an array.</h4><p />
-	 *
-	 * This method can be used to determine whether the provided parameter is an array: the
-	 * method will return <tt>TRUE</tt> if the value is an <tt>array</tt> in the strict
-	 * sense, meaning that the keys are an increasing <tt>0 .. n-1</tt> number series.
-	 *
-	 * @param mixed					$theValue			Value to probe.
-	 * @return bool					<tt>TRUE</tt> means array.
-	 *
-	 * @example
-	 * <code>
-	 * // Will return TRUE.
-	 * $result = $object->is_array( [ 1, 2, 3 ] );
-	 * $result = $object->is_array( [ 0 => 1, 1 => 2, 2 => 3 ] );
-	 * $result = $object->is_array( new ArrayObject( [ 1, 2, 3 ] ) );
-	 * $result = $object->is_array( new Container( [ 1, 2, 3 ] ) );
-	 * $result = $object->is_array( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) );
-	 *
-	 * // Will return FALSE.
-	 * $result = $object->is_array( [ 1 => 1 ] );
-	 * $result = $object->is_array( [ 0 => 1, 2 => 2 ] );
-	 * $result = $object->is_array( [ "one" => 1 ] );
-	 * any scalar value...
-	 * </code>
-	 */
-	protected function is_array( $theValue  )
-	{
-		//
-		// Convert structures.
-		//
-		if( ($theValue instanceof self)
-		 || ($theValue instanceof \ArrayObject) )
-			$theValue = $theValue->getArrayCopy();
-
-		//
-		// Handle arrays.
-		//
-		if( is_array( $theValue ) )
-		{
-			$keys = array_keys( $theValue );
-
-			return ( $keys === array_keys( $keys ) );								// ==>
-
-		} // Was a structure.
-
-		return FALSE;																// ==>
-
-	} // is_array.
 
 
 
