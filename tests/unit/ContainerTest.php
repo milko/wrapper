@@ -268,113 +268,113 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		return [
 
 			// Top level matches.
-			'offsetExists( 0, TRUE )' => [
+			'offsetExists( 0 )' => [
 				0,
 				TRUE
 			],
-			'offsetExists( "array", TRUE )' => [
+			'offsetExists( "array" )' => [
 				"array",
 				TRUE
 			],
-			'offsetExists( "object", TRUE )' => [
+			'offsetExists( "object" )' => [
 				"object",
 				TRUE
 			],
-			'offsetExists( "nested", TRUE )' => [
+			'offsetExists( "nested" )' => [
 				"nested",
 				TRUE
 			],
 
 			// Top level misses.
-			'offsetExists( 9, TRUE )' => [
+			'offsetExists( 9 )' => [
 				9,
 				FALSE
 			],
-			'offsetExists( NULL, TRUE )' => [
+			'offsetExists( NULL )' => [
 				NULL,
 				FALSE
 			],
-			'offsetExists( "UNKNOWN", TRUE )' => [
+			'offsetExists( "UNKNOWN" )' => [
 				"UNKNOWN",
 				FALSE
 			],
 
 			// Nested level matches.
-			'offsetExists( [ "array", 0 ], TRUE )' => [
+			'offsetExists( [ "array", 0 ] )' => [
 				[ "array", 0 ],
 				TRUE
 			],
-			'offsetExists( [ 1, "name" ], TRUE )' => [
+			'offsetExists( [ 1, "name" ] )' => [
 				[ 1, "name" ],
 				TRUE
 			],
-			'offsetExists( [ "object", "string" ], TRUE )' => [
+			'offsetExists( [ "object", "string" ] )' => [
 				[ "object", "string" ],
 				TRUE
 			],
-			'offsetExists( [ "object", "array", 2, 0 ], TRUE )' => [
+			'offsetExists( [ "object", "array", 2, 0 ] )' => [
 				[ "object", "array", 2, 0 ],
 				TRUE
 			],
-			'offsetExists( [ "object", "array", 2, 0, "nested", 0, "last" ], TRUE )' => [
-				[ "object", "array", 2, 0, "nested", 0, "last" ],
+			'offsetExists( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] )' => [
+				[ "object", "array", 2, 0, 2, "nested", 0, "last" ],
 				TRUE
 			],
-			'offsetExists( [ "nested", 0, 0, "leaf", 0 ], TRUE )' => [
+			'offsetExists( [ "nested", 0, 0, "leaf", 0 ] )' => [
 				[ "nested", 0, 0, "leaf", 0 ],
 				TRUE
 			],
 
 			// Nested level misses.
-			'offsetExists( [ "array", 9 ], TRUE )' => [
+			'offsetExists( [ "array", 9 ] )' => [
 				[ "array", 9 ],
 				FALSE
 			],
-			'offsetExists( [ 9, 0 ], TRUE )' => [
+			'offsetExists( [ 9, 0 ] )' => [
 				[ 9, 0 ],
 				FALSE
 			],
-			'offsetExists( [ "object", "UNKNOWN" ], TRUE )' => [
+			'offsetExists( [ "object", "UNKNOWN" ] )' => [
 				[ "object", "UNKNOWN" ],
 				FALSE
 			],
-			'offsetExists( [ "UNKNOWN", "string" ], TRUE )' => [
+			'offsetExists( [ "UNKNOWN", "string" ] )' => [
 				[ "UNKNOWN", "string" ],
 				FALSE
 			],
-			'offsetExists( [ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ], TRUE )' => 	[
+			'offsetExists( [ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ] )' => 	[
 				[ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ],
 				FALSE
 			],
-			'offsetExists( [ "object", "array", 2, 0, "nested", 9, "last" ], TRUE )' => [
+			'offsetExists( [ "object", "array", 2, 0, "nested", 9, "last" ] )' => [
 				[ "object", "array", 2, 0, "nested", 9, "last" ],
 				FALSE
 			],
-			'offsetExists( [ "object", "array", 2, 0, "UNKNOWN", 0, "last" ], TRUE )' => [
+			'offsetExists( [ "object", "array", 2, 0, "UNKNOWN", 0, "last" ] )' => [
 				[ "object", "array", 2, 0, "UNKNOWN", 0, "last" ],
 				FALSE
 			],
-			'offsetExists( [ "object", "array", 2, 9, "nested", 0, "last" ], TRUE )' => [
+			'offsetExists( [ "object", "array", 2, 9, "nested", 0, "last" ] )' => [
 				[ "object", "array", 2, 9, "nested", 0, "last" ],
 				FALSE
 			],
-			'offsetExists( [ "object", "array", 9, 0, "nested", 0, "last" ], TRUE )' => [
+			'offsetExists( [ "object", "array", 9, 0, "nested", 0, "last" ] )' => [
 				[ "object", "array", 9, 0, "nested", 0, "last" ],
-				TRUE
+				FALSE
 			],
-			'offsetExists( [ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ], TRUE )' => [
+			'offsetExists( [ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ] )' => [
 				[ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ],
-				TRUE
+				FALSE
 			],
-			'offsetExists( [ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ], TRUE )' => [
+			'offsetExists( [ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ] )' => [
 				[ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ],
-				TRUE
+				FALSE
 			],
-			'offsetExists( [ "nested", 9, 0, NULL, 9 ], TRUE )' => 	[
+			'offsetExists( [ "nested", 9, 0, NULL, 9 ] )' => 	[
 				[ "nested", 9, 0, NULL, 9 ],
 				FALSE
 			],
-			'offsetExists( [ NULL, 9, 9, NULL, 9 ], TRUE )' => [
+			'offsetExists( [ NULL, 9, 9, NULL, 9 ] )' => [
 				[ NULL, 9, 9, NULL, 9 ],
 				FALSE
 			]
@@ -403,6 +403,158 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		];
 
 	} // provideOffsetExistsErrors.
+
+
+	/*===================================================================================
+	 *	provideOffsetGet																*
+	 *==================================================================================*/
+
+	/**
+	 * Provide test parameters to offsetGet() test.
+	 *
+	 * The data elements are:
+	 *
+	 * <ul>
+	 * 	<li><tt>$1</tt>: Method parameter.
+	 * 	<li><tt>$2</tt>: Expected result.
+	 * </ul>
+	 */
+	public function provideOffsetGet()
+	{
+		//
+		// Return test data.
+		//
+		return [
+
+			// Top level matches.
+			'offsetGet( 0 )' => [
+				0,
+				"zero"
+			],
+			'offsetGet( "array" )' => [
+				"array",
+				[ 1, 2, 3 ]
+			],
+			'offsetGet( "nested" )' => [
+				"nested",
+				[
+					new ArrayObject([
+						new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			],
+
+			// Top level misses.
+			'offsetGet( 9 )' => [
+				9,
+				NULL
+			],
+			'offsetGet( NULL )' => [
+				NULL,
+				NULL
+			],
+			'offsetGet( "UNKNOWN" )' => [
+				"UNKNOWN",
+				NULL
+			],
+
+			// Nested level matches.
+			'offsetGet( [ "array", 0 ] )' => [
+				[ "array", 0 ],
+				1
+			],
+			'offsetGet( [ 1, "name" ] )' => [
+				[ 1, "name" ],
+				"smith"
+			],
+			'offsetGet( [ "object", "string" ] )' => [
+				[ "object", "string" ],
+				"a string"
+			],
+			'offsetGet( [ "object", "array", 2, 0 ] )' => [
+				[ "object", "array", 2, 0 ],
+				new Container([
+					"uno",
+					"due",
+					new ArrayObject([
+						"nested" => [
+							new test_Container([
+								"last" => "leaf"
+							])
+						]
+					]),
+					new stdClass()
+				])
+			],
+			'offsetGet( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] )' => [
+				[ "object", "array", 2, 0, 2, "nested", 0, "last" ],
+				"leaf"
+			],
+			'offsetGet( [ "nested", 0, 0, "leaf", 0 ] )' => [
+				[ "nested", 0, 0, "leaf", 0 ],
+				"value"
+			],
+
+			// Nested level misses.
+			'offsetGet( [ "array", 9 ] )' => [
+				[ "array", 9 ],
+				NULL
+			],
+			'offsetGet( [ 9, 0 ] )' => [
+				[ 9, 0 ],
+				NULL
+			],
+			'offsetGet( [ "object", "UNKNOWN" ] )' => [
+				[ "object", "UNKNOWN" ],
+				NULL
+			],
+			'offsetGet( [ "UNKNOWN", "string" ] )' => [
+				[ "UNKNOWN", "string" ],
+				NULL
+			],
+			'offsetGet( [ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ] )' => 	[
+				[ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ],
+				NULL
+			],
+			'offsetGet( [ "object", "array", 2, 0, "nested", 9, "last" ] )' => [
+				[ "object", "array", 2, 0, "nested", 9, "last" ],
+				NULL
+			],
+			'offsetGet( [ "object", "array", 2, 0, "UNKNOWN", 0, "last" ] )' => [
+				[ "object", "array", 2, 0, "UNKNOWN", 0, "last" ],
+				NULL
+			],
+			'offsetGet( [ "object", "array", 2, 9, "nested", 0, "last" ] )' => [
+				[ "object", "array", 2, 9, "nested", 0, "last" ],
+				NULL
+			],
+			'offsetGet( [ "object", "array", 9, 0, "nested", 0, "last" ] )' => [
+				[ "object", "array", 9, 0, "nested", 0, "last" ],
+				NULL
+			],
+			'offsetGet( [ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ] )' => [
+				[ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ],
+				NULL
+			],
+			'offsetGet( [ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ] )' => [
+				[ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ],
+				NULL
+			],
+			'offsetGet( [ "nested", 9, 0, NULL, 9 ] )' => 	[
+				[ "nested", 9, 0, NULL, 9 ],
+				NULL
+			],
+			'offsetGet( [ NULL, 9, 9, NULL, 9 ] )' => [
+				[ NULL, 9, 9, NULL, 9 ],
+				NULL
+			]
+		];
+
+	} // provideOffsetGet.
 
 
 
@@ -491,9 +643,10 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 //		exit;
 
 		//
-		// Should raise exception.
+		// Test according to expected boolean.
 		//
-		if( $result = $this->mObject->offsetExists( $theParameter ) )
+		$result = $this->mObject->offsetExists( $theParameter );
+		if( $theExpected )
 			$this->assertTrue( $result, $theExpected );
 		else
 			$this->assertFalse( $result, $theExpected );
@@ -522,6 +675,332 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$this->mObject->offsetExists( $theParameter );
 
 	} // testOffsetExistsErrors.
+
+
+	/*===================================================================================
+	 *	testOffsetGet																	*
+	 *==================================================================================*/
+
+	/**
+	 * Test offsetGet() method
+	 *
+	 * @covers       test_Container::offsetGet()
+	 * @dataProvider provideOffsetGet
+	 *
+	 * @param $theParameter
+	 * @param $theExpected
+	 */
+	public function testOffsetGet( $theParameter, $theExpected )
+	{
+		//
+		// Show test data.
+		//
+//		echo( "\n" );
+//		print_r( $this->mObject );
+//		print_r( $this->mObject->asArray() );
+//		exit;
+
+		//
+		// Make test.
+		//
+		$this->assertEquals( $theExpected, $this->mObject->offsetGet( $theParameter ) );
+
+	} // testOffsetGet.
+
+
+	/*===================================================================================
+	 *	testOffsetSet																	*
+	 *==================================================================================*/
+
+	/**
+	 * Test offsetSet() method
+	 *
+	 * @covers       test_Container::offsetSet()
+	 */
+	public function testOffsetSet()
+	{
+		//
+		// Init local storage.
+		//
+		$class = static::$mClass;
+		$test = new $class();
+
+		//
+		// Make tests.
+		//
+		$message = 'offsetSet( 0, 1 )';
+		$test->offsetSet( 0, 1 );
+		$this->assertEquals(
+			1,
+			$test->offsetGet( 0 ),
+			$message
+		);
+		$this->assertEquals(
+			new $class([ 1 ]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( "uno", 1 )';
+		$test->offsetSet( "uno", 1 );
+		$this->assertEquals(
+			1,
+			$test->offsetGet( "uno" ),
+			$message
+		);
+		$this->assertEquals(
+			new $class([ 0 => 1, "uno" => 1 ]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( NULL, "APPENDED" )';
+		$test->offsetSet( NULL, "APPENDED" );
+		$this->assertEquals(
+			"APPENDED",
+			$test->offsetGet( 1 ),
+			$message );
+		$this->assertEquals(
+			new $class([ 0 => 1, "uno" => 1, 1 => "APPENDED" ]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( 1, "CHANGED" )';
+		$test->offsetSet( 1, "CHANGED" );
+		$this->assertEquals(
+			"CHANGED",
+			$test->offsetGet( 1 ),
+			$message );
+		$this->assertEquals(
+			new $class([ 0 => 1, "uno" => 1, 1 => "CHANGED" ]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( 1, NULL )';
+		$test->offsetSet( 1, NULL );
+		$this->assertNull(
+			$test->offsetGet( 1 ),
+			$message );
+		$this->assertEquals(
+			new $class([ 0 => 1, "uno" => 1 ]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( NULL, new ArrayObject([ "array" => [ 1, 2, 3 ] ]) )';
+		$test->offsetSet( NULL, new ArrayObject([ "array" => [ 1, 2, 3 ] ]) );
+		$this->assertEquals(
+			new ArrayObject([
+				"array" => [ 1, 2, 3 ]
+			]),
+			$test->offsetGet( 2 ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3 ]
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "nested" ], new $class([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) )';
+		$test->offsetSet( [ 2, "nested" ], new $class([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"array" => [ "uno", "due" ]
+				])
+			]),
+			$test->offsetGet( [ 2, "nested" ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3 ],
+					"nested" => new $class([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due" ]
+						])
+					])
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "inserted", "array", "string" ], "a string" )';
+		$test->offsetSet( [ 2, "inserted", "array", "string" ], "a string" );
+		$this->assertEquals(
+			"a string",
+			$test->offsetGet( [ 2, "inserted", "array", "string" ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3 ],
+					"nested" => new $class([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due" ]
+						])
+					]),
+					"inserted" => [
+						"array" => [
+							"string" => "a string"
+						]
+					]
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "array", "number" ], 32 )';
+		$test->offsetSet( [ 2, "array", "number" ], 32 );
+		$this->assertEquals(
+			32,
+			$test->offsetGet( [ 2, "array", "number" ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3, "number" => 32 ],
+					"nested" => new $class([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due" ]
+						])
+					]),
+					"inserted" => [
+						"array" => [
+							"string" => "a string"
+						]
+					]
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "nested", "object", "array", NULL ], "tre" )';
+		$test->offsetSet( [ 2, "nested", "object", "array", NULL ], "tre" );
+		$this->assertEquals(
+			"tre",
+			$test->offsetGet( [ 2, "nested", "object", "array", 2 ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3, "number" => 32 ],
+					"nested" => new $class([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due", "tre" ]
+						])
+					]),
+					"inserted" => [
+						"array" => [
+							"string" => "a string"
+						]
+					]
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "nested", NULL, "object", NULL ], "Appended?" )';
+		$test->offsetSet( [ 2, "nested", NULL, "object", NULL ], "Appended?" );
+		$this->assertEquals(
+			"Appended?",
+			$test->offsetGet( [ 2, "nested", 0, "object", 0 ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3, "number" => 32 ],
+					"nested" => new test_Container([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due", "tre" ]
+						]),
+						0 => [
+							"object" => [ "Appended?" ]
+						]
+					]),
+					"inserted" => [
+						"array" => [
+							"string" => "a string"
+						]
+					]
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "inserted", "array", "string" ], NULL )';
+		$test->offsetSet( [ 2, "inserted", "array", "string" ], NULL );
+		$this->assertEquals(
+			NULL,
+			$test->offsetGet( [ 2, "inserted", "array", "string" ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3, "number" => 32 ],
+					"nested" => new test_Container([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due", "tre" ]
+						]),
+						0 => [
+							"object" => [ "Appended?" ]
+						]
+					])
+				])
+			]),
+			$test,
+			$message
+		);
+
+		$message = 'offsetSet( [ 2, "nested", 0, "object", 0 ], NULL )';
+		$test->offsetSet( [ 2, "nested", 0, "object", 0 ], NULL );
+		$this->assertEquals(
+			NULL,
+			$test->offsetGet( [ 2, "nested", 0, "object", 0 ] ),
+			$message );
+		$this->assertEquals(
+			new $class([
+				0 => 1,
+				"uno" => 1,
+				2 => new ArrayObject([
+					"array" => [ 1, 2, 3, "number" => 32 ],
+					"nested" => new test_Container([
+						"object" => new ArrayObject([
+							"array" => [ "uno", "due", "tre" ]
+						])
+					])
+				])
+			]),
+			$test,
+			$message
+		);
+
+	} // testOffsetSet.
 
 
 
