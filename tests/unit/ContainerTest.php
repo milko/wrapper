@@ -1,9 +1,15 @@
 <?php
 
-/*
- * This file tests the Container class.
+/**
+ * ContainerTest.php
  *
- * (c) Milko Škofič <skofic@gmail.com>
+ * This file contains the unit tests of the {@link Milko\wrapper\Container} class.
+ *
+ *	@package	Test
+ *
+ *	@author		Milko Škofič <skofic@gmail.com>
+ *	@version	1.00
+ *	@since		12/08/2016
  */
 
 /**
@@ -19,1789 +25,574 @@ require_once(dirname(__DIR__) . "/TestContainerClass.php");
 use Milko\wrapper\Container;
 
 /**
- * @covers Milko\wrapper\Container
+ * Container unit tests
+ *
+ * We overload the parent class by implementing unit tests and adding two data members:
+ *
+ * <ul>
+ *  <li><b>{@link $mClass}</b>: This data member holds the current test class name.
+ *  <li><b>{@link $mObject}</b>: This data member holds the test object.
+ * </ul>
+ *
+ *	@covers		Milko\wrapper\Container
+ *
+ *	@package	Test
+ *	@author		Milko Škofič <skofic@gmail.com>
+ *	@version	1.00
+ *	@since		12/08/2016
  */
 class ContainerTest extends PHPUnit_Framework_TestCase
 {
 	/**
-	 * Provide constructor test parameters.
+	 * Class.
 	 *
-	 * $1: parameter 1 for construct.
-	 * $2: parameter 2 for construct.
-	 * $3: expected value.
+	 * This attribute stores the test object class name.
+	 *
+	 * @var string
 	 */
-	public function provideConstructorParameters()
+	public static $mClass = NULL;
+
+	/**
+	 * Data.
+	 *
+	 * This attribute stores the test object instance.
+	 *
+	 * @var object
+	 */
+	public $mObject = NULL;
+
+
+
+
+/*=======================================================================================
+ *																						*
+ *								STATIC SETUP INTERFACE									*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	setUpBeforeClass																*
+	 *==================================================================================*/
+
+	/**
+	 * Set the class name
+	 *
+	 * This method is called before the first test is run, it will set the test class name.
+	 */
+	public static function setUpBeforeClass()
 	{
+		static::$mClass = "test_Container";
+
+	} // setUpBeforeClass.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								PUBLIC SETUP INTERFACE									*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	provideConstructor																*
+	 *==================================================================================*/
+
+	/**
+	 * Provide data to __construct() test.
+	 *
+	 * The data elements are:
+	 *
+	 * <ul>
+	 * 	<li><tt>$1</tt>: Data parameter.
+	 * 	<li><tt>$2</tt>: Array flatten switch parameter.
+	 * 	<li><tt>$3</tt>: Expected object <tt>getArrayCopy()</tt>.
+	 * </ul>
+	 */
+	public function provideConstructor()
+	{
+		//
+		// Return test data.
+		//
 		return [
 			//
 			// Test without array flattening.
 			//
-			"new Container( NULL, FALSE );" => [
+			'new test_Container( NULL, FALSE );' => [
 				NULL,
 				FALSE,
 				[]
 			],
-			"new Container( [], FALSE );" => [
+			'new test_Container( [], FALSE );' => [
 				[],
 				FALSE,
 				[]
 			],
-			"new Container( new ArrayObject(), FALSE );" => [
+			'new test_Container( new ArrayObject(), FALSE );' => [
 				new ArrayObject(),
 				FALSE,
 				[]
 			],
-			"new Container( new Container(), FALSE );" => [
-				new Container(),
+			'new test_Container( new test_Container(), FALSE );' => [
+				new test_Container(),
 				FALSE,
 				[]
 			],
-			"new Container( [1, 2, 3], FALSE );" => [
+			'new test_Container( [1, 2, 3], FALSE );' => [
 				[1, 2, 3],
 				FALSE,
 				[1, 2, 3]
 			],
-			"new Container( new ArrayObject( [1, 2, 3] ), FALSE );" => [
+			'new test_Container( new ArrayObject( [1, 2, 3] ), FALSE );' => [
 				new ArrayObject( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			"new Container( new Container( [1, 2, 3] ), FALSE );" => [
-				new Container( [1, 2, 3] ),
+			'new test_Container( new test_Container( [1, 2, 3] ), FALSE );' => [
+				new test_Container( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			"new Container( new ArrayObject([ \"uno\" => 1, \"due\" => new Container([ \"tre\" => 3 ]) ]), FALSE );" => [
-				new ArrayObject([ "uno" => 1, "due" => new Container([ "tre" => 3 ]) ]),
+			'new test_Container( new ArrayObject([ "uno" => 1, "due" => new test_Container([ "tre" => 3 ]) ]), FALSE );' => [
+				new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]),
 				FALSE,
-				["uno" => 1, "due" => new Container([ "tre" => 3 ])]
+				['uno' => 1, 'due' => new test_Container([ 'tre' => 3 ])]
 			],
 			//
 			// Test with array flattening.
 			//
-			"new Container( NULL, TRUE );" => [
+			'new test_Container( NULL, TRUE );' => [
 				NULL,
 				TRUE,
 				[]
 			],
-			"new Container( [], TRUE );" => [
+			'new test_Container( [], TRUE );' => [
 				[],
 				TRUE,
 				[]
 			],
-			"new Container( new ArrayObject(), TRUE );" => [
+			'new test_Container( new ArrayObject(), TRUE );' => [
 				new ArrayObject(),
 				TRUE,
 				[]
 			],
-			"new Container( new Container(), TRUE );" => [
-				new Container(),
+			'new test_Container( new test_Container(), TRUE );' => [
+				new test_Container(),
 				TRUE,
 				[]
 			],
-			"new Container( [1, 2, 3], TRUE );" => [
+			'new test_Container( [1, 2, 3], TRUE );' => [
 				[1, 2, 3],
 				TRUE,
 				[1, 2, 3]
 			],
-			"new Container( new ArrayObject( [1, 2, 3], TRUE ) );" => [
+			'new test_Container( new ArrayObject( [1, 2, 3], TRUE ) );' => [
 				new ArrayObject( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			"new Container( new Container( [1, 2, 3], TRUE ) );" => [
-				new Container( [1, 2, 3] ),
+			'new test_Container( new test_Container( [1, 2, 3], TRUE ) );' => [
+				new test_Container( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			"new Container( new ArrayObject([ \"uno\" => 1, \"due\" => new Container([ \"tre\" => 3 ]) ]), TRUE );" => [
-				new ArrayObject([ "uno" => 1, "due" => new Container([ "tre" => 3 ]) ]),
+			'new test_Container( new ArrayObject([ "uno" => 1, "due" => new test_Container([ "tre" => 3 ]) ]), TRUE );' => [
+				new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]),
 				TRUE,
-				[ "uno" => 1, "due" =>[ "tre" => 3 ] ]
+				[ 'uno' => 1, 'due' =>[ 'tre' => 3 ] ]
 			]
 		];
 
-	} // provideConstructorParameters.
+	} // provideConstructor.
+
+
+	/*===================================================================================
+	 *	provideConstructorErrors														*
+	 *==================================================================================*/
 
 	/**
-	 * Provide constructor test invalid parameters.
+	 * Provide invalid parameters to __construct() test.
 	 *
-	 * $1: parameter 1 for construct.
-	 * $2: parameter 2 for construct.
+	 * The data elements are:
+	 *
+	 * <ul>
+	 * 	<li><tt>$1</tt>: Data parameter.
+	 * 	<li><tt>$2</tt>: Array flatten switch parameter.
+	 * </ul>
 	 */
-	public function provideInvalidConstructorParameters()
+	public function provideConstructorErrors()
 	{
+		//
+		// Return test data.
+		//
 		return [
-			[
+			'1' => [
 				1,
 				FALSE
 			],
-			[
+			'"string"' => [
 				"string",
 				FALSE
 			],
-			[
+			'new stdClass()' => [
 				new stdClass(),
 				FALSE
 			]
 		];
 
-	} // provideInvalidConstructorParameters.
+	} // provideConstructorErrors.
+
+
+	/*===================================================================================
+	 *	provideOffsetExists																*
+	 *==================================================================================*/
 
 	/**
-	 * Provide offsetExists() test parameters.
+	 * Provide test parameters to offsetExists() test.
 	 *
-	 * $1: Object.
-	 * $2: Parameter.
-	 * $3: Expected.
+	 * The data elements are:
+	 *
+	 * <ul>
+	 * 	<li><tt>$1</tt>: Method parameter.
+	 * 	<li><tt>$2</tt>: Expected result.
+	 * </ul>
 	 */
-	public function provideOffsetExistsParameters()
+	public function provideOffsetExists()
 	{
 		//
-		// Init test object.
+		// Return test data.
 		//
-		$test = new test_Container([
-			"uno",
-			"due",
-			"tre",
-			"array" => [
-				1,
-				2,
-				3,
-				"obj" => new ArrayObject([
-					3,
-					4,
-					5,
-					"obj" => new test_Container([
-						9,
-						8,
-						7
-					])
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [
-						"three" => 3
-					]
-				])
-			]
-		]);
-
-//		print_r( $test );
-//		exit;
-
 		return [
-			//
-			// Test matches.
-			//
-			'offsetExists( 1 )' => [
-				$test,
-				1,
+
+			// Top level matches.
+			'offsetExists( 0, TRUE )' => [
+				0,
 				TRUE
 			],
-			'offsetExists( "array" )' => [
-				$test,
+			'offsetExists( "array", TRUE )' => [
 				"array",
 				TRUE
 			],
-			'offsetExists( [ "array", 0 ] )' => [
-				$test,
-				[ "array", 0 ],
+			'offsetExists( "object", TRUE )' => [
+				"object",
 				TRUE
 			],
-			'offsetExists( [ "array", "obj", 0 ] )' => [
-				$test,
-				[ "array", "obj", 0 ],
-				TRUE
-			],
-			'offsetExists( [ "nested", "one", "two", "three" ] )' => [
-				$test,
-				[ "nested", "one", "two", "three" ],
-				TRUE
-			],
-
-			//
-			// Test non matches.
-			//
-			'offsetExists( NULL )' => [
-				$test,
-				NULL,
-				FALSE
-			],
-			'offsetExists( "UNKNOWN" )' => [
-				$test,
-				"UNKNOWN",
-				FALSE
-			],
-			'offsetExists( [ "array", 9 ] )' => [
-				$test,
-				[ "array", 9 ],
-				FALSE
-			],
-			'offsetExists( [ "UNKNOWN", 0 ] )' => [
-				$test,
-				[ "UNKNOWN", 0 ],
-				FALSE
-			],
-			'offsetExists( [ "array", "obj", "UNKNOWN" ] )' => [
-				$test,
-				[ "array", "obj", "UNKNOWN" ],
-				FALSE
-			],
-			'offsetExists( [ "array", "UNKNOWN", 0 ] )' => [
-				$test,
-				[ "array", "UNKNOWN", 0 ],
-				FALSE
-			],
-			'offsetExists( [ "UNKNOWN", "obj", 0 ] )' => [
-				$test,
-				[ "UNKNOWN", "obj", 0 ],
-				FALSE
-			],
-			'offsetExists( [ NULL, "one", "two", "three" ] )' => [
-				$test,
-				[ NULL, "one", "two", "three" ],
-				FALSE
-			],
-			'offsetExists( [ "nested", "one", NULL, "three" ] )' => [
-				$test,
-				[ "nested", "one", NULL, "three" ],
-				FALSE
-			],
-			'offsetExists( [ "nested", "one", "two", NULL ] )' => [
-				$test,
-				[ "nested", "one", "two", NULL ],
-				FALSE
-			],
-			'offsetExists( [ "UNKNOWN", "one", "two", "three" ] )' => [
-				$test,
-				[ "UNKNOWN", "one", "two", "three" ],
-				FALSE
-			],
-			'offsetExists( [ "nested", "one", "UNKNOWN", "three" ] )' => [
-				$test,
-				[ "nested", "one", "UNKNOWN", "three" ],
-				FALSE
-			],
-			'offsetExists( [ "nested", "one", "two", "UNKNOWN" ] )' => [
-				$test,
-				[ "nested", "one", "two", "UNKNOWN" ],
-				FALSE
-			]
-		];
-
-	} // provideOffsetExistsParameters.
-
-	/**
-	 * Provide offsetGet() test parameters.
-	 *
-	 * $1: Object.
-	 * $2: Parameter.
-	 * $3: Expected.
-	 */
-	public function provideOffsetGetParameters()
-	{
-		//
-		// Init test object.
-		//
-		$test = new test_Container([
-			"uno",
-			"due",
-			"tre",
-			"array" => [
-				1,
-				2,
-				3,
-				"obj" => new ArrayObject([
-					3,
-					4,
-					5,
-					"obj" => new test_Container([
-						9,
-						8,
-						7
-					])
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [
-						"three" => 3
-					]
-				])
-			]
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		return [
-			//
-			// Test matches.
-			//
-			'offsetGet( 1 )' => [
-				$test,
-				1,
-				"due"
-			],
-			'offsetGet( "nested" )' => [
-				$test,
+			'offsetExists( "nested", TRUE )' => [
 				"nested",
-				[ "one" => new ArrayObject( [ "two" => [ "three" => 3 ] ] ) ]
+				TRUE
 			],
-			'offsetGet( [ "array", 0 ] )' => [
-				$test,
+
+			// Top level misses.
+			'offsetExists( 9, TRUE )' => [
+				9,
+				FALSE
+			],
+			'offsetExists( NULL, TRUE )' => [
+				NULL,
+				FALSE
+			],
+			'offsetExists( "UNKNOWN", TRUE )' => [
+				"UNKNOWN",
+				FALSE
+			],
+
+			// Nested level matches.
+			'offsetExists( [ "array", 0 ], TRUE )' => [
 				[ "array", 0 ],
-				1
+				TRUE
 			],
-			'offsetGet( [ "array", "obj", 0 ] )' => [
-				$test,
-				[ "array", "obj", 0 ],
-				3
+			'offsetExists( [ 1, "name" ], TRUE )' => [
+				[ 1, "name" ],
+				TRUE
 			],
-			'offsetGet( [ "nested", "one", "two", "three" ] )' => [
-				$test,
-				[ "nested", "one", "two", "three" ],
-				3
+			'offsetExists( [ "object", "string" ], TRUE )' => [
+				[ "object", "string" ],
+				TRUE
+			],
+			'offsetExists( [ "object", "array", 2, 0 ], TRUE )' => [
+				[ "object", "array", 2, 0 ],
+				TRUE
+			],
+			'offsetExists( [ "object", "array", 2, 0, "nested", 0, "last" ], TRUE )' => [
+				[ "object", "array", 2, 0, "nested", 0, "last" ],
+				TRUE
+			],
+			'offsetExists( [ "nested", 0, 0, "leaf", 0 ], TRUE )' => [
+				[ "nested", 0, 0, "leaf", 0 ],
+				TRUE
 			],
 
-			//
-			// Test non matches.
-			//
-			'offsetGet( NULL )' => [
-				$test,
-				NULL,
-				NULL
-			],
-			'offsetGet( "UNKNOWN" )' => [
-				$test,
-				"UNKNOWN",
-				NULL
-			],
-			'offsetGet( [ "array", 9 ] )' => [
-				$test,
+			// Nested level misses.
+			'offsetExists( [ "array", 9 ], TRUE )' => [
 				[ "array", 9 ],
-				NULL
+				FALSE
 			],
-			'offsetGet( [ "UNKNOWN", 0 ] )' => [
-				$test,
-				[ "UNKNOWN", 0 ],
-				NULL
+			'offsetExists( [ 9, 0 ], TRUE )' => [
+				[ 9, 0 ],
+				FALSE
 			],
-			'offsetGet( [ "array", "obj", "UNKNOWN" ] )' => [
-				$test,
-				[ "array", "obj", "UNKNOWN" ],
-				NULL
+			'offsetExists( [ "object", "UNKNOWN" ], TRUE )' => [
+				[ "object", "UNKNOWN" ],
+				FALSE
 			],
-			'offsetGet( [ "array", "UNKNOWN", 0 ] )' => [
-				$test,
-				[ "array", "UNKNOWN", 0 ],
-				NULL
+			'offsetExists( [ "UNKNOWN", "string" ], TRUE )' => [
+				[ "UNKNOWN", "string" ],
+				FALSE
 			],
-			'offsetGet( [ "UNKNOWN", "obj", 0 ] )' => [
-				$test,
-				[ "UNKNOWN", "obj", 0 ],
-				NULL
+			'offsetExists( [ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ], TRUE )' => 	[
+				[ "object", "array", 2, 0, "nested", 0, "UNKNOWN" ],
+				FALSE
 			],
-			'offsetGet( [ NULL, "one", "two", "three" ] )' => [
-				$test,
-				[ NULL, "one", "two", "three" ],
-				NULL
+			'offsetExists( [ "object", "array", 2, 0, "nested", 9, "last" ], TRUE )' => [
+				[ "object", "array", 2, 0, "nested", 9, "last" ],
+				FALSE
 			],
-			'offsetGet( [ "nested", "one", NULL, "three" ] )' => [
-				$test,
-				[ "nested", "one", NULL, "three" ],
-				NULL
+			'offsetExists( [ "object", "array", 2, 0, "UNKNOWN", 0, "last" ], TRUE )' => [
+				[ "object", "array", 2, 0, "UNKNOWN", 0, "last" ],
+				FALSE
 			],
-			'offsetGet( [ "nested", "one", "two", NULL ] )' => [
-				$test,
-				[ "nested", "one", "two", NULL ],
-				NULL
+			'offsetExists( [ "object", "array", 2, 9, "nested", 0, "last" ], TRUE )' => [
+				[ "object", "array", 2, 9, "nested", 0, "last" ],
+				FALSE
 			],
-			'offsetGet( [ "UNKNOWN", "one", "two", "three" ] )' => [
-				$test,
-				[ "UNKNOWN", "one", "two", "three" ],
-				NULL
+			'offsetExists( [ "object", "array", 9, 0, "nested", 0, "last" ], TRUE )' => [
+				[ "object", "array", 9, 0, "nested", 0, "last" ],
+				TRUE
 			],
-			'offsetGet( [ "nested", "one", "UNKNOWN", "three" ] )' => [
-				$test,
-				[ "nested", "one", "UNKNOWN", "three" ],
-				NULL
+			'offsetExists( [ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ], TRUE )' => [
+				[ "object", "UNKNOWN", 2, 0, "nested", 0, "last" ],
+				TRUE
 			],
-			'offsetGet( [ "nested", "one", "two", "UNKNOWN" ] )' => [
-				$test,
-				[ "nested", "one", "two", "UNKNOWN" ],
-				NULL
+			'offsetExists( [ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ], TRUE )' => [
+				[ "UNKNOWN", "array", 2, 0, "nested", 0, "last" ],
+				TRUE
+			],
+			'offsetExists( [ "nested", 9, 0, NULL, 9 ], TRUE )' => 	[
+				[ "nested", 9, 0, NULL, 9 ],
+				FALSE
+			],
+			'offsetExists( [ NULL, 9, 9, NULL, 9 ], TRUE )' => [
+				[ NULL, 9, 9, NULL, 9 ],
+				FALSE
 			]
 		];
 
-	} // provideOffsetGetParameters.
+	} // provideOffsetExists.
+
+
+	/*===================================================================================
+	 *	provideOffsetExistsErrors														*
+	 *==================================================================================*/
 
 	/**
-	 * Provide offsetSet() test parameters.
+	 * Test offsetExists() exceptions.
 	 *
-	 * $1: Object.
-	 * $2: Key.
-	 * $3: Value.
-	 * $4: Expected object contents.
+	 * The data parameter is the parameter to the method.
 	 */
-	public function provideOffsetSetParameters()
+	public function provideOffsetExistsErrors()
 	{
 		//
-		// Init test object.
+		// Return test data.
 		//
-		$test = new test_Container();
-
 		return [
-			'offsetSet( 0, 1 )' => [
-				$test,
-				0,
-				1,
-				new test_Container([ 1 ])
-			],
-			'offsetSet( "uno", 1 )' => [
-				$test,
-				"uno",
-				1,
-				new test_Container([ 0 => 1, "uno" => 1 ])
-			],
-			'offsetSet( NULL, "APPENDED" )' => [
-				$test,
-				NULL,
-				"APPENDED",
-				new test_Container([ 0 => 1, "uno" => 1, 1 => "APPENDED" ])
-			],
-			'offsetSet( 1, "CHANGED" )' => [
-				$test,
-				1,
-				"CHANGED",
-				new test_Container([ 0 => 1, "uno" => 1, 1 => "CHANGED" ])
-			],
-			'offsetSet( 1, NULL )' => [
-				$test,
-				1,
-				NULL,
-				new test_Container([ 0 => 1, "uno" => 1 ])
-			],
-			'offsetSet( NULL, new ArrayObject([ "array" => [ 1, 2, 3 ] ]) )' => [
-				$test,
-				NULL,
-				new ArrayObject([ "array" => [ 1, 2, 3 ] ]),
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3 ]
-					])
-				])
-			],
-			'offsetSet( [ 2, "nested" ], new test_Container([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) )' => [
-				$test,
-				[ 2, "nested" ],
-				new test_Container([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]),
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due" ]
-							])
-						])
-					])
-				])
-			],
-			'offsetSet( [ 2, "inserted", "array", "string" ], "a string" )' => [
-				$test,
-				[ 2, "inserted", "array", "string" ],
-				"a string",
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due" ]
-							])
-						]),
-						"inserted" => [
-							"array" => [
-								"string" => "a string"
-							]
-						]
-					])
-				])
-			],
-			'offsetSet( [ 2, "array", "number" ], 32 )' => [
-				$test,
-				[ 2, "array", "number" ],
-				32,
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3, "number" => 32 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due" ]
-							])
-						]),
-						"inserted" => [
-							"array" => [
-								"string" => "a string"
-							]
-						]
-					])
-				])
-			],
-			'offsetSet( [ 2, "nested", "object", "array", NULL ], "tre" )' => [
-				$test,
-				[ 2, "nested", "object", "array", NULL ],
-				"tre",
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3, "number" => 32 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due", "tre" ]
-							])
-						]),
-						"inserted" => [
-							"array" => [
-								"string" => "a string"
-							]
-						]
-					])
-				])
-			],
-			'offsetSet( [ 2, "nested", NULL, "array", NULL ], "Appended?" )' => [
-				$test,
-				[ 2, "nested", NULL, "object", NULL ],
-				"Appended?",
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3, "number" => 32 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due", "tre" ]
-							]),
-							0 => [
-								"object" => [ "Appended?" ]
-							]
-						]),
-						"inserted" => [
-							"array" => [
-								"string" => "a string"
-							]
-						]
-					])
-				])
-			],
-			'offsetSet( [ 2, "inserted", "array", "string" ], NULL )' => [
-				$test,
-				[ 2, "inserted", "array", "string" ],
-				NULL,
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3, "number" => 32 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due", "tre" ]
-							]),
-							0 => [
-								"object" => [ "Appended?" ]
-							]
-						])
-					])
-				])
-			],
-			'offsetSet( [ 2, "nested", 0, "object", 0 ], NULL )' => [
-				$test,
-				[ 2, "nested", 0, "object", 0 ],
-				NULL,
-				new test_Container([
-					0 => 1,
-					"uno" => 1,
-					2 => new ArrayObject([
-						"array" => [ 1, 2, 3, "number" => 32 ],
-						"nested" => new test_Container([
-							"object" => new ArrayObject([
-								"array" => [ "uno", "due", "tre" ]
-							])
-						])
-					])
-				])
-			],
+			[ new DateTime() ],
+			[ [ 1, [ 2, 3 ], 4 ] ]
 		];
 
-	} // provideOffsetSetParameters.
+	} // provideOffsetExistsErrors.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								PUBLIC TEST INTERFACE									*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	testConstructor																	*
+	 *==================================================================================*/
 
 	/**
-	 * Provide offsetUnset() test parameters.
+	 * Test __construct()
 	 *
-	 * $1: Object.
-	 * $2: Parameter.
-	 * $3: Expected object.
-	 */
-	public function provideOffsetUnsetParameters()
-	{
-		//
-		// Init test object.
-		//
-		$test = new test_Container([
-			"uno",
-			"due",
-			"tre",
-			"array" => [
-				1,
-				2,
-				3,
-				"obj" => new ArrayObject([
-					3,
-					4,
-					5,
-					"obj" => new test_Container([
-						9,
-						8,
-						7
-					])
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [
-						"three" => 3
-					]
-				])
-			]
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		return [
-			'offsetUnset( NULL )' => [
-				$test,
-				NULL,
-				new test_Container([
-					"uno",
-					"due",
-					"tre",
-					"array" => [
-						1,
-						2,
-						3,
-						"obj" => new ArrayObject([
-							3,
-							4,
-							5,
-							"obj" => new test_Container([
-								9,
-								8,
-								7
-							])
-						])
-					],
-					"nested" => [
-						"one" => new ArrayObject([
-							"two" => [
-								"three" => 3
-							]
-						])
-					]
-				])
-			],
-			'offsetUnset( "UNKNOWN" )' => [
-				$test,
-				"UNKNOWN",
-				new test_Container([
-					"uno",
-					"due",
-					"tre",
-					"array" => [
-						1,
-						2,
-						3,
-						"obj" => new ArrayObject([
-							3,
-							4,
-							5,
-							"obj" => new test_Container([
-								9,
-								8,
-								7
-							])
-						])
-					],
-					"nested" => [
-						"one" => new ArrayObject([
-							"two" => [
-								"three" => 3
-							]
-						])
-					]
-				])
-			],
-			'offsetUnset( 0 )' => [
-				$test,
-				0,
-				new test_Container([
-					1 => "due",
-					2 => "tre",
-					"array" => [
-						1,
-						2,
-						3,
-						"obj" => new ArrayObject([
-							3,
-							4,
-							5,
-							"obj" => new test_Container([
-								9,
-								8,
-								7
-							])
-						])
-					],
-					"nested" => [
-						"one" => new ArrayObject([
-							"two" => [
-								"three" => 3
-							]
-						])
-					]
-				])
-			],
-			'offsetUnset( [ "array", "obj", "obj" ] )' => [
-				$test,
-				[ "array", "obj", "obj" ],
-				$temp = new test_Container([
-					1 => "due",
-					2 => "tre",
-					"array" => [
-						1,
-						2,
-						3,
-						"obj" => new ArrayObject([
-							3,
-							4,
-							5
-						])
-					],
-					"nested" => [
-						"one" => new ArrayObject([
-							"two" => [
-								"three" => 3
-							]
-						])
-					]
-				])
-			],
-			'offsetUnset( [ "array", "obj", "obj" ] )' => [
-				$test,
-				[ "array", "obj", "obj" ],
-				$temp
-			],
-			'offsetUnset( [ "UNKNOWN", "obj", "obj" ] )' => [
-				$test,
-				[ "UNKNOWN", "obj", "obj" ],
-				$temp
-			],
-			'offsetUnset( [ "array", "UNKNOWN" ] )' => [
-				$test,
-				[ "array", "UNKNOWN" ],
-				$temp
-			],
-			'offsetUnset( [ "nested", "one", "two", "three" ] )' => [
-				$test,
-				[ "nested", "one", "two", "three" ],
-				$temp = new test_Container([
-					1 => "due",
-					2 => "tre",
-					"array" => [
-						1,
-						2,
-						3,
-						"obj" => new ArrayObject([
-							3,
-							4,
-							5
-						])
-					]
-				])
-			],
-		];
-
-	} // provideOffsetUnsetParameters.
-
-	/**
-	 * Provide IsArray() test parameters.
+	 * @covers       test_Container::__construct()
+	 * @dataProvider provideConstructor
 	 *
-	 * $1: Parameter.
-	 * $2: Expected.
+	 * @param $theParameter1
+	 * @param $theParameter2
+	 * @param $theExpected
 	 */
-	public function provideIsArrayParameters()
-	{
-		return [
-			'IsArray( [] )' => [
-				[],
-				TRUE
-			],
-			'IsArray( new ArrayObject() )' => [
-				new ArrayObject(),
-				TRUE
-			],
-			'IsArray( new Container() )' => [
-				new Container(),
-				TRUE
-			],
-			'IsArray( [ 1, 2, 3 ] )' => [
-				[ 1, 2, 3 ],
-				TRUE
-			],
-			'IsArray( [ 0 => 1, 1 => 2, 2 => 3 ] )' => [
-				[ 0 => 1, 1 => 2, 2 => 3 ],
-				TRUE
-			],
-			'IsArray( new ArrayObject( [ 1, 2, 3 ] ) )' => [
-				new ArrayObject( [ 1, 2, 3 ] ),
-				TRUE
-			],
-			'IsArray( new Container( [ 1, 2, 3 ] ) )' => [
-				new Container( [ 1, 2, 3 ] ),
-				TRUE
-			],
-			'IsArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) )' => [
-				new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ),
-				TRUE
-			],
-
-			'IsArray( [ 1 => 1 ] )' => [
-				[ 1 => 1 ],
-				FALSE
-			],
-			'IsArray( [ 0 => 1, 2 => 2 ] )' => [
-				[ 0 => 1, 2 => 2 ],
-				FALSE
-			],
-			'IsArray( [ "one" => 1 ] )' => [
-				[ "one" => 1 ],
-				FALSE
-			],
-			'IsArray( new ArrayObject([ "one" => 1 ]) )' => [
-				new ArrayObject([ "one" => 1 ]),
-				FALSE
-			],
-			'IsArray( "string" )' => [
-				"string",
-				FALSE
-			],
-			'IsArray( 0 )' => [
-				0,
-				FALSE
-			],
-		];
-
-	} // provideIsArrayParameters.
-
-	/**
-	 * @covers       Container::__construct()
-	 * @uses		 Container
-	 * @dataProvider provideConstructorParameters
-	 */
-	public function testConstructor( $param1, $param2, $expected )
+	public function testConstructor( $theParameter1, $theParameter2, $theExpected )
 	{
 		//
-		// Tests.
+		// Create object.
 		//
-		$object = new Container( $param1, $param2 );
-		$this->assertEquals( $object->getArrayCopy(), $expected );
+		$object = new test_Container( $theParameter1, $theParameter2 );
+
+		//
+		// Check object contents.
+		//
+		$this->assertEquals( $object->getArrayCopy(), $theExpected );
 
 	} // testConstructor.
 
+
+	/*===================================================================================
+	 *	testConstructorErrors															*
+	 *==================================================================================*/
+
 	/**
-	 * @covers       Container::__construct() exceptions
-	 * @uses		 Container
-	 * @dataProvider provideInvalidConstructorParameters
+	 * Test __construct() exceptions
+	 *
+	 * @covers       test_Container::__construct()
+	 * @dataProvider provideConstructorErrors
 	 * @expectedException InvalidArgumentException
+	 *
+	 * @param $theParameter1
+	 * @param $theParameter2
 	 */
-	public function testConstructorExceptions( $param1, $param2 )
+	public function testConstructorErrors( $theParameter1, $theParameter2 )
 	{
 		//
-		// Tests.
+		// Should raise exception.
 		//
-		$object = new Container( $param1, $param2 );
+		$object = new Container( $theParameter1, $theParameter2 );
 
-	} // testConstructorExceptions.
+	} // testConstructorErrors.
+
+
+	/*===================================================================================
+	 *	testOffsetExists																*
+	 *==================================================================================*/
 
 	/**
-	 * @covers       Container::offsetExists()
-	 * @dataProvider provideOffsetExistsParameters
-	 * @uses		 Container
+	 * Test offsetExists() method
+	 *
+	 * @covers       test_Container::offsetExists()
+	 * @dataProvider provideOffsetExists
+	 *
+	 * @param $theParameter
+	 * @param $theExpected
 	 */
-	public function testOffsetExists( test_Container $test, $param, $expected )
+	public function testOffsetExists( $theParameter, $theExpected )
 	{
-		$result = $test->offsetExists( $param );
-		if( $expected )
-			$this->assertTrue( $result, $expected );
+		//
+		// Show test data.
+		//
+//		echo( "\n" );
+//		print_r( $this->mObject );
+//		print_r( $this->mObject->asArray() );
+//		exit;
+
+		//
+		// Should raise exception.
+		//
+		if( $result = $this->mObject->offsetExists( $theParameter ) )
+			$this->assertTrue( $result, $theExpected );
 		else
-			$this->assertFalse( $result, $expected );
+			$this->assertFalse( $result, $theExpected );
 
 	} // testOffsetExists.
 
-	/**
-	 * @covers       Container::offsetGet()
-	 * @dataProvider provideOffsetGetParameters
-	 * @uses		 Container
-	 */
-	public function testOffsetGet( test_Container $test, $param, $expected )
-	{
-		$this->assertEquals( $expected, $test->offsetGet( $param ) );
 
-	} // testOffsetGet.
+	/*===================================================================================
+	 *	testOffsetExistsErrors															*
+	 *==================================================================================*/
 
 	/**
-	 * @covers       Container::offsetSet()
-	 * @dataProvider provideOffsetSetParameters
-	 * @uses		 Container
+	 * Test offsetExists() exceptions
+	 *
+	 * @covers       test_Container::offsetExists()
+	 * @dataProvider provideOffsetExistsErrors
+	 * @expectedException InvalidArgumentException
+	 *
+	 * @param $theParameter
 	 */
-	public function testOffsetSet( test_Container $test, $key, $value, $source )
+	public function testOffsetExistsErrors( $theParameter )
 	{
-		$test->offsetSet( $key, $value );
+		//
+		// Should raise exception.
+		//
+		$this->mObject->offsetExists( $theParameter );
 
-//		echo( "\n" );
-//		print_r( $test );
+	} // testOffsetExistsErrors.
 
-		$this->assertEquals( $source, $test );
 
-	} // testOffsetGet.
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED SETUP INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	setUp																			*
+	 *==================================================================================*/
 
 	/**
-	 * @covers       Container::offsetUnset()
-	 * @dataProvider provideOffsetUnsetParameters
-	 * @uses		 Container
+	 * Set up test object
 	 */
-	public function testOffsetUnset( test_Container $test, $param, $source )
+	protected function setUp()
 	{
-		$test->offsetUnset( $param );
+		//
+		// Get class.
+		//
+		$class = static::$mClass;
 
-//		echo( "\n" );
-//		print_r( $test );
-
-		$this->assertEquals( $source, $test );
-
-	} // testOffsetUnset.
-
-	/**
-	 * @covers       Container::getIterator()
-	 * @uses		 Container
-	 */
-	public function testGetIterator()
-	{
 		//
 		// Instantiate object.
 		//
-		$array = [ 1 => "one", 2 => "due", "tres" => 3 ];
-		$test = new test_Container( $array );
-
-//		echo( "\n" );
-//		print_r( $test );
-
-		//
-		// Test iterator.
-		//
-		$iterator = $test->getIterator();
-		foreach( $iterator as $key => $value )
-		{
-			$message = "key [$key] exists";
-			$this->assertTrue( array_key_exists( $key, $array ), $message );
-
-			$message = "key [$key] matches value [$value]";
-			$this->assertEquals( $key, array_search( $value, $array, TRUE ), $message );
-
-			$message = "value is [$value]";
-			$this->assertEquals( $value, $array[ $key ], $message );
-		}
-
-	} // testGetIterator.
-
-	/**
-	 * @covers       Container::count()
-	 * @uses		 Container
-	 */
-	public function testCount()
-	{
-		$test = new test_Container();
-		$this->assertEquals( $test->count(), 0, "count test_Container()" );
-
-		$test = new test_Container([ 1, 2, 3 ]);
-		$this->assertEquals( $test->count(), 3, "count test_Container([ 1, 2, 3 ])" );
-
-	} // testCount.
-
-	/**
-	 * @covers       Array functions
-	 * @uses		 Container
-	 */
-	public function testArrayFunctions()
-	{
-		$message = 'getArrayCopy() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test = new test_Container([ "uno" => 1, "due" => 2, 3 => "tre" ]);
-		$result = $test->getArrayCopy();
-		$this->assertEquals( $result, [ "uno" => 1, "due" => 2, 3 => "tre" ], $message );
-
-		$message = 'array_keys() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$result = $test->array_keys();
-		$this->assertEquals( $result, [ "uno", "due", 3 ], $message );
-
-		$message = 'array_values() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$result = $test->array_values();
-		$this->assertEquals( $result, [ 1, 2, "tre" ], $message );
-
-		$message = 'asort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->asort();
-		$this->assertEquals( $test->array_keys(), [ 3, "uno", "due" ], $message );
-
-		$message = 'ksort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->ksort();
-		$this->assertEquals( $test->array_keys(), [ "due", "uno", 3 ], $message );
-
-		$message = 'krsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->krsort();
-		$this->assertEquals( $test->array_keys(), [ 3, "uno", "due" ], $message );
-
-		$message = 'natcasesort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->natcasesort();
-		$this->assertEquals( $test->array_keys(), [ "uno", "due", 3 ], $message );
-
-		$message = 'natsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->natsort();
-		$this->assertEquals( $test->array_keys(), [ "uno", "due", 3 ], $message );
-
-		$message = 'arsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
-		$test->arsort();
-		$this->assertEquals( $test->array_keys(), [ "due", "uno", 3 ], $message );
-
-		$message = 'array_push( "A", "B" )';
-		$test->array_push( "A", "B" );
-		$this->assertEquals( $test->getArrayCopy(), [ "due" => 2, "uno" => 1, 3 => "tre", 4 => [ "A", "B" ] ], $message );
-
-		$message = 'array_pop()';
-		$result = $test->array_pop();
-		$this->assertEquals( $result, [ 0 => "A", 1 => "B" ], $message );
-		$this->assertEquals( $test->getArrayCopy(), [ "due" => 2, "uno" => 1, 3 => "tre" ], $message );
-
-		$message = 'array_unshift( "A", "B" )';
-		$test->array_unshift( "A", "B" );
-		$this->assertEquals( $test->getArrayCopy(), [ 0 => [ "A", "B" ], "due" => 2, "uno" => 1, 1 => "tre" ], $message );
-
-		$message = 'array_shift()';
-		$result = $test->array_shift();
-		$this->assertEquals( $result, [ 0 => "A", 1 => "B" ], $message );
-		$this->assertEquals( $test->getArrayCopy(), [ "due" => 2, "uno" => 1, 0 => "tre" ], $message );
-
-	} // testArrayFunctions.
-
-	/**
-	 * @covers       Container::propertyReference()
-	 * @uses		 Container
-	 */
-	public function testPropertyReference()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			0 => "uno",
-			2 => "tre",
-			"array" => [
-				0 => 1,
-				1 => 2,
-				2 => 3,
-				"obj" => new ArrayObject([
-					0 => 3,
-					1 => 4,
-					2 => 5,
-					"obj" => new test_Container([
-						0 => 9,
-						2 => 7
-					]),
-					3 => [ "ADD" => "ADDED NESTED" ]
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [ "three" => 3]
-				])
-			],
-			3 => "ADDED"
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		$message = '$test->propertyReference()';
-		$result = & $test->propertyReference();
-		$this->assertTrue( $test->getArrayCopy() === $result, $message );
-
-		$message = '$test->propertyReference( NULL )';
-		$result = & $test->propertyReference( NULL );
-		$this->assertTrue( $test->getArrayCopy() === $result, $message );
-
-		$message = '$test->propertyReference( [] )';
-		$result = & $test->propertyReference( [] );
-		$this->assertTrue( $test->getArrayCopy() === $result, $message );
-
-		$message = '$result = & $test->propertyReference( 0 ); $result = 3;';
-		$result = & $test->propertyReference( 0 );
-		$this->assertEquals( $result, "uno", $message );
-		$result = 3;
-		$this->assertEquals( $result, 3, $message );
-		$this->assertEquals( $test[ 0 ], 3, $message );
-
-		$message = '$result = & $test->propertyReference( [ "array", "obj", "obj", 0 ] ); $result = "X";';
-		$result = & $test->propertyReference( [ "array", "obj", "obj", 0 ] );
-		$this->assertEquals( $result, 9, $message );
-		$result = "X";
-		$this->assertEquals( $result, "X", $message );
-		$this->assertEquals( $test[ [ "array", "obj", "obj", 0 ] ], "X", $message );
-
-		unset( $result );
-
-	} // testPropertyReference.
-
-	/**
-	 * @covers       Container::propertySchema()
-	 * @uses		 Container
-	 */
-	public function testPropertySchema()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			0 => "uno",
-			2 => "tre",
-			"array" => [
-				0 => 1,
-				1 => 2,
-				2 => 3,
-				"obj" => new ArrayObject([
-					0 => 3,
-					1 => 4,
-					2 => 5,
-					"obj" => new test_Container([
-						0 => 9,
-						2 => 7
-					]),
-					3 => [ "ADD" => "ADDED NESTED" ]
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [ "three" => 3]
-				])
-			],
-			3 => "ADDED"
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		$message = '$test->propertySchema()';
-		$result = $test->propertySchema();
-//		print_r( $result );
-		$this->assertEquals(
-			$result,
-			[
-				0 => [
-					[ 0 ],
-					[ "array", 0 ],
-					[ "array", "obj", 0 ],
-					[ "array", "obj", "obj", 0 ]
-				],
-				"ADD" => [
-					[ "array", "obj", 3, "ADD" ]
-				],
-				"three" => [
-					[ "nested", "one", "two", "three" ]
-				],
-				1 => [
-					[ "array", 1 ],
-					[ "array", "obj", 1 ]
-				],
-				2 => [
-					[ 2 ],
-					[ "array", 2 ],
-					[ "array", "obj", 2 ],
-					[ "array", "obj", "obj", 2 ]
-				],
-				3 => [
-					[ 3 ]
-				]
-			],
-			$message
-		);
-
-		$message = '$test->propertySchema( '.' )';
-		$result = $test->propertySchema( '.' );
-//		print_r( $result );
-		$this->assertEquals(
-			$result,
-			[
-				0 => [
-					"0",
-					"array.0",
-					"array.obj.0",
-					"array.obj.obj.0"
-				],
-				"ADD" => [
-					"array.obj.3.ADD"
-				],
-				"three" => [
-					"nested.one.two.three"
-				],
-				1 => [
-					"array.1",
-					"array.obj.1"
-				],
-				2 => [
-					"2",
-					"array.2",
-					"array.obj.2",
-					"array.obj.obj.2"
-				],
-				3 => [
-					"3"
-				]
-			],
-			$message
-		);
-
-	} // testPropertySchema.
-
-	/**
-	 * @covers       Container::asArray()
-	 * @uses		 Container
-	 */
-	public function testAsArray()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			0 => "uno",
-			2 => "tre",
-			"array" => [
-				0 => 1,
-				1 => 2,
-				2 => 3,
-				"obj" => new ArrayObject([
-					0 => 3,
-					1 => 4,
-					2 => 5,
-					"obj" => new test_Container([
-						0 => 9,
-						2 => 7
-					]),
-					3 => [ "ADD" => "ADDED NESTED" ]
-				])
-			],
-			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [ "three" => 3]
-				])
-			],
-			3 => "ADDED"
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		$message = '$result = $test->asArray()';
-		$result = $test->asArray();
-//		print_r( $result );
-		$this->assertEquals(
-			$result,
-			[
-				0 => "uno",
-				2 => "tre",
+		$this->mObject = new $class([
+			"zero",
+			"array" => [ 1, 2, 3 ],
+			"object" => new ArrayObject([
+				"string" => "a string",
+				"number" => 25,
 				"array" => [
-					0 => 1,
-					1 => 2,
-					2 => 3,
-					"obj" => [
-						0 => 3,
-						1 => 4,
-						2 => 5,
-						"obj" => [
-							0 => 9,
-							2 => 7
-						],
-						3 => [ "ADD" => "ADDED NESTED" ]
+					"one",
+					"two",
+					[
+						new Container([
+							"uno",
+							"due",
+							new ArrayObject([
+								"nested" => [
+									new test_Container([
+										"last" => "leaf"
+									])
+								]
+							]),
+							new stdClass()
+						])
 					]
-				],
-				"nested" => [
-					"one" => [
-						"two" => [ "three" => 3]
-					]
-				],
-				3 => "ADDED"
-			],
-			$message
-		);
-		$this->assertEquals(
-			$test,
-			new test_Container([
-				0 => "uno",
-				2 => "tre",
-				"array" => [
-					0 => 1,
-					1 => 2,
-					2 => 3,
-					"obj" => new ArrayObject([
-						0 => 3,
-						1 => 4,
-						2 => 5,
-						"obj" => new test_Container([
-							0 => 9,
-							2 => 7
-						]),
-						3 => [ "ADD" => "ADDED NESTED" ]
-					])
-				],
-				"nested" => [
-					"one" => new ArrayObject([
-						"two" => [ "three" => 3]
-					])
-				],
-				3 => "ADDED"
+				]
 			]),
-			$message
-		);
-
-	} // testAsArray.
-
-	/**
-	 * @covers       Container::toArray()
-	 * @uses		 Container
-	 */
-	public function testToArray()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			0 => "uno",
-			2 => "tre",
-			"array" => [
-				0 => 1,
-				1 => 2,
-				2 => 3,
-				"obj" => new ArrayObject([
-					0 => 3,
-					1 => 4,
-					2 => 5,
-					"obj" => new test_Container([
-						0 => 9,
-						2 => 7
-					]),
-					3 => [ "ADD" => "ADDED NESTED" ]
-				])
-			],
 			"nested" => [
-				"one" => new ArrayObject([
-					"two" => [ "three" => 3]
-				])
-			],
-			3 => "ADDED"
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		$message = '$test->toArray()';
-		$test->toArray();
-//		print_r( $result );
-		$this->assertEquals(
-			$test->getArrayCopy(),
-			[
-				0 => "uno",
-				2 => "tre",
-				"array" => [
-					0 => 1,
-					1 => 2,
-					2 => 3,
-					"obj" => [
-						0 => 3,
-						1 => 4,
-						2 => 5,
-						"obj" => [
-							0 => 9,
-							2 => 7
-						],
-						3 => [ "ADD" => "ADDED NESTED" ]
-					]
-				],
-				"nested" => [
-					"one" => [
-						"two" => [ "three" => 3]
-					]
-				],
-				3 => "ADDED"
-			],
-			$message
-		);
-
-	} // testToArray.
-
-	/**
-	 * @covers       Container::ConvertToArray()
-	 * @uses		 Container
-	 */
-	public function testConvertToArray()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			"ArrayObject" => new ArrayObject([
-				"array" => [
-					"container" => new Container([
-						"string" => "a string"
-					])
-				]
-			])
-		]);
-
-//		print_r( $test );
-//		exit;
-
-		$message = 'Container::ConvertToArray( $test )';
-		test_Container::ConvertToArray( $test );
-//		print_r( $test );
-		$this->assertEquals(
-			$test,
-			[
-				"ArrayObject" => [
-					"array" => [
-						"container" => [
-							"string" => "a string"
+				new ArrayObject([
+					new Container([
+						"leaf" => [
+							"value"
 						]
-					]
-				]
-			],
-			$message
-		);
-
-	} // testConvertToArray.
-
-	/**
-	 * @covers       Container::IsArray()
-	 * @dataProvider provideIsArrayParameters
-	 * @uses		 Container
-	 */
-	public function testIsArray( $param, $expected )
-	{
-		$result = Container::IsArray( $param );
-		if( $expected )
-			$this->assertTrue( $result, $expected );
-		else
-			$this->assertFalse( $result, $expected );
-
-	} // testIsArray.
-
-	/**
-	 * @covers       Container::manageAttribute()
-	 * @uses		 Container
-	 */
-	public function testManageAttribute()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container();
-
-		$result = $test->Attribute( "NEW" );
-		$message = '$result = $test->Attribute( "NEW" )';
-		$this->assertEquals( $result, "NEW", $message );
-		$message = '$test->attribute == "NEW';
-		$this->assertEquals( $test->attribute, "NEW", $message );
-
-		$result = $test->Attribute( "OTHER", TRUE );
-		$message = '$result = $test->Attribute( "OTHER", TRUE )';
-		$this->assertEquals( $result, "NEW", $message );
-		$message = '$test->attribute == "OTHER';
-		$this->assertEquals( $test->attribute, "OTHER", $message );
-
-		$result = $test->Attribute();
-		$message = '$result = $test->Attribute()';
-		$this->assertEquals( $result, "OTHER", $message );
-
-		$result = $test->Attribute( FALSE, TRUE );
-		$message = '$result = $test->Attribute( FALSE, TRUE )';
-		$this->assertEquals( $result, "OTHER", $message );
-		$message = '$test->attribute === NULL';
-		$this->assertNull( $test->attribute, $message );
-
-	} // testManageAttribute.
-
-	/**
-	 * @covers       Container::manageFlagAttribute()
-	 * @uses		 Container
-	 */
-	public function testManageFlagAttribute()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container();
-
-		$message = '$result = $test->BitfieldAttribute()';
-		$result = $test->BitfieldAttribute();
-		$this->assertEquals( bin2hex($result), "00000000", $message );
-		$this->assertEquals( $result, $test->flag, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE )';
-		$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE );
-		$this->assertEquals( bin2hex($result), "ff000000", $message );
-		$this->assertEquals( $result, $test->flag, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("ff0f" ), TRUE, TRUE )';
-		$result = $test->BitfieldAttribute( hex2bin("ff0f" ), TRUE, TRUE );
-		$this->assertEquals( bin2hex($result), "ff000000", $message );
-		$this->assertEquals( bin2hex($test->flag), "ff0f0000", $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("f0000000" ) )';
-		$result = $test->BitfieldAttribute( hex2bin("f0000000" ) );
-		$this->assertTrue( $result, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("0f" ) )';
-		$result = $test->BitfieldAttribute( hex2bin("0f" ) );
-		$this->assertTrue( $result, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("000000ff" ) )';
-		$result = $test->BitfieldAttribute( hex2bin("000000ff" ) );
-		$this->assertFalse( $result, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("00f0" ) )';
-		$result = $test->BitfieldAttribute( hex2bin("00f0" ) );
-		$this->assertFalse( $result, $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("f0f00000" ), FALSE, TRUE )';
-		$result = $test->BitfieldAttribute( hex2bin("f0f00000" ), FALSE, TRUE );
-		$this->assertEquals( bin2hex($result), "ff0f0000", $message );
-		$this->assertEquals( bin2hex($test->flag), "0f0f0000", $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("0ff0" ), FALSE, TRUE )';
-		$result = $test->BitfieldAttribute( hex2bin("0ff0" ), FALSE, TRUE );
-		$this->assertEquals( bin2hex($result), "0f0f0000", $message );
-		$this->assertEquals( bin2hex($test->flag), "000f", $message );
-
-		$message = '$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE, TRUE )';
-		$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE, TRUE );
-		$this->assertEquals( bin2hex($result), "000f", $message );
-		$this->assertEquals( bin2hex($test->flag), "ff0f0000", $message );
-
-	} // testManageFlagAttribute.
-
-	/**
-	 * @covers       Container::manageProperty()
-	 * @uses		 Container
-	 */
-	public function testManageProperty()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container([
-			"nested" => new ArrayObject([
-				"container" => new Container([
-					"array" => [
-						"string" => "a string"
-					]
+					])
 				])
-			]),
-			"one" => new test_Container([
-				"two" => 3
-			])
+			],
+			[ "name" => "smith" ]
 		]);
 
-//		print_r( $test );
-//		exit;
+	} // testConstructor.
 
-		$message = '$result = $test->Property( "prop", "NEW" )';
-		$result = $test->Property( "prop", "NEW" );
-		$this->assertEquals( $result, "NEW", $message );
-		$this->assertEquals( $test[ "prop" ], "NEW", $message );
 
-		$message = '$result = $test->Property( "prop", "OTHER", TRUE )';
-		$result = $test->Property( "prop", "OTHER", TRUE );
-		$this->assertEquals( $result, "NEW", $message );
-		$this->assertEquals( $test[ "prop" ], "OTHER", $message );
 
-		$message = '$result = $test->Property( "prop" )';
-		$result = $test->Property( "prop" );
-		$this->assertEquals( $result, "OTHER", $message );
-		$this->assertEquals( $test[ "prop" ], "OTHER", $message );
 
-		$message = '$result = $test->Property( "prop", FALSE, TRUE )';
-		$result = $test->Property( "prop", FALSE, TRUE );
-		$this->assertEquals( $result, "OTHER", $message );
-		$this->assertNull( $test[ "prop" ], $message );
+} // class Container.
 
-		$result = $test->Property( [ "nested", "container", "array", "string" ] );
-		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ] )';
-		$this->assertEquals( $result, "a string", $message );
 
-		$message = '$result = $test->Property( [ "nested", "container", "UNKNOWN", "string" ] )';
-		$result = $test->Property( [ "nested", "container", "UNKNOWN", "string" ] );
-		$this->assertNull( $result, $message );
-
-		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], "NEW STRING" )';
-		$result = $test->Property( [ "nested", "container", "array", "string" ], "NEW STRING" );
-		$this->assertEquals( $result, "NEW STRING", $message );
-		$this->assertEquals( $test[ "nested" ][ "container" ][ "array" ][ "string" ], "NEW STRING", $message );
-
-		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], "OTHER STRING", TRUE )';
-		$result = $test->Property( [ "nested", "container", "array", "string" ], "OTHER STRING", TRUE );
-		$this->assertEquals( $result, "NEW STRING", $message );
-		$this->assertEquals( $test[ "nested" ][ "container" ][ "array" ][ "string" ], "OTHER STRING", $message );
-
-		$message = '$result = $test->Property( [ "branch", "array", "array", "string" ], "INSERTED STRING", TRUE )';
-		$result = $test->Property( [ "branch", "array", "array", "string" ], "INSERTED STRING", TRUE );
-		$this->assertNull( $result, $message );
-		$this->assertEquals( $test[ "branch" ][ "array" ][ "array" ][ "string" ], "INSERTED STRING", $message );
-
-		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], FALSE, TRUE )';
-		$result = $test->Property( [ "nested", "container", "array", "string" ], FALSE, TRUE );
-		$this->assertEquals( $result, "OTHER STRING", $message );
-		$this->assertFalse( $test->offsetExists( "nested" ), $message );
-
-	} // testManageProperty.
-
-	/**
-	 * @covers       Container::manageFlagProperty()
-	 * @uses		 Container
-	 */
-	public function testManageFlagProperty()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container();
-
-		$test[ "flag" ] = hex2bin( "00000000" );
-
-		$message = '$result = $test->BitfieldProperty( "flag" )';
-		$result = $test->BitfieldProperty( "flag" );
-		$this->assertEquals( bin2hex($result), "00000000", $message );
-		$this->assertEquals( $result, $test[ "flag" ], $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE );
-		$this->assertEquals( bin2hex($result), "ff000000", $message );
-		$this->assertEquals( $result, $test[ "flag" ], $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE );
-		$this->assertEquals( bin2hex($result), "ff000000", $message );
-		$this->assertEquals( bin2hex($test[ "flag" ]), "ff0f0000", $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) );
-		$this->assertTrue( $result, $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) );
-		$this->assertTrue( $result, $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) );
-		$this->assertFalse( $result, $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) );
-		$this->assertFalse( $result, $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE );
-		$this->assertEquals( bin2hex($result), "ff0f0000", $message );
-		$this->assertEquals( bin2hex($test[ "flag" ]), "0f0f0000", $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE );
-		$this->assertEquals( bin2hex($result), "0f0f0000", $message );
-		$this->assertEquals( bin2hex($test[ "flag" ]), "000f", $message );
-
-		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE )';
-		$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE );
-		$this->assertEquals( bin2hex($result), "000f", $message );
-		$this->assertEquals( bin2hex($test[ "flag" ]), "ff0f0000", $message );
-
-	} // testManageFlagProperty.
-
-	/**
-	 * @covers       Container::nestedPropertyReference()
-	 * @uses		 Container
-	 */
-	public function testNestedPropertyReference()
-	{
-		//
-		// Instantiate test object.
-		//
-		$test = new test_Container( [
-			"nested" => new ArrayObject( [
-				"container" => new Container( [
-					"array" => [
-						"string" => "a string"
-					]
-				] )
-			] ),
-			"one" => new test_Container( [
-				"two" => 3
-			] ),
-			1 => "uno"
-		] );
-
-//		print_r( $test );
-//		exit;
-
-		$message = '$result = & $test->NestedProperty( [ 1 ] );';
-		$offsets = [ 1 ];
-		$result = &$test->NestedProperty( $offsets );
-		$this->assertEquals( $result, "uno", $message );
-		$this->assertEquals( $result, $test[ 1 ], $message );
-		$this->assertCount( 0, $offsets, $message );
-
-		$message = '$result = $test->NestedProperty( [ "nested", "container", "array", "string" ] );';
-		$offsets = [ "nested", "container", "array", "string" ];
-		$result = $test->NestedProperty( $offsets );
-		$this->assertEquals( $result, "a string", $message );
-		$this->assertEquals( $result, $test[ "nested" ][ "container" ][ "array" ][ "string" ], $message );
-		$this->assertCount( 0, $offsets, $message );
-
-		$message = '$result = $test->NestedProperty( [ "nested", "container", "array", "UNKNOWN" ] );';
-		$offsets = [ "nested", "container", "array", "UNKNOWN" ];
-		$result = $test->NestedProperty( $offsets );
-		$this->assertEquals( $result, [ "string" => "a string" ], $message );
-		$this->assertEquals( $result, $test[ "nested" ][ "container" ][ "array" ], $message );
-		$this->assertEquals( $offsets, [ "UNKNOWN" ], $message );
-
-		$message = '$result = $test->NestedProperty( [ "UNKNOWN" ] );';
-		$offsets = [ "UNKNOWN" ];
-		$result = $test->NestedProperty( $offsets );
-		$this->assertEquals( $result, $test->propertyReference(), $message );
-		$this->assertEquals( $offsets, [ "UNKNOWN" ], $message );
-
-	} // testNestedPropertyReference.
-}
+?>

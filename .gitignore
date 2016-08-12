@@ -9,6 +9,7 @@ composer.lock
 
 # Project directories
 /docs
+/old
 
 # Project files
 analysis.txt
