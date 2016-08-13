@@ -8,111 +8,92 @@ require_once(dirname(__DIR__) . "/includes.local.php");
 //
 // Reference class.
 //
-use Milko\wrapper\Container;
+use Milko\wrapper\Datasource;
 
+// Instantiate datasource.
+$dsn = new Datasource( 'protocol://user:pass@host:9090/dir/file?arg=val#frag' );
 
-// Empty container.
-$object = new Container();
-// Milko\wrapper\Container Object
+// Get protocol.
+$result = $dsn->Protocol();
+$result = $dsn[ Datasource::PROT ];
+// string(8) "protocol"
+
+// Get host.
+$result = $dsn->Host();
+$result = $dsn[ Datasource::HOST ];
+// string(4) "host"
+
+// Get port.
+$result = $dsn->Port();
+$result = $dsn[ Datasource::PORT ];
+// int(9090)
+
+// Get user.
+$result = $dsn->User();
+$result = $dsn[ Datasource::USER ];
+// string(4) "user"
+
+// Get password.
+$result = $dsn->Password();
+$result = $dsn[ Datasource::PASS ];
+// string(4) "pass"
+
+// Get path.
+$result = $dsn->Path();
+$result = $dsn[ Datasource::PATH ];
+// string(9) "/dir/file"
+
+// Get fragment.
+$result = $dsn->Password();
+$result = $dsn[ Datasource::FRAG ];
+// string(4) "frag"
+
+// Get query.
+$result = $dsn->Query();
+$result = $dsn[ Datasource::QUERY ];
+// Array
 // (
-// 	[mProperties:protected] => Array
-// 		(
-// 		)
+//	[arg] => val
 // )
 
-// With array.
-$object = new Container( [1,2,3] );
-// With Container.
-$object = new Container( new Container( [1,2,3] ) );
-// With ArrayObject.
-$object = new Container( new ArrayObject( [1,2,3] ) );
-// Milko\wrapper\Container Object
+// Get URL.
+$result = $dsn->URL();
+// string(52) "protocol://user:pass@host:9090/dir/file?arg=val#frag"
+
+// Change protocol.
+$dsn->Protocol( "MySQL" );
+$dsn[ Datasource::PROT ] = "MySQL";
+
+// Remove user.
+$dsn->User( FALSE );
+$dsn[ Datasource::USER ] = FALSE;
+
+// Remove port.
+$dsn->Port( FALSE );
+$dsn[ Datasource::PORT ] = NULL;
+
+// Get URL.
+$result = $dsn->URL();
+// string(35) "MySQL://@host/dir/file?arg=val#frag"
+
+// Instantiate datasource.
+$dsn = new Datasource( 'protocol://user:pass@host1:9090,host2,host3:8080/dir/file?arg=val#frag' );
+
+// Get host.
+$result = $dsn->Host();
+$result = $dsn[ Datasource::HOST ];
+print_r( $result );
+// Array
 // (
-// 	[mProperties:protected] => Array
-// 		(
-//			[0] => 1
-//			[1] => 2
-//			[2] => 3
-// 		)
+//	[0] => host1
+//	[1] => host2
+//	[2] => host3
 // )
 
-// With embedded objects.
-$object = new Container(
-	[ 1 => new Container(
-		[ 2 => new ArrayObject(
-			[ 1, 2, 3 ] ) ] ) ] );
-// Milko\wrapper\Container Object
-// (
-// 	[mProperties:protected] => Array
-// 		(
-// 			[1] => Milko\wrapper\Container Object
-// 				(
-// 					[mProperties:protected] => Array
-// 						(
-// 							[2] => ArrayObject Object
-// 								(
-// 									[storage:ArrayObject:private] => Array
-// 										(
-// 											[0] => 1
-// 											[1] => 2
-// 											[2] => 3
-// 										)
-// 								)
-// 						)
-// 				)
-// 		)
-// )
-
-// With embedded objects converted to array.
-$object = new Container(
-	[ 1 => new Container(
-		[ 2 => new ArrayObject(
-			[ 1, 2, 3 ] ) ] ) ],
-	TRUE );
-// Milko\wrapper\Container Object
-// (
-// 	[mProperties:protected] => Array
-// 		(
-// 			[1] => Array
-// 				(
-// 					[2] => Array
-// 						(
-// 							[0] => 1
-// 							[1] => 2
-// 							[2] => 3
-// 						)
-// 				)
-// 		)
-// )
-
-exit;
-
-
-
-// Example class.
-class Test extends Container {
-	private $status = NULL;
-	private $attribute = NULL;
-	public function __construct( $props = NULL, bool $array = FALSE ) {
-		// Construct parent.
-		parent::__construct( $props, $array );
-		// Initialise status attribute.
-		$this->status = hex2bin( '00000000' );
-	}
-	public function Status( string $mask = NULL,
-							   bool $value = NULL,
-							   bool $old = FALSE ) {
-		return $this->manageBitfieldAttribute( $this->status, $mask, $value, $old );
-	}
-	public function Attribute( $val = NULL, $old = FALSE ) {
-		return $this->manageAttribute( $this->attribute, $val, $old );
-	}
-	public function Property( $off = NULL, $val = NULL, bool $old = FALSE ) {
-		return $this->manageProperty( $off, $val, $old );
-	}
-}
-
-// Example structure.
-$object = new Test();
+// Get port.
+$result = $dsn->Port();
+$result = $dsn[ Datasource::PORT ];
+print_r( $result );
+// int(9090)
 
 ?>

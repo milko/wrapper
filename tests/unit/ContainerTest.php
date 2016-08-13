@@ -115,91 +115,96 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function provideConstructor()
 	{
 		//
+		// Make tests.
+		//
+		$class = static::$mClass;
+
+		//
 		// Return test data.
 		//
 		return [
 			//
 			// Test without array flattening.
 			//
-			'new test_Container( NULL, FALSE );' => [
+			"new $class( NULL, FALSE );" => [
 				NULL,
 				FALSE,
 				[]
 			],
-			'new test_Container( [], FALSE );' => [
+			"new $class( [], FALSE );" => [
 				[],
 				FALSE,
 				[]
 			],
-			'new test_Container( new ArrayObject(), FALSE );' => [
+			"new $class( new ArrayObject(), FALSE );" => [
 				new ArrayObject(),
 				FALSE,
 				[]
 			],
-			'new test_Container( new test_Container(), FALSE );' => [
+			"new $class( new test_Container(), FALSE );" => [
 				new test_Container(),
 				FALSE,
 				[]
 			],
-			'new test_Container( [1, 2, 3], FALSE );' => [
+			"new $class( [1, 2, 3], FALSE );" => [
 				[1, 2, 3],
 				FALSE,
 				[1, 2, 3]
 			],
-			'new test_Container( new ArrayObject( [1, 2, 3] ), FALSE );' => [
+			"new $class( new ArrayObject( [1, 2, 3] ), FALSE );" => [
 				new ArrayObject( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			'new test_Container( new test_Container( [1, 2, 3] ), FALSE );' => [
+			"new $class( new test_Container( [1, 2, 3] ), FALSE );" => [
 				new test_Container( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			'new test_Container( new ArrayObject([ "uno" => 1, "due" => new test_Container([ "tre" => 3 ]) ]), FALSE );' => [
-				new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]),
+			"new $class( new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]), FALSE );" => [
+				new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]),
 				FALSE,
 				['uno' => 1, 'due' => new test_Container([ 'tre' => 3 ])]
 			],
 			//
 			// Test with array flattening.
 			//
-			'new test_Container( NULL, TRUE );' => [
+			"new $class( NULL, TRUE );" => [
 				NULL,
 				TRUE,
 				[]
 			],
-			'new test_Container( [], TRUE );' => [
+			"new $class( [], TRUE );" => [
 				[],
 				TRUE,
 				[]
 			],
-			'new test_Container( new ArrayObject(), TRUE );' => [
+			"new $class( new ArrayObject(), TRUE );" => [
 				new ArrayObject(),
 				TRUE,
 				[]
 			],
-			'new test_Container( new test_Container(), TRUE );' => [
+			"new $class( new test_Container(), TRUE );" => [
 				new test_Container(),
 				TRUE,
 				[]
 			],
-			'new test_Container( [1, 2, 3], TRUE );' => [
+			"new $class( [1, 2, 3], TRUE );" => [
 				[1, 2, 3],
 				TRUE,
 				[1, 2, 3]
 			],
-			'new test_Container( new ArrayObject( [1, 2, 3], TRUE ) );' => [
+			"new $class( new ArrayObject( [1, 2, 3], TRUE ) );" => [
 				new ArrayObject( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			'new test_Container( new test_Container( [1, 2, 3], TRUE ) );' => [
+			"new $class( new test_Container( [1, 2, 3], TRUE ) );" => [
 				new test_Container( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			'new test_Container( new ArrayObject([ "uno" => 1, "due" => new test_Container([ "tre" => 3 ]) ]), TRUE );' => [
+			"new $class( new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]), TRUE );" => [
 				new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]),
 				TRUE,
 				[ 'uno' => 1, 'due' =>[ 'tre' => 3 ] ]
@@ -717,14 +722,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testOffsetExists( $theParameter, $theExpected )
 	{
 		//
-		// Show test data.
-		//
-//		echo( "\n" );
-//		print_r( $this->mObject );
-//		print_r( $this->mObject->asArray() );
-//		exit;
-
-		//
 		// Test according to expected boolean.
 		//
 		$result = $this->mObject->offsetExists( $theParameter );
@@ -775,14 +772,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testOffsetGet( $theParameter, $theExpected )
 	{
 		//
-		// Show test data.
-		//
-//		echo( "\n" );
-//		print_r( $this->mObject );
-//		print_r( $this->mObject->asArray() );
-//		exit;
-
-		//
 		// Make test.
 		//
 		$this->assertEquals( $theExpected, $this->mObject->offsetGet( $theParameter ) );
@@ -802,7 +791,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testOffsetSet()
 	{
 		//
-		// Init local storage.
+		// Make tests.
 		//
 		$class = static::$mClass;
 		$test = new $class();

@@ -30,7 +30,7 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	// Declare attribute accessor method.
 	//
-	function Attribute( $theValue = NULL, $getOld = FALSE )
+	public function Attribute( $theValue = NULL, $getOld = FALSE )
 	{
 		return $this->manageAttribute( $this->attribute, $theValue, $getOld );
 	}
@@ -38,7 +38,7 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	// Declare bitfield attribute accessor method.
 	//
-	function BitfieldAttribute( string  $theMask = NULL,
+	public function BitfieldAttribute( string  $theMask = NULL,
 								bool	$theValue = NULL,
 								bool	$doOld = FALSE )
 	{
@@ -49,7 +49,7 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	// Declare property accessor method.
 	//
-	function Property( $theOffset, $theValue = NULL, $getOld = FALSE )
+	public function Property( $theOffset, $theValue = NULL, $getOld = FALSE )
 	{
 		return $this->manageProperty( $theOffset, $theValue, $getOld );
 	}
@@ -57,7 +57,7 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	// Declare bitfield property accessor method.
 	//
-	function BitfieldProperty( $theOffset,
+	public function BitfieldProperty( $theOffset,
 							   string  $theMask = NULL,
 							   bool	$theValue = NULL,
 							   bool	$doOld = FALSE )
@@ -69,9 +69,17 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	// Declare nested property accessor method.
 	//
-	function & NestedProperty( array & $theOffsets, bool $getParent = FALSE )
+	public function & NestedProperty( array & $theOffsets, bool $getParent = FALSE )
 	{
 		return $this->nestedPropertyReference( $theOffsets, $getParent );
+	}
+
+	//
+	// Reset object properties.
+	//
+	public function ResetProperties()
+	{
+		$this->mProperties = [];
 	}
 }
 
