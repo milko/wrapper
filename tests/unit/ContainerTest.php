@@ -557,6 +557,88 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	} // provideOffsetGet.
 
 
+	/*===================================================================================
+	 *	provideIsArray																	*
+	 *==================================================================================*/
+
+	/**
+	 * Provide test parameters to IsArray() test.
+	 *
+	 * The data elements are:
+	 *
+	 * <ul>
+	 * 	<li><tt>$1</tt>: Method parameter.
+	 * 	<li><tt>$2</tt>: Expected result.
+	 * </ul>
+	 */
+	public function provideIsArray()
+	{
+		//
+		// Return test data.
+		//
+		return [
+			'IsArray( [] )' => [
+				[],
+				TRUE
+			],
+			'IsArray( new ArrayObject() )' => [
+				new ArrayObject(),
+				TRUE
+			],
+			'IsArray( new Container() )' => [
+				new Container(),
+				TRUE
+			],
+			'IsArray( [ 1, 2, 3 ] )' => [
+				[ 1, 2, 3 ],
+				TRUE
+			],
+			'IsArray( [ 0 => 1, 1 => 2, 2 => 3 ] )' => [
+				[ 0 => 1, 1 => 2, 2 => 3 ],
+				TRUE
+			],
+			'IsArray( new ArrayObject( [ 1, 2, 3 ] ) )' => [
+				new ArrayObject( [ 1, 2, 3 ] ),
+				TRUE
+			],
+			'IsArray( new Container( [ 1, 2, 3 ] ) )' => [
+				new Container( [ 1, 2, 3 ] ),
+				TRUE
+			],
+			'IsArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) )' => [
+				new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ),
+				TRUE
+			],
+
+			'IsArray( [ 1 => 1 ] )' => [
+				[ 1 => 1 ],
+				FALSE
+			],
+			'IsArray( [ 0 => 1, 2 => 2 ] )' => [
+				[ 0 => 1, 2 => 2 ],
+				FALSE
+			],
+			'IsArray( [ "one" => 1 ] )' => [
+				[ "one" => 1 ],
+				FALSE
+			],
+			'IsArray( new ArrayObject([ "one" => 1 ]) )' => [
+				new ArrayObject([ "one" => 1 ]),
+				FALSE
+			],
+			'IsArray( "string" )' => [
+				"string",
+				FALSE
+			],
+			'IsArray( 0 )' => [
+				0,
+				FALSE
+			],
+		];
+
+	} // provideIsArray.
+
+
 
 /*=======================================================================================
  *																						*
@@ -1001,6 +1083,1357 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		);
 
 	} // testOffsetSet.
+
+
+	/*===================================================================================
+	 *	testOffsetUnset																	*
+	 *==================================================================================*/
+
+	/**
+	 * Test offsetUnset() method
+	 *
+	 * @covers       test_Container::offsetUnset()
+	 */
+	public function testOffsetUnset()
+	{
+		//
+		// Init local storage.
+		//
+		$class = static::$mClass;
+		$test = new $class();
+
+//		echo( "\n" );
+//		print_r( $this->mObject );
+//		print_r( $this->mObject->asArray() );
+//		exit;
+
+		//
+		// Make tests.
+		//
+		$message = 'offsetUnset( NULL )';
+		$this->mObject->offsetUnset( NULL );
+		$this->assertEquals(
+			new $class([
+				0 => "zero",
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								]),
+								3 => new stdClass()
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				],
+				1 => [ "name" => "smith" ]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( "UNKNOWN" )';
+		$this->mObject->offsetUnset( "UNKNOWN" );
+		$this->assertEquals(
+			new $class([
+				0 => "zero",
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								]),
+								3 => new stdClass()
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				],
+				1 => [ "name" => "smith" ]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( 9 )';
+		$this->mObject->offsetUnset( 9 );
+		$this->assertEquals(
+			new $class([
+				0 => "zero",
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								]),
+								3 => new stdClass()
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				],
+				1 => [ "name" => "smith" ]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( 0 )';
+		$this->mObject->offsetUnset( 0 );
+		$this->assertEquals(
+			new $class([
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								]),
+								3 => new stdClass()
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				],
+				1 => [ "name" => "smith" ]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ 1, "name" ] )';
+		$this->mObject->offsetUnset( [ 1, "name" ] );
+		$this->assertEquals(
+			new $class([
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								]),
+								3 => new stdClass()
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 2, 0, 3 ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 3 ] );
+		$this->assertEquals(
+			new $class([
+				"array" => [
+					0 => 1,
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "array", 0 ] )';
+		$this->mObject->offsetUnset( [ "array", 0 ] );
+		$this->assertEquals(
+			new $class([
+				"array" => [
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						0 => "one",
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 0 ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 0 ] );
+		$this->assertEquals(
+			new $class([
+				"array" => [
+					1 => 2,
+					2 => 3
+				],
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "array" ] )';
+		$this->mObject->offsetUnset( [ "array" ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						1 => "two",
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 1 ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 1 ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						2 => [
+							0 => new Container([
+								0 => "uno",
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 2, 0, 0 ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 0 ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						2 => [
+							0 => new Container([
+								1 => "due",
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 2, 0, 1 ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 1 ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+					"array" => [
+						2 => [
+							0 => new Container([
+								2 => new ArrayObject([
+									"nested" => [
+										0 => new $class([
+											"last" => "leaf"
+										])
+									]
+								])
+							])
+						]
+					]
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] )';
+		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+				]),
+				"nested" => [
+					0 => new ArrayObject([
+						0 => new Container([
+							"leaf" => [
+								"value"
+							]
+						])
+					])
+				]
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "nested", 0, 0, "leaf" ] )';
+		$this->mObject->offsetUnset( [ "nested", 0, 0, "leaf" ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string",
+					"number" => 25,
+				])
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "number" ] )';
+		$this->mObject->offsetUnset( [ "object", "number" ] );
+		$this->assertEquals(
+			new $class([
+				"object" => new ArrayObject([
+					"string" => "a string"
+				])
+			]),
+			$this->mObject,
+			$message
+		);
+
+		$message = 'offsetUnset( [ "object", "string" ] )';
+		$this->mObject->offsetUnset( [ "object", "string" ] );
+		$this->assertEquals(
+			new $class([]),
+			$this->mObject,
+			$message
+		);
+
+//		echo( "\n" );
+//		print_r( $this->mObject );
+//		print_r( $this->mObject->asArray() );
+//		exit;
+
+	} // testOffsetUnset.
+
+
+	/*===================================================================================
+	 *	testGetIterator																	*
+	 *==================================================================================*/
+
+	/**
+	 * Test getIterator() method
+	 *
+	 * @covers       test_Container::getIterator()
+	 */
+	public function testGetIterator()
+	{
+		//
+		// Instantiate object.
+		//
+		$class = static::$mClass;
+		$array = [ 1 => "one", 2 => "due", "tres" => 3 ];
+		$test = new $class( $array );
+
+//		echo( "\n" );
+//		print_r( $test );
+
+		//
+		// Test iterator.
+		//
+		$iterator = $test->getIterator();
+		foreach( $iterator as $key => $value )
+		{
+			$message = "key [$key] exists";
+			$this->assertTrue( array_key_exists( $key, $array ), $message );
+
+			$message = "key [$key] matches value [$value]";
+			$this->assertEquals( $key, array_search( $value, $array, TRUE ), $message );
+
+			$message = "value is [$value]";
+			$this->assertEquals( $value, $array[ $key ], $message );
+		}
+
+	} // testGetIterator.
+
+
+	/*===================================================================================
+	 *	testCount																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test count() method
+	 *
+	 * @covers       test_Container::count()
+	 */
+	public function testCount()
+	{
+		//
+		// Init local storage.
+		//
+		$class = static::$mClass;
+
+		//
+		// Start tests.
+		//
+		$test = new $class();
+		$this->assertEquals( 0, $test->count(), "count $class()" );
+
+		$test = new $class([ 1, 2, 3 ]);
+		$this->assertEquals( 3, $test->count(), "count $class([ 1, 2, 3 ])" );
+
+	} // testCount.
+
+
+	/*===================================================================================
+	 *	testArrayFunctions																*
+	 *==================================================================================*/
+
+	/**
+	 * Test array function methods
+	 *
+	 * @covers       test_Container::getArrayCopy()
+	 * @covers       test_Container::array_keys()
+	 * @covers       test_Container::array_values()
+	 * @covers       test_Container::asort()
+	 * @covers       test_Container::ksort()
+	 * @covers       test_Container::krsort()
+	 * @covers       test_Container::natcasesort()
+	 * @covers       test_Container::natsort()
+	 * @covers       test_Container::arsort()
+	 * @covers       test_Container::array_push()
+	 * @covers       test_Container::array_pop()
+	 * @covers       test_Container::array_unshift()
+	 * @covers       test_Container::array_shift()
+	 */
+	public function testArrayFunctions()
+	{
+		//
+		// Init local storage.
+		//
+		$class = static::$mClass;
+		$test = new $class([ "uno" => 1, "due" => 2, 3 => "tre" ]);
+
+		//
+		// Start tests.
+		//
+		$message = 'getArrayCopy() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$result = $test->getArrayCopy();
+		$this->assertEquals( [ "uno" => 1, "due" => 2, 3 => "tre" ], $result, $message );
+
+		$message = 'array_keys() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$result = $test->array_keys();
+		$this->assertEquals( [ "uno", "due", 3 ], $result, $message );
+
+		$message = 'array_values() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$result = $test->array_values();
+		$this->assertEquals( [ 1, 2, "tre" ], $result, $message );
+
+		$message = 'asort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->asort();
+		$this->assertEquals( [ 3, "uno", "due" ], $test->array_keys(), $message );
+
+		$message = 'ksort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->ksort();
+		$this->assertEquals( [ "due", "uno", 3 ], $test->array_keys(), $message );
+
+		$message = 'krsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->krsort();
+		$this->assertEquals( [ 3, "uno", "due" ], $test->array_keys(), $message );
+
+		$message = 'natcasesort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->natcasesort();
+		$this->assertEquals( [ "uno", "due", 3 ], $test->array_keys(), $message );
+
+		$message = 'natsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->natsort();
+		$this->assertEquals( [ "uno", "due", 3 ], $test->array_keys(), $message );
+
+		$message = 'arsort() [ "uno" => 1, "due" => 2, 3 => "tre" ]';
+		$test->arsort();
+		$this->assertEquals( [ "due", "uno", 3 ], $test->array_keys(), $message );
+
+		$message = 'array_push( "A", "B" )';
+		$test->array_push( "A", "B" );
+		$this->assertEquals( [ "due" => 2, "uno" => 1, 3 => "tre", 4 => [ "A", "B" ] ], $test->getArrayCopy(), $message );
+
+		$message = 'array_pop()';
+		$this->assertEquals( [ 0 => "A", 1 => "B" ], $test->array_pop(), $message );
+		$this->assertEquals( [ "due" => 2, "uno" => 1, 3 => "tre" ], $test->getArrayCopy(), $message );
+
+		$message = 'array_unshift( "A", "B" )';
+		$test->array_unshift( "A", "B" );
+		$this->assertEquals( [ 0 => [ "A", "B" ], "due" => 2, "uno" => 1, 1 => "tre" ], $test->getArrayCopy(), $message );
+
+		$message = 'array_shift()';
+		$result = $test->array_shift();
+		$this->assertEquals( $result, [ 0 => "A", 1 => "B" ], $message );
+		$this->assertEquals( [ "due" => 2, "uno" => 1, 0 => "tre" ], $test->getArrayCopy(), $message );
+
+	} // testArrayFunctions.
+
+
+	/*===================================================================================
+	 *	testPropertyReference															*
+	 *==================================================================================*/
+
+	/**
+	 * Test propertyReference() method
+	 *
+	 * @covers       test_Container::propertyReference()
+	 */
+	public function testPropertyReference()
+	{
+		//
+		// Start tests.
+		//
+		$message = 'propertyReference()';
+		$result = & $this->mObject->propertyReference();
+		$this->assertTrue( $this->mObject->getArrayCopy() === $result, $message );
+
+		$message = 'propertyReference( NULL )';
+		$result = & $this->mObject->propertyReference( NULL );
+		$this->assertTrue( $this->mObject->getArrayCopy() === $result, $message );
+
+		$message = 'propertyReference( [] )';
+		$result = & $this->mObject->propertyReference( [] );
+		$this->assertTrue( $this->mObject->getArrayCopy() === $result, $message );
+
+		$message = '$result = & propertyReference( 0 ); $result = 3;';
+		$result = & $this->mObject->propertyReference( 0 );
+		$this->assertEquals( "zero", $result, $message );
+		$result = 3;
+		$this->assertEquals( 3, $this->mObject[ 0 ], $message );
+
+		$message = '$result = & propertyReference( [ "array", 1 ] ); $result = "due";';
+		$result = & $this->mObject->propertyReference( [ "array", 1 ] );
+		$this->assertEquals( 2, $result, $message );
+		$result = "due";
+		$this->assertEquals( "due", $this->mObject[ [ "array", 1 ] ], $message );
+
+		$message = '$result = & propertyReference( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] ); $result = "ultimo";';
+		$result = & $this->mObject->propertyReference( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] );
+		$this->assertEquals( $result, "leaf", $message );
+		$result = "ultimo";
+		$this->assertEquals( "ultimo", $this->mObject[ [ "object", "array", 2, 0, 2, "nested", 0, "last" ] ], $message );
+
+		unset( $result );
+
+	} // testPropertyReference.
+
+
+	/*===================================================================================
+	 *	testPropertySchema																*
+	 *==================================================================================*/
+
+	/**
+	 * Test propertySchema() method
+	 *
+	 * @covers       test_Container::propertySchema()
+	 */
+	public function testPropertySchema()
+	{
+		//
+		// Start tests.
+		//
+		$message = 'propertySchema()';
+		$result = $this->mObject->propertySchema();
+		$this->assertEquals(
+			[
+				0 => [
+					[ 0 ]
+				],
+				"array" => [
+					[ "array" ],
+					[ "object", "array" ]
+				],
+				"last" => [
+					[ "object", "array", "nested", "last" ]
+				],
+				"leaf" => [
+					[ "nested", "leaf" ]
+				],
+				"name" => [
+					[ 1, "name" ]
+				],
+				"number" => [
+					[ "object", "number" ]
+				],
+				"string" => [
+					[ "object", "string" ]
+				]
+			],
+			$result,
+			$message
+		);
+
+		foreach( $result as $leaf => $branches )
+		{
+			foreach( $branches as $branch )
+				$this->assertEquals( $leaf, $branch[ count( $branch ) - 1 ], "Checking leaf [$leaf]" );
+		}
+
+		$message = 'propertySchema( "." )';
+		$result = $this->mObject->propertySchema( "." );
+		$this->assertEquals(
+			[
+				0 => [ 0 ],
+				"array" => [ "array", "object.array" ],
+				"last" => [ "object.array.nested.last" ],
+				"leaf" => [ "nested.leaf" ],
+				"name" => [ "1.name" ],
+				"number" => [ "object.number" ],
+				"string" => [ "object.string" ]
+			],
+			$result,
+			$message
+		);
+
+	} // testPropertySchema.
+
+
+	/*===================================================================================
+	 *	testAsArray																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test asArray() and toArray() methods
+	 *
+	 * @covers       test_Container::asArray()
+	 * @covers       test_Container::toArray()
+	 */
+	public function testAsArray()
+	{
+		//
+		// Instantiate expected.
+		//
+		$expected = [
+			0 => "zero",
+			"array" => [
+				0 => 1,
+				1 => 2,
+				2 => 3
+			],
+			"object" => [
+				"string" => "a string",
+				"number" => 25,
+				"array" => [
+					0 => "one",
+					1 => "two",
+					2 => [
+						0 => [
+							0 => "uno",
+							1 => "due",
+							2 => [
+								"nested" => [
+									0 => [
+										"last" => "leaf"
+									]
+								]
+							],
+							3 => new stdClass()
+						]
+					]
+				]
+			],
+			"nested" => [
+				0 => [
+					0 => [
+						"leaf" => [
+							"value"
+						]
+					]
+				]
+			],
+			1 => [ "name" => "smith" ]
+		];
+
+		//
+		// Start tests.
+		//
+		$result = $this->mObject->asArray();
+		$this->assertEquals( $expected, $this->mObject->asArray(), "asArray()" );
+		$this->assertNotEquals( $expected, $this->mObject, "asArray()" );
+
+		$this->mObject->toArray();
+		$this->assertEquals( $expected, $this->mObject->getArrayCopy(), "toArray()" );
+
+	} // testAsArray.
+
+
+	/*===================================================================================
+	 *	testConvertToArray																*
+	 *==================================================================================*/
+
+	/**
+	 * Test ConvertToArray() method
+	 *
+	 * @covers       test_Container::ConvertToArray()
+	 */
+	public function testConvertToArray()
+	{
+		//
+		// Instantiate expected.
+		//
+		$expected = [
+			0 => "zero",
+			"array" => [
+				0 => 1,
+				1 => 2,
+				2 => 3
+			],
+			"object" => [
+				"string" => "a string",
+				"number" => 25,
+				"array" => [
+					0 => "one",
+					1 => "two",
+					2 => [
+						0 => [
+							0 => "uno",
+							1 => "due",
+							2 => [
+								"nested" => [
+									0 => [
+										"last" => "leaf"
+									]
+								]
+							],
+							3 => new stdClass()
+						]
+					]
+				]
+			],
+			"nested" => [
+				0 => [
+					0 => [
+						"leaf" => [
+							"value"
+						]
+					]
+				]
+			],
+			1 => [ "name" => "smith" ]
+		];
+
+		//
+		// Start tests.
+		//
+		Container::ConvertToArray( $this->mObject );
+		$this->assertEquals( $expected, $this->mObject, "Container::ConvertToArray()" );
+
+	} // testConvertToArray.
+
+
+	/*===================================================================================
+	 *	testIsArray																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test IsArray() method
+	 *
+	 * @covers       test_Container::IsArray()
+	 * @dataProvider provideIsArray
+	 *
+	 * @param $theParameter
+	 * @param $theExpected
+	 */
+	public function testIsArray( $theParameter, $theExpected )
+	{
+		//
+		// Init local storage.
+		//
+		$class = static::$mClass;
+
+		//
+		// Perform tests.
+		//
+		$result = $class::IsArray( $theParameter );
+		if( $theExpected )
+			$this->assertTrue( $result, $theExpected );
+		else
+			$this->assertFalse( $result, $theExpected );
+
+	} // testIsArray.
+
+
+	/*===================================================================================
+	 *	testManageAttribute																*
+	 *==================================================================================*/
+
+	/**
+	 * Test IsArray() method
+	 *
+	 * @covers       test_Container::manageAttribute()
+	 */
+	public function testManageAttribute()
+	{
+		//
+		// Instantiate test object.
+		//
+		$class = static::$mClass;
+		$test = new $class();
+
+		//
+		// Start tests.
+		//
+		$result = $test->Attribute( "NEW" );
+		$message = '$result = Attribute( "NEW" )';
+		$this->assertEquals( $result, "NEW", $message );
+		$message = 'attribute == "NEW';
+		$this->assertEquals( $test->attribute, "NEW", $message );
+
+		$result = $test->Attribute( "OTHER", TRUE );
+		$message = '$result = Attribute( "OTHER", TRUE )';
+		$this->assertEquals( $result, "NEW", $message );
+		$message = 'attribute == "OTHER';
+		$this->assertEquals( $test->attribute, "OTHER", $message );
+
+		$result = $test->Attribute();
+		$message = '$result = Attribute()';
+		$this->assertEquals( $result, "OTHER", $message );
+
+		$result = $test->Attribute( FALSE, TRUE );
+		$message = '$result = Attribute( FALSE, TRUE )';
+		$this->assertEquals( $result, "OTHER", $message );
+		$message = 'attribute === NULL';
+		$this->assertNull( $test->attribute, $message );
+
+	} // testManageAttribute.
+
+
+	/*===================================================================================
+	 *	testManageFlagAttribute															*
+	 *==================================================================================*/
+
+	/**
+	 * Test manageFlagAttribute() method
+	 *
+	 * @covers       test_Container::manageFlagAttribute()
+	 */
+	public function testManageFlagAttribute()
+	{
+		//
+		// Instantiate test object.
+		//
+		$class = static::$mClass;
+		$test = new $class();
+
+		$message = '$result = BitfieldAttribute()';
+		$result = $test->BitfieldAttribute();
+		$this->assertEquals( "00000000", bin2hex($result), $message );
+		$this->assertEquals( $test->flag, $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("ff000000" ), TRUE )';
+		$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( $test->flag, $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("ff0f" ), TRUE, TRUE )';
+		$result = $test->BitfieldAttribute( hex2bin("ff0f" ), TRUE, TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( "ff0f0000", bin2hex($test->flag), $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("f0000000" ) )';
+		$result = $test->BitfieldAttribute( hex2bin("f0000000" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("0f" ) )';
+		$result = $test->BitfieldAttribute( hex2bin("0f" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("000000ff" ) )';
+		$result = $test->BitfieldAttribute( hex2bin("000000ff" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("00f0" ) )';
+		$result = $test->BitfieldAttribute( hex2bin("00f0" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("f0f00000" ), FALSE, TRUE )';
+		$result = $test->BitfieldAttribute( hex2bin("f0f00000" ), FALSE, TRUE );
+		$this->assertEquals( "ff0f0000", bin2hex($result), $message );
+		$this->assertEquals( "0f0f0000", bin2hex($test->flag), $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("0ff0" ), FALSE, TRUE )';
+		$result = $test->BitfieldAttribute( hex2bin("0ff0" ), FALSE, TRUE );
+		$this->assertEquals( "0f0f0000", bin2hex($result), $message );
+		$this->assertEquals( "000f", bin2hex($test->flag), $message );
+
+		$message = '$result = BitfieldAttribute( hex2bin("ff000000" ), TRUE, TRUE )';
+		$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE, TRUE );
+		$this->assertEquals( "000f", bin2hex($result), $message );
+		$this->assertEquals( "ff0f0000", bin2hex($test->flag), $message );
+
+	} // testManageFlagAttribute.
+
+
+	/*===================================================================================
+	 *	testManageProperty																*
+	 *==================================================================================*/
+
+	/**
+	 * Test manageProperty() method
+	 *
+	 * @covers       test_Container::manageProperty()
+	 */
+	public function testManageProperty()
+	{
+		//
+		// Instantiate test object.
+		//
+		$class = static::$mClass;
+		$test = new $class([
+			"nested" => new ArrayObject([
+				"container" => new Container([
+					"array" => [
+						"string" => "a string"
+					]
+				])
+			]),
+			"one" => new test_Container([
+				"two" => 3
+			])
+		]);
+
+		$message = '$result = $test->Property( "prop", "NEW" )';
+		$result = $test->Property( "prop", "NEW" );
+		$this->assertEquals( "NEW", $result, $message );
+		$this->assertEquals( "NEW", $test[ "prop" ], $message );
+
+		$message = '$result = $test->Property( "prop", "OTHER", TRUE )';
+		$result = $test->Property( "prop", "OTHER", TRUE );
+		$this->assertEquals( "NEW", $result, $message );
+		$this->assertEquals( "OTHER", $test[ "prop" ], $message );
+
+		$message = '$result = $test->Property( "prop" )';
+		$result = $test->Property( "prop" );
+		$this->assertEquals( "OTHER", $result, $message );
+		$this->assertEquals( "OTHER", $test[ "prop" ], $message );
+
+		$message = '$result = $test->Property( "prop", FALSE, TRUE )';
+		$result = $test->Property( "prop", FALSE, TRUE );
+		$this->assertEquals( "OTHER", $result, $message );
+		$this->assertNull( $test[ "prop" ], $message );
+
+		$result = $test->Property( [ "nested", "container", "array", "string" ] );
+		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ] )';
+		$this->assertEquals( "a string", $result, $message );
+
+		$message = '$result = $test->Property( [ "nested", "container", "UNKNOWN", "string" ] )';
+		$result = $test->Property( [ "nested", "container", "UNKNOWN", "string" ] );
+		$this->assertNull( $result, $message );
+
+		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], "NEW STRING" )';
+		$result = $test->Property( [ "nested", "container", "array", "string" ], "NEW STRING" );
+		$this->assertEquals( "NEW STRING", $result, $message );
+		$this->assertEquals( "NEW STRING", $test[ "nested" ][ "container" ][ "array" ][ "string" ], $message );
+
+		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], "OTHER STRING", TRUE )';
+		$result = $test->Property( [ "nested", "container", "array", "string" ], "OTHER STRING", TRUE );
+		$this->assertEquals( "NEW STRING", $result, $message );
+		$this->assertEquals( "OTHER STRING", $test[ "nested" ][ "container" ][ "array" ][ "string" ], $message );
+
+		$message = '$result = $test->Property( [ "branch", "array", "array", "string" ], "INSERTED STRING", TRUE )';
+		$result = $test->Property( [ "branch", "array", "array", "string" ], "INSERTED STRING", TRUE );
+		$this->assertNull( $result, $message );
+		$this->assertEquals( "INSERTED STRING", $test[ "branch" ][ "array" ][ "array" ][ "string" ], $message );
+
+		$message = '$result = $test->Property( [ "nested", "container", "array", "string" ], FALSE, TRUE )';
+		$result = $test->Property( [ "nested", "container", "array", "string" ], FALSE, TRUE );
+		$this->assertEquals( "OTHER STRING", $result, $message );
+		$this->assertFalse( $test->offsetExists( "nested" ), $message );
+
+	} // testManageProperty.
+
+
+	/*===================================================================================
+	 *	testManageFlagProperty															*
+	 *==================================================================================*/
+
+	/**
+	 * Test manageFlagProperty() method
+	 *
+	 * @covers       test_Container::manageFlagProperty()
+	 */
+	public function testManageFlagProperty()
+	{
+		//
+		// Instantiate test object.
+		//
+		$class = static::$mClass;
+		$test = new $class();
+		$test[ "flag" ] = hex2bin( "00000000" );
+
+		$message = '$result = $test->BitfieldProperty( "flag" )';
+		$result = $test->BitfieldProperty( "flag" );
+		$this->assertEquals( "00000000", bin2hex($result), $message );
+		$this->assertEquals( $test[ "flag" ], $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( $test[ "flag" ], $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("ff0f" ), TRUE, TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( "ff0f0000", bin2hex($test[ "flag" ]), $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("f0000000" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("0f" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("000000ff" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("00f0" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("f0f00000" ), FALSE, TRUE );
+		$this->assertEquals( "ff0f0000", bin2hex($result), $message );
+		$this->assertEquals( "0f0f0000", bin2hex($test[ "flag" ]), $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("0ff0" ), FALSE, TRUE );
+		$this->assertEquals( "0f0f0000", bin2hex($result), $message );
+		$this->assertEquals( "000f", bin2hex($test[ "flag" ]), $message );
+
+		$message = '$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE )';
+		$result = $test->BitfieldProperty( "flag", hex2bin("ff000000" ), TRUE, TRUE );
+		$this->assertEquals( "000f", bin2hex($result), $message );
+		$this->assertEquals( "ff0f0000", bin2hex($test[ "flag" ]), $message );
+
+	} // testManageFlagProperty.
+
+
+	/*===================================================================================
+	 *	testNestedPropertyReference														*
+	 *==================================================================================*/
+
+	/**
+	 * Test nestedPropertyReference() method
+	 *
+	 * @covers       test_Container::nestedPropertyReference()
+	 */
+	public function testNestedPropertyReference()
+	{
+		//
+		// Instantiate test object.
+		//
+		$class = static::$mClass;
+		$test = new $class( [
+			"nested" => new ArrayObject( [
+				"container" => new $class( [
+					"array" => [
+						"string" => "a string"
+					]
+				] )
+			] ),
+			"one" => new test_Container( [
+				"two" => 3
+			] ),
+			1 => "uno"
+		] );
+
+		$message = '$result = & $test->NestedProperty( [ 1 ] );';
+		$offsets = [ 1 ];
+		$result = &$test->NestedProperty( $offsets );
+		$this->assertEquals( "uno", $result, $message );
+		$this->assertEquals( $test[ 1 ], $result, $message );
+		$this->assertCount( 0, $offsets, $message );
+
+		$message = '$result = $test->NestedProperty( [ "nested", "container", "array", "string" ] );';
+		$offsets = [ "nested", "container", "array", "string" ];
+		$result = $test->NestedProperty( $offsets );
+		$this->assertEquals( "a string", $result, $message );
+		$this->assertEquals( $test[ "nested" ][ "container" ][ "array" ][ "string" ], $result, $message );
+		$this->assertCount( 0, $offsets, $message );
+
+		$message = '$result = $test->NestedProperty( [ "nested", "container", "array", "UNKNOWN" ] );';
+		$offsets = [ "nested", "container", "array", "UNKNOWN" ];
+		$result = $test->NestedProperty( $offsets );
+		$this->assertEquals( [ "string" => "a string" ], $result, $message );
+		$this->assertEquals( $test[ "nested" ][ "container" ][ "array" ], $result, $message );
+		$this->assertEquals( [ "UNKNOWN" ], $offsets, $message );
+
+		$message = '$result = $test->NestedProperty( [ "UNKNOWN" ] );';
+		$offsets = [ "UNKNOWN" ];
+		$result = $test->NestedProperty( $offsets );
+		$this->assertEquals( $test->propertyReference(), $result, $message );
+		$this->assertEquals( [ "UNKNOWN" ], $offsets, $message );
+
+	} // testNestedPropertyReference.
 
 
 
