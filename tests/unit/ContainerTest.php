@@ -164,7 +164,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			"new $class( new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]), FALSE );" => [
 				new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]),
 				FALSE,
-				['uno' => 1, 'due' => new test_Container([ 'tre' => 3 ])]
+				['uno' => 1, 'due' => new Container([ 'tre' => 3 ])]
 			],
 			//
 			// Test with array flattening.
@@ -487,7 +487,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 					"due",
 					new ArrayObject([
 						"nested" => [
-							new test_Container([
+							new Container([
 								"last" => "leaf"
 							])
 						]
@@ -670,13 +670,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testConstructor( $theParameter1, $theParameter2, $theExpected )
 	{
 		//
-		// Create object.
+		// Make test.
 		//
 		$object = new test_Container( $theParameter1, $theParameter2 );
-
-		//
-		// Check object contents.
-		//
 		$this->assertEquals( $object->getArrayCopy(), $theExpected );
 
 	} // testConstructor.
@@ -1089,12 +1085,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		// Init local storage.
 		//
 		$class = static::$mClass;
-		$test = new $class();
-
-//		echo( "\n" );
-//		print_r( $this->mObject );
-//		print_r( $this->mObject->asArray() );
-//		exit;
 
 		//
 		// Make tests.
@@ -1121,7 +1111,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1168,7 +1158,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1215,7 +1205,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1261,7 +1251,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1307,7 +1297,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1352,7 +1342,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1395,7 +1385,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1437,7 +1427,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1475,7 +1465,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1512,7 +1502,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1548,7 +1538,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 								1 => "due",
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1583,7 +1573,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 							0 => new Container([
 								2 => new ArrayObject([
 									"nested" => [
-										0 => new $class([
+										0 => new Container([
 											"last" => "leaf"
 										])
 									]
@@ -1656,7 +1646,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "string" ] )';
 		$this->mObject->offsetUnset( [ "object", "string" ] );
 		$this->assertEquals(
-			new $class([]),
+			new $class(),
 			$this->mObject,
 			$message
 		);
@@ -2466,7 +2456,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 							"due",
 							new ArrayObject([
 								"nested" => [
-									new test_Container([
+									new Container([
 										"last" => "leaf"
 									])
 								]

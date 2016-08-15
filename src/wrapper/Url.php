@@ -1,29 +1,25 @@
 <?php
 
 /**
- * Datasource.php
+ * Url.php
  *
- * This file contains the definition of the {@link milko\wrapper\Datasource} class.
+ * This file contains the definition of the {@link milko\wrapper\Url} class.
  */
 
 namespace Milko\wrapper;
 
 /*=======================================================================================
  *																						*
- *									Datasource.php										*
+ *										Url.php											*
  *																						*
  *======================================================================================*/
 
 use Milko\wrapper\Container;
 
 /**
- * <h4>Data source or URL object.</h4><p />
+ * <h4>URL object.</h4><p />
  *
- * This class implements an URL that contains the connection properties needed by classes
- * representing connection instances, such as servers and databases.
- *
- * When instantiated, this class will parse the provided connection URL and store the
- * connection parameters in the object's properties, the supported offsets are:
+ * This class implements an URL and stores its elements into the class properties:
  *
  * <ul>
  *	<li><tt>{@link PROT}</tt>: The protocol.
@@ -36,13 +32,25 @@ use Milko\wrapper\Container;
  *	<li><tt>{@link FRAG}</tt>: The fragment.
  * </ul>
  *
- * There is also a set of member accessor methods that can be used to manage the data source
- * elements, these are declared by the {@link iDatasource} interface.
+ * There is also a set of member accessor methods that can be used to manage the object
+ * properties:
  *
- * Casting the object to a string will return its data source name or URL.
+ * <ul>
+ *	<li><tt>{@link Protocol()}</tt>: The protocol.
+ *	<li><tt>{@link Host()}</tt>: The host.
+ *	<li><tt>{@link Port()}</tt>: The port.
+ *	<li><tt>{@link User()}</tt>: The user name.
+ *	<li><tt>{@link Password()}</tt>: The user password.
+ *	<li><tt>{@link Path()}</tt>: The path.
+ *	<li><tt>{@link Query()}</tt>: The query parameters.
+ *	<li><tt>{@link Fragment}</tt>: The fragment.
+ *	<li><tt>{@link URL()}</tt>: The URL.
+ * </ul>
+ *
+ * Casting the object to a string will return the URL.
  *
  * When setting the individual elements with the member accessor methods, there is no value
- * checking: it is the responsibility of the caller to ensure the URL is valid.
+ * checking: it is the responsibility of the caller to ensure the provided data is valid.
  *
  *	@package	Core
  *
@@ -52,8 +60,52 @@ use Milko\wrapper\Container;
  *
  *	@example
  * <code>
- * // Instantiate data source.
- * $dsn = new Datasource( 'protocol://user:pass@host:9090/dir/file?arg=val#frag' );
+ * // Instantiate empty Object.
+ * $dsn = new Url();
+ *
+ * // Set protocol.
+ * $dsn->Protocol( "MySQL" );
+ * $dsn[ Url::PROT ] = "MySQL";
+ *
+ * // Set host.
+ * $dsn->Host( "localhost" );
+ * $dsn[ Url::HOST ] = "localhost";
+ *
+ * // Set port.
+ * $dsn->Port( 3306 );
+ * $dsn[ Url::PORT ] = 3306;
+ *
+ * // Set database and table.
+ * $dsn->Path( "Database/Table" );
+ * $dsn[ Url::PATH ] = "Database/Table";
+ *
+ * // Set user.
+ * $dsn->User( "user" );
+ * $dsn[ Url::USER ] = "user";
+ *
+ * // Set password.
+ * $dsn->Password( "password" );
+ * $dsn[ Url::PASS ] = "password";
+ *
+ * // Milko\wrapper\Url Object
+ * // (
+ * //     [mProperties:protected] => Array
+ * //         (
+ * //             [prot] => MySQL
+ * //             [host] => localhost
+ * //             [port] => 3306
+ * //             [path] => Database/Table
+ * //             [user] => user
+ * //             [pass] => password
+ * //         )
+ * // )
+ *
+ * $url = $dsn->URL();
+ * $url = (string)$dsn;
+ * // string(51) "MySQL://user:password@localhost:3306/Database/Table"
+ *
+ * // Instantiate from URL.
+ * $dsn = new Url( 'protocol://user:pass@host:9090/dir/file?arg=val#frag' );
  * // Milko\wrapper\Datasource Object
  * // (
  * //     [mProperties:protected] => Array
@@ -74,42 +126,42 @@ use Milko\wrapper\Container;
  *
  * // Get protocol.
  * $result = $dsn->Protocol();
- * $result = $dsn[ Datasource::PROT ];
+ * $result = $dsn[ Url::PROT ];
  * // string(8) "protocol"
  *
  * // Get host.
  * $result = $dsn->Host();
- * $result = $dsn[ Datasource::HOST ];
+ * $result = $dsn[ Url::HOST ];
  * // string(4) "host"
  *
  * // Get port.
  * $result = $dsn->Port();
- * $result = $dsn[ Datasource::PORT ];
+ * $result = $dsn[ Url::PORT ];
  * // int(9090)
  *
  * // Get user.
  * $result = $dsn->User();
- * $result = $dsn[ Datasource::USER ];
+ * $result = $dsn[ Url::USER ];
  * // string(4) "user"
  *
  * // Get password.
  * $result = $dsn->Password();
- * $result = $dsn[ Datasource::PASS ];
+ * $result = $dsn[ Url::PASS ];
  * // string(4) "pass"
  *
  * // Get path.
  * $result = $dsn->Path();
- * $result = $dsn[ Datasource::PATH ];
+ * $result = $dsn[ Url::PATH ];
  * // string(9) "/dir/file"
  *
  * // Get fragment.
  * $result = $dsn->Password();
- * $result = $dsn[ Datasource::FRAG ];
+ * $result = $dsn[ Url::FRAG ];
  * // string(4) "frag"
  *
  * // Get query.
  * $result = $dsn->Query();
- * $result = $dsn[ Datasource::QUERY ];
+ * $result = $dsn[ Url::QUERY ];
  * // Array
  * // (
  * //	[arg] => val
@@ -122,22 +174,21 @@ use Milko\wrapper\Container;
  *
  * // Change protocol.
  * $dsn->Protocol( "MySQL" );
- * $dsn[ Datasource::PROT ] = "MySQL";
+ * $dsn[ Url::PROT ] = "MySQL";
  *
  * // Remove user.
  * $dsn->User( FALSE );
- * $dsn[ Datasource::USER ] = FALSE;
+ * $dsn[ Url::USER ] = FALSE;
  *
  * // Remove port.
  * $dsn->Port( FALSE );
- * $dsn[ Datasource::PORT ] = NULL;
+ * $dsn[ Url::PORT ] = NULL;
  *
  * // Get URL.
  * $result = $dsn->URL();
- * var_dump($result);
  * // string(35) "MySQL://@host/dir/file?arg=val#frag"
  *
- * $dsn = new Datasource( 'protocol://user:pass@host1:9090,host2,host3:8080/dir/file?arg=val#frag' );
+ * $dsn = new Url( 'protocol://user:pass@host1:9090,host2,host3:8080/dir/file?arg=val#frag' );
  * // Milko\wrapper\Datasource Object
  * // (
  * //     [mProperties:protected] => Array
@@ -168,7 +219,7 @@ use Milko\wrapper\Container;
  *
  * // Get host.
  * $result = $dsn->Host();
- * $result = $dsn[ Datasource::HOST ];
+ * $result = $dsn[ Url::HOST ];
  * // Array
  * // (
  * //	[0] => host1
@@ -178,7 +229,7 @@ use Milko\wrapper\Container;
  *
  * // Get port.
  * $result = $dsn->Port();
- * $result = $dsn[ Datasource::PORT ];
+ * $result = $dsn[ Url::PORT ];
  * // Array
  * // (
  * //	[0] => 9090
@@ -187,7 +238,7 @@ use Milko\wrapper\Container;
  * // )
  * </code>
  */
-class Datasource extends Container
+class Url extends Container
 {
 	/**
 	 * Protocol.
@@ -278,9 +329,9 @@ class Datasource extends Container
 	/**
 	 * <h4>Instantiate class.</h4><p />
 	 *
-	 * The object must be instantiated from a data source name, if the provided connection
-	 * string is invalid, or if either the scheme or the host are missing, the method will
-	 * raise an exception.
+	 * You can instantiate an empty object, or instantiate an object from an URL, if the
+	 * provided connection string is invalid, or if either the protocol or the host are
+	 * missing, the method will raise an exception.
 	 *
 	 * @param string			$theConnection		Data source name.
 	 * @throws \InvalidArgumentException
@@ -295,8 +346,13 @@ class Datasource extends Container
 	 *
 	 * @example
 	 * <code>
-	 * $dsn = new DataSource( 'html://user:pass@host:8080/dir/file?arg=val#frag' );
-	 * // Milko\wrapper\Datasource Object
+	 * // Instantiate empty URL.
+	 * $dsn = new Url();
+	 * $dsn[ Url::PROT ] = "protocol";
+	 * // ...
+	 *
+	 * $dsn = new Url( 'html://user:pass@host:8080/dir/file?arg=val#frag' );
+	 * // Milko\wrapper\Url Object
 	 * // (
 	 * //     [mProperties:protected] => Array
 	 * //         (
@@ -314,8 +370,8 @@ class Datasource extends Container
 	 * //         )
 	 * // )
 	 *
-	 * $dsn = new Datasource( 'protocol://user:password@host1:9090,host2,host3:9191/dir/file?arg=val#frag' );
-	 * // Milko\wrapper\Datasource Object
+	 * $dsn = new Url( 'protocol://user:password@host1:9090,host2,host3:9191/dir/file?arg=val#frag' );
+	 * // Milko\wrapper\Url Object
 	 * // (
 	 * //     [mProperties:protected] => Array
 	 * //         (
@@ -344,82 +400,89 @@ class Datasource extends Container
 	 * // )
 	 * </code>
 	 */
-	public function __construct( string $theConnection )
+	public function __construct( string $theConnection = NULL )
 	{
 		//
-		// Handle connection string.
+		// Handle parameter.
 		//
-		if( strlen( $theConnection = trim( $theConnection ) ) )
+		if( $theConnection !== NULL )
 		{
 			//
-			// Check URL.
+			// Handle connection string.
 			//
-			if( parse_url( $theConnection ) === FALSE )
-				throw new \InvalidArgumentException(
-					"Unable to instantiate data source: " .
-					"invalid data source string."
-				);																// !@! ==>
-
-			//
-			// Call parent constructor.
-			//
-			parent::__construct();
-
-			//
-			// Load components.
-			//
-			$this->Protocol( parse_url( $theConnection, PHP_URL_SCHEME ) );
-			$this->Host( parse_url( $theConnection, PHP_URL_HOST ) );
-			$this->Port( parse_url( $theConnection, PHP_URL_PORT ) );
-			$this->User( parse_url( $theConnection, PHP_URL_USER ) );
-			$this->Password( parse_url( $theConnection, PHP_URL_PASS ) );
-			$this->Path( parse_url( $theConnection, PHP_URL_PATH ) );
-			$this->Query( parse_url( $theConnection, PHP_URL_QUERY ) );
-			$this->Fragment( parse_url( $theConnection, PHP_URL_FRAGMENT ) );
-
-			//
-			// Handle multiple hosts.
-			//
-			if( strpos( ($list = $this->Host()), ',' ) !== FALSE )
+			if( strlen( $theConnection = trim( $theConnection ) ) )
 			{
 				//
-				// Split hosts.
+				// Check URL.
 				//
-				$hosts = $ports = [];
-				$parts = explode( ',', $list );
-				foreach( $parts as $part )
+				if( parse_url( $theConnection ) === FALSE )
+					throw new \InvalidArgumentException(
+						"Unable to instantiate data source: " .
+						"invalid data source string."
+					);															// !@! ==>
+
+				//
+				// Call parent constructor.
+				//
+				parent::__construct();
+
+				//
+				// Load components.
+				//
+				$this->Protocol( parse_url( $theConnection, PHP_URL_SCHEME ) );
+				$this->Host( parse_url( $theConnection, PHP_URL_HOST ) );
+				$this->Port( parse_url( $theConnection, PHP_URL_PORT ) );
+				$this->User( parse_url( $theConnection, PHP_URL_USER ) );
+				$this->Password( parse_url( $theConnection, PHP_URL_PASS ) );
+				$this->Path( parse_url( $theConnection, PHP_URL_PATH ) );
+				$this->Query( parse_url( $theConnection, PHP_URL_QUERY ) );
+				$this->Fragment( parse_url( $theConnection, PHP_URL_FRAGMENT ) );
+
+				//
+				// Handle multiple hosts.
+				//
+				if( strpos( ($list = $this->Host()), ',' ) !== FALSE )
 				{
-					$sub = explode( ':', $part );
-					$hosts[] = trim( $sub[ 0 ] );
-					$ports[] = ( count( $sub ) > 1 )
-						? (int)$sub[ 1 ]
-						: NULL;
-				}
+					//
+					// Split hosts.
+					//
+					$hosts = $ports = [];
+					$parts = explode( ',', $list );
+					foreach( $parts as $part )
+					{
+						$sub = explode( ':', $part );
+						$hosts[] = trim( $sub[ 0 ] );
+						$ports[] = ( count( $sub ) > 1 )
+							? (int)$sub[ 1 ]
+							: NULL;
+					}
 
-				//
-				// Split last port.
-				//
-				if( ($tmp = $this->Port()) !== NULL )
-					$ports[ count( $ports ) - 1 ] = (int)$tmp;
+					//
+					// Split last port.
+					//
+					if( ($tmp = $this->Port()) !== NULL )
+						$ports[ count( $ports ) - 1 ] = (int)$tmp;
 
-				//
-				// Set hosts and ports.
-				//
-				$this->Host( $hosts );
-				$this->Port( $ports );
+					//
+					// Set hosts and ports.
+					//
+					$this->Host( $hosts );
+					$this->Port( $ports );
 
-			} // Has multiple hosts.
+				} // Has multiple hosts.
 
-		} // Data source name is not empty.
+			} // Data source name is not empty.
 
-		//
-		// Handle empty connection string.
-		//
-		else
-			throw new \InvalidArgumentException(
-				"Unable to instantiate data source: " .
-				"empty connection string."
-			);																	// !@! ==>
+			//
+			// Handle empty connection string.
+			//
+			else
+				throw new \InvalidArgumentException(
+					"Unable to instantiate data source: " .
+					"empty connection string."
+				);																// !@! ==>
+
+		} // Provided parameter.
 
 	} // Constructor.
 
@@ -429,19 +492,23 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Return data source name</h4><p />
+	 * <h4>Return Url string</h4><p />
 	 *
-	 * In this class we consider the data source name as the global identifier; here we
-	 * return it as is, in derived classes you should be careful to shadow sensitive data.
+	 * In this class we consider the URL as the string representation og the object; in
+	 * derived classes you should be careful to shadow sensitive data.
 	 *
-	 * Note that this method cannot return the <tt>NULL</tt> value, which means that it
-	 * cannot be used until there is a data source name for the object.
+	 * <em>Note that this method cannot return the <tt>NULL</tt> value, which means that it
+	 * cannot be used until the required object properties have been set.</em>
 	 *
 	 * @return string
 	 *
 	 * @uses URL()
 	 */
-	public function __toString()								{	return $this->URL();	}
+	public function __toString()
+	{
+		return $this->URL();														// ==>
+
+	} // __toString.
 
 
 
@@ -460,8 +527,8 @@ class Datasource extends Container
 	/**
 	 * <h4>Set a value at a given offset.</h4><p />
 	 *
-	 * We overload this method to check the port value: it can either be an array or an
-	 * integer, if that is not the case, an exception will be raised.
+	 * We overload this method to check the port value: it can either be an integer or an
+	 * array of integers, if that is not the case, an exception will be raised.
 	 *
 	 * @param string				$theOffset			Offset.
 	 * @param mixed					$theValue			Value to set at offset.
@@ -475,24 +542,60 @@ class Datasource extends Container
 		if( $theOffset == self::PORT )
 		{
 			//
-			// Assert numeric value.
+			// Check value.
 			//
-			if( ($theValue !== NULL)
-			 && (! is_array( $theValue )) )
+			if( $theValue !== NULL )
 			{
 				//
-				// Throw.
+				// Assert numeric or array.
 				//
-				if( ! is_numeric( $theValue ) )
+				if( (! is_numeric( $theValue ))
+				 && (! is_array( $theValue )) )
 					throw new \InvalidArgumentException (
-						"The data source port must be a numeric value."
+						"The port must be a numeric value."
 					);															// !@! ==>
 
 				//
-				// Cast value.
+				// Check array elements.
 				//
-				$theValue = (int)$theValue;
-			}
+				if( is_array( $theValue ) )
+				{
+					//
+					// Iterate ports.
+					//
+					foreach( $theValue as $key => $value )
+					{
+						//
+						// Cast empty string to NULL.
+						//
+						if( ! strlen( $value ) )
+							$theValue[ $key ] = $value = NULL;
+
+						//
+						// Check value.
+						//
+						elseif( ($value !== NULL)
+						 	 && (! is_numeric( $value )) )
+							throw new \InvalidArgumentException (
+								"The port must be a numeric value."
+							);													// !@! ==>
+
+						//
+						// Cast array element.
+						//
+						$theValue[ $key ] = (int)$value;
+
+					} // Iterating ports.
+
+				} // Provided list of ports.
+
+				//
+				// Cast scalar value.
+				//
+				else
+					$theValue = (int)$theValue;
+
+			} // Not delete operation.
 
 		} // Setting port.
 
@@ -556,7 +659,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source protocol.</h4><p />
+	 * <h4>Manage protocol.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link PROT}
 	 * offset.
@@ -590,7 +693,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source host.</h4><p />
+	 * <h4>Manage host.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link HOST}
 	 * offset.
@@ -604,6 +707,9 @@ class Datasource extends Container
 	 * <code>
 	 * // Set host.
 	 * $test = $dsn->Host( 'example.net' );
+	 *
+	 * // Set hosts.
+	 * $test = $dsn->Host( [ 'host1', 'host2', 'host3' ] );
 	 *
 	 * // Retrieve current host.
 	 * $test = $dsn->Host();
@@ -624,7 +730,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source port.</h4><p />
+	 * <h4>Manage port.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link PORT}
 	 * offset.
@@ -639,6 +745,9 @@ class Datasource extends Container
 	 * // Set port.
 	 * $test = $dsn->Port( 8080 );
 	 *
+	 * // Set ports.
+	 * $test = $dsn->Port( [ 8080, NULL, 8080 ] );
+	 *
 	 * // Retrieve current port.
 	 * $test = $dsn->Port();
 	 *
@@ -647,6 +756,7 @@ class Datasource extends Container
 	 *
 	 * // Raises an exception!
 	 * $test = $dsn->Port( "string" );
+	 * $test = $dsn->Port( [ 8080, "baba", 8080 ] );
 	 * </code>
 	 */
 	public function Port( $theValue = NULL )
@@ -661,7 +771,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source user name.</h4><p />
+	 * <h4>Manage user name.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link USER}
 	 * offset.
@@ -695,7 +805,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source user password.</h4><p />
+	 * <h4>Manage user password.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link PASS}
 	 * offset.
@@ -729,7 +839,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source path.</h4><p />
+	 * <h4>Manage path.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link PATH}
 	 * offset.
@@ -764,7 +874,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source query.</h4><p />
+	 * <h4>Manage query.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link QUERY}
 	 * offset.
@@ -862,7 +972,7 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage data source fragment.</h4><p />
+	 * <h4>Manage fragment.</h4><p />
 	 *
 	 * We implement this method by using {@link manageProperty()} with the {@link FRAG}
 	 * offset.
@@ -905,9 +1015,9 @@ class Datasource extends Container
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Return the data source URL.</h4><p />
+	 * <h4>Return the URL.</h4><p />
 	 *
-	 * This method can be used to return an URL from the current data source.
+	 * This method can be used to return an URL from the current object properties.
 	 *
 	 * The method accepts a parameter that can be used to exclude specific elements from the
 	 * returned URL: provide an array with the offsets you wish to exclude.
@@ -919,11 +1029,16 @@ class Datasource extends Container
 	 *
 	 * @example
 	 * <code>
+	 * // Instantiate from URL.
+	 * $dsn = new Url( 'protocol://user:pass@host:9090/dir/file?arg=val#frag' );
+	 *
 	 * // Return full URL.
 	 * $test = $dsn->URL();
+	 * // string(52) "protocol://user:pass@host:9090/dir/file?arg=val#frag"
 	 *
 	 * // Return URL without path.
-	 * $test = $dsn->URL( [ Datasource::PATH ] );
+	 * $test = $dsn->URL( [ Url::PATH ] );
+	 * // string(43) "protocol://user:pass@host:9090?arg=val#frag"
 	 * </code>
 	 */
 	public function URL( $theExcluded = [] )
@@ -1061,7 +1176,7 @@ class Datasource extends Container
 
 
 
-} // class Datasource.
+} // class Url.
 
 
 ?>
