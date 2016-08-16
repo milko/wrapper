@@ -188,7 +188,7 @@ use Milko\wrapper\Container;
  * $result = $dsn->URL();
  * // string(35) "MySQL://@host/dir/file?arg=val#frag"
  *
- * $dsn = new Url( 'protocol://user:pass@host1:9090,host2,host3:8080/dir/file?arg=val#frag' );
+ * $dsn = new Url( 'protocol://user:pass@host1:9090,host2:8080,host3:8181/dir/file?arg=val#frag' );
  * // Milko\wrapper\Datasource Object
  * // (
  * //     [mProperties:protected] => Array
@@ -203,8 +203,8 @@ use Milko\wrapper\Container;
  * //             [port] => Array
  * //                 (
  * //                     [0] => 9090
- * //                     [1] =>
- * //                     [2] => 8080
+ * //                     [1] => 8080
+ * //                     [2] => 8181
  * //                 )
  * //             [user] => user
  * //             [pass] => pass
@@ -333,7 +333,13 @@ class Url extends Container
 	 * provided connection string is invalid, or if either the protocol or the host are
 	 * missing, the method will raise an exception.
 	 *
-	 * @param string			$theConnection		Data source name.
+	 * The constructor relies on the <tt>parse_url</tt> function to determine whether the
+	 * provided connection string is valid. There is a special behaviour you should be aware
+	 * of: when providing multiple hosts, either provide the port to all or to none, it will
+	 * fail if the last host does not have a port, but a previous does; if a middle host
+	 * does not have the port, it strangely works.
+	 *
+	 * @param string			$theConnection		Data source name or properties.
 	 * @throws \InvalidArgumentException
 	 *
 	 * @uses Protocol()
@@ -370,7 +376,7 @@ class Url extends Container
 	 * //         )
 	 * // )
 	 *
-	 * $dsn = new Url( 'protocol://user:password@host1:9090,host2,host3:9191/dir/file?arg=val#frag' );
+	 * $dsn = new Url( 'protocol://user:password@host1:9090,host2:8080,host3:9191/dir/file?arg=val#frag' );
 	 * // Milko\wrapper\Url Object
 	 * // (
 	 * //     [mProperties:protected] => Array
@@ -385,7 +391,7 @@ class Url extends Container
 	 * //             [port] => Array
 	 * //                 (
 	 * //                     [0] => 9090
-	 * //                     [1] =>
+	 * //                     [1] => 8080
 	 * //                     [2] => 8080
 	 * //                 )
 	 * //             [user] => user

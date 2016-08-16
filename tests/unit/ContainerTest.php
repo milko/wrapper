@@ -44,15 +44,6 @@ use Milko\wrapper\Container;
 class ContainerTest extends PHPUnit_Framework_TestCase
 {
 	/**
-	 * Class.
-	 *
-	 * This attribute stores the test object class name.
-	 *
-	 * @var string
-	 */
-	public static $mClass = NULL;
-
-	/**
 	 * Data.
 	 *
 	 * This attribute stores the test object instance.
@@ -61,31 +52,6 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 */
 	public $mObject = NULL;
 
-
-
-
-/*=======================================================================================
- *																						*
- *								STATIC SETUP INTERFACE									*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	setUpBeforeClass																*
-	 *==================================================================================*/
-
-	/**
-	 * Set the class name
-	 *
-	 * This method is called before the first test is run, it will set the test class name.
-	 */
-	public static function setUpBeforeClass()
-	{
-		static::$mClass = "test_Container";
-
-	} // setUpBeforeClass.
 
 
 
@@ -115,53 +81,48 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function provideConstructor()
 	{
 		//
-		// Make tests.
-		//
-		$class = static::$mClass;
-
-		//
 		// Return test data.
 		//
 		return [
 			//
 			// Test without array flattening.
 			//
-			"new $class( NULL, FALSE );" => [
+			"new test_Container( NULL, FALSE );" => [
 				NULL,
 				FALSE,
 				[]
 			],
-			"new $class( [], FALSE );" => [
+			"new test_Container( [], FALSE );" => [
 				[],
 				FALSE,
 				[]
 			],
-			"new $class( new ArrayObject(), FALSE );" => [
+			"new test_Container( new ArrayObject(), FALSE );" => [
 				new ArrayObject(),
 				FALSE,
 				[]
 			],
-			"new $class( new test_Container(), FALSE );" => [
+			"new test_Container( new test_Container(), FALSE );" => [
 				new test_Container(),
 				FALSE,
 				[]
 			],
-			"new $class( [1, 2, 3], FALSE );" => [
+			"new test_Container( [1, 2, 3], FALSE );" => [
 				[1, 2, 3],
 				FALSE,
 				[1, 2, 3]
 			],
-			"new $class( new ArrayObject( [1, 2, 3] ), FALSE );" => [
+			"new test_Container( new ArrayObject( [1, 2, 3] ), FALSE );" => [
 				new ArrayObject( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			"new $class( new test_Container( [1, 2, 3] ), FALSE );" => [
+			"new test_Container( new test_Container( [1, 2, 3] ), FALSE );" => [
 				new test_Container( [1, 2, 3] ),
 				FALSE,
 				[1, 2, 3]
 			],
-			"new $class( new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]), FALSE );" => [
+			"new test_Container( new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]), FALSE );" => [
 				new ArrayObject([ 'uno' => 1, 'due' => new Container([ 'tre' => 3 ]) ]),
 				FALSE,
 				['uno' => 1, 'due' => new Container([ 'tre' => 3 ])]
@@ -169,42 +130,42 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			//
 			// Test with array flattening.
 			//
-			"new $class( NULL, TRUE );" => [
+			"new test_Container( NULL, TRUE );" => [
 				NULL,
 				TRUE,
 				[]
 			],
-			"new $class( [], TRUE );" => [
+			"new test_Container( [], TRUE );" => [
 				[],
 				TRUE,
 				[]
 			],
-			"new $class( new ArrayObject(), TRUE );" => [
+			"new test_Container( new ArrayObject(), TRUE );" => [
 				new ArrayObject(),
 				TRUE,
 				[]
 			],
-			"new $class( new test_Container(), TRUE );" => [
+			"new test_Container( new test_Container(), TRUE );" => [
 				new test_Container(),
 				TRUE,
 				[]
 			],
-			"new $class( [1, 2, 3], TRUE );" => [
+			"new test_Container( [1, 2, 3], TRUE );" => [
 				[1, 2, 3],
 				TRUE,
 				[1, 2, 3]
 			],
-			"new $class( new ArrayObject( [1, 2, 3], TRUE ) );" => [
+			"new test_Container( new ArrayObject( [1, 2, 3], TRUE ) );" => [
 				new ArrayObject( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			"new $class( new test_Container( [1, 2, 3], TRUE ) );" => [
+			"new test_Container( new test_Container( [1, 2, 3], TRUE ) );" => [
 				new test_Container( [1, 2, 3] ),
 				TRUE,
 				[1, 2, 3]
 			],
-			"new $class( new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]), TRUE );" => [
+			"new test_Container( new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]), TRUE );" => [
 				new ArrayObject([ 'uno' => 1, 'due' => new test_Container([ 'tre' => 3 ]) ]),
 				TRUE,
 				[ 'uno' => 1, 'due' =>[ 'tre' => 3 ] ]
@@ -787,10 +748,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testOffsetSet()
 	{
 		//
-		// Make tests.
+		// Instantiate object.
 		//
-		$class = static::$mClass;
-		$test = new $class();
+		$test = new test_Container();
 
 		//
 		// Make tests.
@@ -803,7 +763,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$message
 		);
 		$this->assertEquals(
-			new $class([ 1 ]),
+			new test_Container([ 1 ]),
 			$test,
 			$message
 		);
@@ -816,7 +776,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$message
 		);
 		$this->assertEquals(
-			new $class([ 0 => 1, "uno" => 1 ]),
+			new test_Container([ 0 => 1, "uno" => 1 ]),
 			$test,
 			$message
 		);
@@ -828,7 +788,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( 1 ),
 			$message );
 		$this->assertEquals(
-			new $class([ 0 => 1, "uno" => 1, 1 => "APPENDED" ]),
+			new test_Container([ 0 => 1, "uno" => 1, 1 => "APPENDED" ]),
 			$test,
 			$message
 		);
@@ -840,7 +800,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( 1 ),
 			$message );
 		$this->assertEquals(
-			new $class([ 0 => 1, "uno" => 1, 1 => "CHANGED" ]),
+			new test_Container([ 0 => 1, "uno" => 1, 1 => "CHANGED" ]),
 			$test,
 			$message
 		);
@@ -851,7 +811,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( 1 ),
 			$message );
 		$this->assertEquals(
-			new $class([ 0 => 1, "uno" => 1 ]),
+			new test_Container([ 0 => 1, "uno" => 1 ]),
 			$test,
 			$message
 		);
@@ -865,7 +825,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( 2 ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
@@ -876,10 +836,10 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$message
 		);
 
-		$message = 'offsetSet( [ 2, "nested" ], new $class([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) )';
-		$test->offsetSet( [ 2, "nested" ], new $class([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) );
+		$message = 'offsetSet( [ 2, "nested" ], new test_Container([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) )';
+		$test->offsetSet( [ 2, "nested" ], new test_Container([ "object" => new ArrayObject([ "array" => [ "uno", "due" ] ]) ]) );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"array" => [ "uno", "due" ]
 				])
@@ -887,12 +847,12 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "nested" ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
 					"array" => [ 1, 2, 3 ],
-					"nested" => new $class([
+					"nested" => new test_Container([
 						"object" => new ArrayObject([
 							"array" => [ "uno", "due" ]
 						])
@@ -910,12 +870,12 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "inserted", "array", "string" ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
 					"array" => [ 1, 2, 3 ],
-					"nested" => new $class([
+					"nested" => new test_Container([
 						"object" => new ArrayObject([
 							"array" => [ "uno", "due" ]
 						])
@@ -938,12 +898,12 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "array", "number" ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
 					"array" => [ 1, 2, 3, "number" => 32 ],
-					"nested" => new $class([
+					"nested" => new test_Container([
 						"object" => new ArrayObject([
 							"array" => [ "uno", "due" ]
 						])
@@ -966,12 +926,12 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "nested", "object", "array", 2 ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
 					"array" => [ 1, 2, 3, "number" => 32 ],
-					"nested" => new $class([
+					"nested" => new test_Container([
 						"object" => new ArrayObject([
 							"array" => [ "uno", "due", "tre" ]
 						])
@@ -994,7 +954,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "nested", 0, "object", 0 ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
@@ -1025,7 +985,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "inserted", "array", "string" ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
@@ -1051,7 +1011,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 			$test->offsetGet( [ 2, "nested", 0, "object", 0 ] ),
 			$message );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => 1,
 				"uno" => 1,
 				2 => new ArrayObject([
@@ -1082,17 +1042,12 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testOffsetUnset()
 	{
 		//
-		// Init local storage.
-		//
-		$class = static::$mClass;
-
-		//
 		// Make tests.
 		//
 		$message = 'offsetUnset( NULL )';
 		$this->mObject->offsetUnset( NULL );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => "zero",
 				"array" => [
 					0 => 1,
@@ -1139,7 +1094,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( "UNKNOWN" )';
 		$this->mObject->offsetUnset( "UNKNOWN" );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => "zero",
 				"array" => [
 					0 => 1,
@@ -1186,7 +1141,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( 9 )';
 		$this->mObject->offsetUnset( 9 );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				0 => "zero",
 				"array" => [
 					0 => 1,
@@ -1233,7 +1188,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( 0 )';
 		$this->mObject->offsetUnset( 0 );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"array" => [
 					0 => 1,
 					1 => 2,
@@ -1279,7 +1234,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ 1, "name" ] )';
 		$this->mObject->offsetUnset( [ 1, "name" ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"array" => [
 					0 => 1,
 					1 => 2,
@@ -1324,7 +1279,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 2, 0, 3 ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 3 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"array" => [
 					0 => 1,
 					1 => 2,
@@ -1368,7 +1323,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "array", 0 ] )';
 		$this->mObject->offsetUnset( [ "array", 0 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"array" => [
 					1 => 2,
 					2 => 3
@@ -1411,7 +1366,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 0 ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 0 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"array" => [
 					1 => 2,
 					2 => 3
@@ -1453,7 +1408,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "array" ] )';
 		$this->mObject->offsetUnset( [ "array" ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1491,7 +1446,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 1 ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 1 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1528,7 +1483,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 2, 0, 0 ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 0 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1564,7 +1519,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 2, 0, 1 ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 1 ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1599,7 +1554,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] )';
 		$this->mObject->offsetUnset( [ "object", "array", 2, 0, 2, "nested", 0, "last" ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1621,7 +1576,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "nested", 0, 0, "leaf" ] )';
 		$this->mObject->offsetUnset( [ "nested", 0, 0, "leaf" ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string",
 					"number" => 25,
@@ -1634,7 +1589,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "number" ] )';
 		$this->mObject->offsetUnset( [ "object", "number" ] );
 		$this->assertEquals(
-			new $class([
+			new test_Container([
 				"object" => new ArrayObject([
 					"string" => "a string"
 				])
@@ -1646,15 +1601,10 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'offsetUnset( [ "object", "string" ] )';
 		$this->mObject->offsetUnset( [ "object", "string" ] );
 		$this->assertEquals(
-			new $class(),
+			new test_Container(),
 			$this->mObject,
 			$message
 		);
-
-//		echo( "\n" );
-//		print_r( $this->mObject );
-//		print_r( $this->mObject->asArray() );
-//		exit;
 
 	} // testOffsetUnset.
 
@@ -1673,12 +1623,8 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate object.
 		//
-		$class = static::$mClass;
 		$array = [ 1 => "one", 2 => "due", "tres" => 3 ];
-		$test = new $class( $array );
-
-//		echo( "\n" );
-//		print_r( $test );
+		$test = new test_Container( $array );
 
 		//
 		// Test iterator.
@@ -1711,18 +1657,13 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testCount()
 	{
 		//
-		// Init local storage.
-		//
-		$class = static::$mClass;
-
-		//
 		// Start tests.
 		//
-		$test = new $class();
-		$this->assertEquals( 0, $test->count(), "count $class()" );
+		$test = new test_Container();
+		$this->assertEquals( 0, $test->count(), "count test_Container()" );
 
-		$test = new $class([ 1, 2, 3 ]);
-		$this->assertEquals( 3, $test->count(), "count $class([ 1, 2, 3 ])" );
+		$test = new test_Container([ 1, 2, 3 ]);
+		$this->assertEquals( 3, $test->count(), "count test_Container([ 1, 2, 3 ])" );
 
 	} // testCount.
 
@@ -1753,8 +1694,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Init local storage.
 		//
-		$class = static::$mClass;
-		$test = new $class([ "uno" => 1, "due" => 2, 3 => "tre" ]);
+		$test = new test_Container([ "uno" => 1, "due" => 2, 3 => "tre" ]);
 
 		//
 		// Start tests.
@@ -2083,14 +2023,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testIsArray( $theParameter, $theExpected )
 	{
 		//
-		// Init local storage.
-		//
-		$class = static::$mClass;
-
-		//
 		// Perform tests.
 		//
-		$result = $class::IsArray( $theParameter );
+		$result = test_Container::IsArray( $theParameter );
 		if( $theExpected )
 			$this->assertTrue( $result, $theExpected );
 		else
@@ -2113,8 +2048,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate test object.
 		//
-		$class = static::$mClass;
-		$test = new $class();
+		$test = new test_Container();
 
 		//
 		// Start tests.
@@ -2158,8 +2092,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate test object.
 		//
-		$class = static::$mClass;
-		$test = new $class();
+		$test = new test_Container();
 
 		$message = '$result = BitfieldAttribute()';
 		$result = $test->BitfieldAttribute();
@@ -2224,8 +2157,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate test object.
 		//
-		$class = static::$mClass;
-		$test = new $class([
+		$test = new test_Container([
 			"nested" => new ArrayObject([
 				"container" => new Container([
 					"array" => [
@@ -2303,8 +2235,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate test object.
 		//
-		$class = static::$mClass;
-		$test = new $class();
+		$test = new test_Container();
 		$test[ "flag" ] = hex2bin( "00000000" );
 
 		$message = '$result = $test->BitfieldProperty( "flag" )';
@@ -2370,10 +2301,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate test object.
 		//
-		$class = static::$mClass;
-		$test = new $class( [
+		$test = new test_Container( [
 			"nested" => new ArrayObject( [
-				"container" => new $class( [
+				"container" => new test_Container( [
 					"array" => [
 						"string" => "a string"
 					]
@@ -2434,14 +2364,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		//
-		// Get class.
-		//
-		$class = static::$mClass;
-
-		//
 		// Instantiate object.
 		//
-		$this->mObject = new $class([
+		$this->mObject = new test_Container([
 			"zero",
 			"array" => [ 1, 2, 3 ],
 			"object" => new ArrayObject([
@@ -2483,7 +2408,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 
 
 
-} // class Container.
+} // class ContainerTest.
 
 
 ?>
