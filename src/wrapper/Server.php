@@ -101,6 +101,27 @@ abstract class Server extends Container
 	use \Url;
 
 	/**
+	 * Database name tag.
+	 *
+	 * This represents the resource name tag provided in options parameters.
+	 */
+	const kOPTION_NAME = "@name@";
+
+	/**
+	 * User code tag.
+	 *
+	 * This represents the user code tag provided in options parameters.
+	 */
+	const kOPTION_USER_CODE = "@user@";
+
+	/**
+	 * User password tag.
+	 *
+	 * This represents the user password tag provided in options parameters.
+	 */
+	const kOPTION_USER_PASS = "@pass@";
+
+	/**
 	 * <h4>Server connection object.</h4><p />
 	 *
 	 * This data member holds the <i>server connection object</i>, it is the native object

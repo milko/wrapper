@@ -23,26 +23,120 @@ use Milko\wrapper\Collection;
  * This <em>abstract</em> class is the ancestor of all classes representing database
  * instances.
  *
- * The class uses the inherited {@link Container) interface to manage a list of
- * {@link Container} connections, the {@link Container()} method can be used to manage this
- * list.
+ * The class uses its inherited {@link Container} interface to store a list of
+ * {@link Container} instances, this is performed by the {@link Container()} method.
  *
- * The class declares the following abstract protected methods that have the duty of
- * creating and releasing the actual container connections:
+ * An abstract method, {@link NewContainer()}, must be implemented by derived concrete
+ * classes, its duty is to instantiate the correct type of {@link Container} instance.
  *
- * <ul>
- * 	<li><b>{@link containerCreate()}</b>: Create a {@link Container} connection.
- * 	<li><b>{@link containerDestruct()}</b>: Close a container connection.
- * </ul>
+ * Finally, a set of protected methods are used to create, {@link containerCreate()}, and
+ * forget, {@link containerDestruct()}, {@link Container} instances.
  *
  *	@package	Core
  *
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		17/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate database server.
+ * $server = new DatabaseServer( "database://user:pass@host?opt=val" );
+ *
+ * // Get database.
+ * $database = $server->Database( "db1" );
+ *
+ * // Instantiate database.
+ * $database = new Database( $server, "protocol://host/db1" );
+ * </code>
  */
 abstract class Database extends Server
 {
+	/**
+	 * Server.
+	 *
+	 * This attribute stores the database server.
+	 *
+	 * @var DatabaseServer
+	 */
+	protected $mServer = NULL;
+
+
+
+
+/*=======================================================================================
+ *																						*
+ *										MAGIC											*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	__construct																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate class.</h4><p />
+	 *
+	 * We overload the method to handle the database server parameter.
+	 *
+	 * Objects of this class store their server in the {@link $mServer} object attribute,
+	 * this parameter is required; the second parameter is the first parameter of the
+	 * server {@linkl Server::__construct()} method.
+	 *
+	 * @param Server			$theServer			Database server.
+	 * @param string			$theConnection		Data source name.
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate database server.
+	 * $server = new DatabaseServer( "protocol://user:pass@host?opt=val" );
+	 *
+	 * // Instantiate database.
+	 * $database = new Database( $server, "protocol://host/database" );
+	 * </code>
+	 */
+	public function __construct( Server $theServer, string $theConnection = NULL )
+	{
+		//
+		// Set server reference.
+		//
+		$this->mServer = $theServer;
+
+		//
+		// Call parent constructor.
+		//
+		parent::__construct( $theConnection );
+
+	} // Constructor.
+
+
+
+/*=======================================================================================
+ *																						*
+ *							PUBLIC MEMBER ACCESSOR INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Server																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return database server.</h4><p />
+	 *
+	 * This method can be used to retrieve the database server.
+	 *
+	 * @return DatabaseServer		Database server instance.
+	 */
+	public function Server()
+	{
+		return $this->mServer;														// ==>
+
+	} // Server.
 
 
 
@@ -59,7 +153,7 @@ abstract class Database extends Server
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage collection instance.</h4><p />
+	 * <h4>Manage collection instances.</h4><p />
 	 *
 	 * This method can be used to create, retrieve and forget {@link Collection} instances,
 	 * it accepts two parameters:
@@ -76,26 +170,29 @@ abstract class Database extends Server
 	 * 	 </ul>
 	 * </ul>
 	 *
-	 * The method will return a {@link Collection} instance, or <tt>NULL</tt> if no
-	 * collection of the provided name was found.
+	 * To provide credentials to the collection, use <tt>user</tt> and <tt>password</tt> in
+	 * the provided options.
 	 *
-	 * @param string				$theName			Collection name.
-	 * @param mixed					$theOptions			Collection options or operation.
-	 * @return Collection			Collection instance or <tt>NULL</tt>.
+	 * The method will return a {@link Database} instance, or <tt>NULL</tt> if no database
+	 * of the provided name was found.
+	 *
+	 * @param string				$theName			Database name.
+	 * @param mixed					$theOptions			Database options or operation.
+	 * @return Database				Database instance or <tt>NULL</tt>.
 	 *
 	 * @example
 	 * <code>
 	 * // Add and get a new collection without options.
-	 * $db = $object->Collection( "col1", [] );
+	 * $db = $object->Collection( "db1", [] );
 	 *
 	 * // Add and get a new collection with options.
-	 * $db = $object->Collection( "col1", [ "opt1" => "val1" ] );
+	 * $db = $object->Collection( "db1", [ "opt1" => "val1" ] );
 	 *
 	 * // Get collection instance.
-	 * $db = $object->Collection( "col1" );
+	 * $db = $object->Collection( "db1" );
 	 *
 	 * // Forget collection.
-	 * $object->Collection( "col1", FALSE );
+	 * $object->Collection( "db1", FALSE );
 	 * </code>
 	 */
 	public function Collection( string $theName, $theOptions = NULL )
@@ -114,9 +211,10 @@ abstract class Database extends Server
 		if( $theOptions === FALSE )
 		{
 			//
-			// Destruct database.
+			// Destruct collection.
 			//
-			$this->collectionDestruct( $theName );
+			if( $this->offsetExists( $theName ) )
+				$this->collectionDestruct( $this->offsetGet( $theName ) );
 
 			//
 			// Remove instance.
@@ -128,7 +226,7 @@ abstract class Database extends Server
 		} // Reset collection instance.
 
 		//
-		// Connect database.
+		// Connect current object.
 		//
 		if( ! $this->isConnected() )
 			$this->Connect();
@@ -137,13 +235,8 @@ abstract class Database extends Server
 		// Create collection.
 		//
 		$collection = ( is_array( $theOptions ) )
-					? $this->collectionCreate( $theName, $theOptions )
-					: $this->collectionCreate( $theName );
-
-		//
-		// Connect collection.
-		//
-		$collection->Connect();
+					? $this->NewCollection( $theName, $theOptions )
+					: $this->NewCollection( $theName );
 
 		//
 		// Set collection.
@@ -153,6 +246,105 @@ abstract class Database extends Server
 		return $collection;															// ==>
 
 	} // Collection.
+
+
+
+/*=======================================================================================
+ *																						*
+ *						PUBLIC COLLECTION INSTANTIATION INTERFACE						*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	NewCollection																	*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate collection.</h4><p />
+	 *
+	 * This method can be used to create a {@link Collection} instance.
+	 *
+	 * The method expects the collection name as the first parameter and the collection
+	 * creation options as the second parameter. The options are an associative array with
+	 * the option as key and the option value as value.
+	 *
+	 * The user name and password can be provided in the options parameter as respectively
+	 * {@link kOPTION_USER_CODE} and {@link kOPTION_USER_PASS}.
+	 *
+	 * If you wish to identify the collection by the name parameter, but want to name the
+	 * collection differently, you can provide the collection name in {@link kOPTION_NAME}.
+	 *
+	 * @param string				$theName			Collection name.
+	 * @param array					$theOptions			Creation options.
+	 * @return Collection			The {@link Collection} instance.
+	 *
+	 * @example
+	 * <code>
+	 * // Create collection "db1".
+	 * $db = $object->NewCollection( "col1" );
+	 *
+	 * // Create collection "col0" named "col2" with credentials.
+	 * $db = $object->NewCollection(
+	 * 	"col2", [
+	 * 		Server::kOPTION_NAME => "col0",
+	 * 		Server::kOPTION_USER_CODE => "user",
+	 * 		Server::kOPTION_USER_PASS => "password"
+	 * ]);
+	 * </code>
+	 */
+	public function NewCollection( string $theName, array $theOptions = [] )
+	{
+		//
+		// Instantiate database.
+		//
+		$collection = $this->collectionCreate();
+
+		//
+		// Parse options.
+		//
+		$name = $theName;
+		if( array_key_exists( self::kOPTION_NAME, $theOptions ) )
+		{
+			$name = $theOptions[ self::kOPTION_NAME ];
+			unset( $theOptions[ self::kOPTION_NAME ] );
+		}
+		$user = NULL;
+		if( array_key_exists( self::kOPTION_USER_CODE, $theOptions ) )
+		{
+			$user = $theOptions[ self::kOPTION_USER_CODE ];
+			unset( $theOptions[ self::kOPTION_USER_CODE ] );
+		}
+		$pass = NULL;
+		if( array_key_exists( self::kOPTION_USER_PASS, $theOptions ) )
+		{
+			$pass = $theOptions[ self::kOPTION_USER_PASS ];
+			unset( $theOptions[ self::kOPTION_USER_PASS ] );
+		}
+
+		//
+		// Copy attributes from this object.
+		//
+		$collection->Protocol( $this->Protocol() );
+		$collection->Host( $this->Host() );
+		$collection->Port( $this->Port() );
+		$collection->Path( $this->Path() );
+
+		//
+		// Set database specific attributes.
+		//
+		$collection->Path( $this->Path() . "/$name" );
+		if( $user !== NULL )
+			$collection->User( $user );
+		if( $pass !== NULL )
+			$collection->Password( $pass );
+		if( count( $theOptions ) )
+			$collection->Query( $theOptions );
+
+		return $collection;															// ==>
+
+	} // NewCollection.
 
 
 
@@ -169,22 +361,20 @@ abstract class Database extends Server
 	 *==================================================================================*/
 
 	/**
-	 * Create collection connection.
+	 * Instantiate collection.
 	 *
-	 * This method should create the actual database connection and return the
-	 * {@link Database} instance; in this class the method is virtual, it is the
-	 * responsibility of concrete derived classes to implement this method.
+	 * This method should return an empty {@link Collection} instance.
 	 *
-	 * The first parameter represents the database name, the second optional parameter
-	 * represents the creation options.
+	 * The method is abstract to provide derived concrete classes the option to instantiate
+	 * the correct type of collection.
 	 *
 	 * If the operation fails, the method should raise an exception.
 	 *
-	 * @param string				$theName			Database name.
+	 * @param string				$theName			Collection name.
 	 * @param array					$theOptions			Creation options.
-	 * @return mixed				The {@link Database} instance.
+	 * @return Collection			The {@link Collection} instance.
 	 */
-	abstract protected function databaseCreate( string $theName, array $theOptions = [] );
+	abstract protected function collectionCreate();
 
 
 	/*===================================================================================
@@ -194,17 +384,15 @@ abstract class Database extends Server
 	/**
 	 * Close collection connection.
 	 *
-	 * This method should close the collection connection identified by the provided name,
-	 * the method will not handle the current object's collections list, it is only
-	 * concerned with releasing eventual resources before the caller removes the connection.
-	 *
-	 * The method assumes the provided name exists in the collections list.
+	 * This method should release the provided {@link Collection} by releasing used
+	 * resources. The goal of this method is not to close the connection, since the
+	 * collection might be shared, but to release eventual resources.
 	 *
 	 * If the operation fails, the method should raise an exception.
 	 *
-	 * @param string				$theName			Collection name.
+	 * @param Collection			$theCollection		Collection instance.
 	 */
-	abstract protected function collectionDestruct( string $theName );
+	abstract protected function collectionDestruct( Collection $theCollection );
 
 
 

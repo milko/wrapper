@@ -32,8 +32,12 @@ class test_Server extends Server
 	}
 }
 
+$x = "/dir/file/frag";
+print_r( explode( '/', $x ) );
+exit;
+
 // Instantiate from URL.
-$test = new test_Server( 'user:pass@/database?arg=val#frag' );
+$test = new test_Server( 'prot://user:pass@host/database?@user@=val&@password@=password#frag' );
 print_r( $test );
 
 ?>

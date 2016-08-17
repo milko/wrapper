@@ -626,6 +626,20 @@ trait Url
 	 */
 	public function Path( $theValue = NULL )
 	{
+		//
+		// Check if new value.
+		//
+		if( ($theValue !== NULL)
+		 && ($theValue !== FALSE) )
+		{
+			//
+			// Add directory token.
+			//
+			if( substr( $theValue, 0, 1 ) != '/' )
+			$theValue = "/$theValue";
+
+		} // New path.
+
 		return Container::manageAttribute( $this->mPath, $theValue );				// ==>
 
 	} // Path.

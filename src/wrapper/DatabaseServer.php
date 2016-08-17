@@ -23,26 +23,95 @@ use Milko\wrapper\Database;
  * This <em>abstract</em> class is the ancestor of all classes representing database server
  * instances.
  *
- * The class uses the inherited {@link Container) interface to manage a list of
- * {@link Database} connections, the {@link Database()} method can be used to manage this
- * list.
+ * The class uses its inherited {@link Container} interface to store a list of
+ * {@link Database} instances, this is performed by the {@link Database()} method.
  *
- * The class declares the following abstract protected methods that have the duty of
- * creating and releasing the actual database connections:
+ * An abstract method, {@link NewDatabase()}, must be implemented by derived concrete
+ * classes, its duty is to instantiate the correct type of {@link Database} instance.
  *
- * <ul>
- * 	<li><b>{@link databaseCreate()}</b>: Create a {@link Database} connection.
- * 	<li><b>{@link databaseDestruct()}</b>: Close a database connection.
- * </ul>
+ * Finally, a set of protected methods are used to create, {@link databaseCreate()}, and
+ * forget, {@link databaseDestruct()}, {@link Database} instances.
  *
  *	@package	Core
  *
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		17/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate database server.
+ * $sr = new DatabaseServer( "database://user:pass@host?opt=val" );
+ *
+ * // Get database.
+ * $db = $sr->Database( "db1", [ "opt1" => "val1" ] );
+ * // work with database
+ * </code>
  */
 abstract class DatabaseServer extends Server
 {
+
+
+
+/*=======================================================================================
+ *																						*
+ *										MAGIC											*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	__construct																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate class.</h4><p />
+	 *
+	 * We overload the method to handle eventual database and collection in the data source
+	 * name.
+	 *
+	 * @param string			$theConnection		Data source name.
+	 */
+	public function __construct( string $theConnection = NULL )
+	{
+		//
+		// Call parent constructor.
+		//
+		parent::__construct( $theConnection );
+
+		//
+		// Handle path.
+		//
+		if( ($path = $this->Path()) !== NULL )
+		{
+			//
+			// Get path components.
+			//
+			$tmp = explode( '/', $path );
+			$database = $tmp[ 1 ];
+			if( count( $tmp ) > 2 )
+				$collection = $tmp[ 2 ];
+
+			//
+			// Remove current path.
+			//
+			$this->Path( FALSE );
+
+			//
+			// Add database.
+			//
+			$database = $this->Database( $database );
+
+			//
+			// Add collection.
+			//
+			if( count( $tmp ) > 2 )
+				$database->Collection( $collection );
+
+		} // Has path.
+
+	} // Constructor.
 
 
 
@@ -59,7 +128,7 @@ abstract class DatabaseServer extends Server
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage database instance.</h4><p />
+	 * <h4>Manage database instances.</h4><p />
 	 *
 	 * This method can be used to create, retrieve and forget {@link Database} instances, it
 	 * accepts two parameters:
@@ -119,7 +188,8 @@ abstract class DatabaseServer extends Server
 			//
 			// Destruct database.
 			//
-			$this->databaseDestruct( $theName );
+			if( $this->offsetExists( $theName ) )
+				$this->databaseDestruct( $this->offsetGet( $theName ) );
 
 			//
 			// Remove instance.
@@ -131,7 +201,7 @@ abstract class DatabaseServer extends Server
 		} // Reset database instance.
 
 		//
-		// Connect database server.
+		// Connect current object.
 		//
 		if( ! $this->isConnected() )
 			$this->Connect();
@@ -140,13 +210,8 @@ abstract class DatabaseServer extends Server
 		// Create database.
 		//
 		$database = ( is_array( $theOptions ) )
-				  ? $this->databaseCreate( $theName, $theOptions )
-				  : $this->databaseCreate( $theName );
-
-		//
-		// Connect database.
-		//
-		$database->Connect();
+				  ? $this->NewDatabase( $theName, $theOptions )
+				  : $this->NewDatabase( $theName );
 
 		//
 		// Set database.
@@ -156,6 +221,104 @@ abstract class DatabaseServer extends Server
 		return $database;															// ==>
 
 	} // Database.
+
+
+
+/*=======================================================================================
+ *																						*
+ *						PUBLIC DATABASE INSTANTIATION INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	NewDatabase																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate database.</h4><p />
+	 *
+	 * This method can be used to create a {@link Database} instance.
+	 *
+	 * The method expects the database name as the first parameter and the database creation
+	 * options as the second parameter. The options are an associative array with the option
+	 * as key and the option value as value.
+	 *
+	 * The user name and password can be provided in the options parameter as respectively
+	 * {@link kOPTION_USER_CODE} and {@link kOPTION_USER_PASS}.
+	 *
+	 * If you wish to identify the database by the name parameter, but want to name the
+	 * database differently, you can provide the database name in {@link kOPTION_NAME}.
+	 *
+	 * @param string				$theName			Database name.
+	 * @param array					$theOptions			Creation options.
+	 * @return Database				The {@link Database} instance.
+	 *
+	 * @example
+	 * <code>
+	 * // Create database "db1".
+	 * $db = $object->NewDatabase( "db1" );
+	 *
+	 * // Create database "db0" named "db2" with credentials.
+	 * $db = $object->NewDatabase(
+	 * 	"db2", [
+	 * 		Server::kOPTION_NAME => "db0",
+	 * 		Server::kOPTION_USER_CODE => "user",
+	 * 		Server::kOPTION_USER_PASS => "password"
+	 * ]);
+	 * </code>
+	 */
+	public function NewDatabase( string $theName, array $theOptions = [] )
+	{
+		//
+		// Instantiate database.
+		//
+		$database = $this->databaseCreate();
+
+		//
+		// Parse options.
+		//
+		$name = $theName;
+		if( array_key_exists( self::kOPTION_NAME, $theOptions ) )
+		{
+			$name = $theOptions[ self::kOPTION_NAME ];
+			unset( $theOptions[ self::kOPTION_NAME ] );
+		}
+		$user = NULL;
+		if( array_key_exists( self::kOPTION_USER_CODE, $theOptions ) )
+		{
+			$user = $theOptions[ self::kOPTION_USER_CODE ];
+			unset( $theOptions[ self::kOPTION_USER_CODE ] );
+		}
+		$pass = NULL;
+		if( array_key_exists( self::kOPTION_USER_PASS, $theOptions ) )
+		{
+			$pass = $theOptions[ self::kOPTION_USER_PASS ];
+			unset( $theOptions[ self::kOPTION_USER_PASS ] );
+		}
+
+		//
+		// Copy attributes from this object.
+		//
+		$database->Protocol( $this->Protocol() );
+		$database->Host( $this->Host() );
+		$database->Port( $this->Port() );
+
+		//
+		// Set database specific attributes.
+		//
+		$database->Path( "/$name" );
+		if( $user !== NULL )
+			$database->User( $user );
+		if( $pass !== NULL )
+			$database->Password( $pass );
+		if( count( $theOptions ) )
+			$database->Query( $theOptions );
+
+		return $database;															// ==>
+
+	} // NewDatabase.
 
 
 
@@ -172,22 +335,20 @@ abstract class DatabaseServer extends Server
 	 *==================================================================================*/
 
 	/**
-	 * Create database connection.
+	 * Instantiate database.
 	 *
-	 * This method should create the actual database connection and return the
-	 * {@link Database} instance; in this class the method is virtual, it is the
-	 * responsibility of concrete derived classes to implement this method.
+	 * This method should return an empty {@link Database} instance.
 	 *
-	 * The first parameter represents the database name, the second optional parameter
-	 * represents the creation options.
+	 * The method is abstract to provide derived concrete classes the option to instantiate
+	 * the correct type of database.
 	 *
 	 * If the operation fails, the method should raise an exception.
 	 *
 	 * @param string				$theName			Database name.
 	 * @param array					$theOptions			Creation options.
-	 * @return mixed				The {@link Database} instance.
+	 * @return Database				The {@link Database} instance.
 	 */
-	abstract protected function databaseCreate( string $theName, array $theOptions = [] );
+	abstract protected function databaseCreate();
 
 
 	/*===================================================================================
@@ -197,17 +358,15 @@ abstract class DatabaseServer extends Server
 	/**
 	 * Close database connection.
 	 *
-	 * This method should close the database connection identified by the provided name, the
-	 * method will not handle the current object's databases list, it is only concerned with
-	 * releasing eventual resources before the caller removes the connection.
-	 *
-	 * The method assumes the provided name exists in the databases list.
+	 * This method should release the provided {@link Database} by releasing used resources.
+	 * The goal of this method is not to close the connection, since the database might be
+	 * shared, but to release eventual resources.
 	 *
 	 * If the operation fails, the method should raise an exception.
 	 *
-	 * @param string				$theName			Database name.
+	 * @param Database				$theDatabase		Database instance.
 	 */
-	abstract protected function databaseDestruct( string $theName );
+	abstract protected function databaseDestruct( Database $theDatabase );
 
 
 
