@@ -117,13 +117,13 @@ namespace Milko\wrapper;
  *
  * 	// Attribute manager.
  * 	function Attribute( $value = NULL, $old = FALSE ) {
- * 		return $this->manageAttribute( $this->attribute, $value, $old );
+ * 		return self::manageAttribute( $this->attribute, $value, $old );
  * 	}
  *
  * 	// Flag attribute manager.
  * 	function FlagAttribute(
  * 		string $mask = NULL, bool $value = NULL, bool $old = FALSE ) {
- * 		return $this->manageBitfieldAttribute( $this->flag, $mask, $value, $old );
+ * 		return self::manageBitfieldAttribute( $this->flag, $mask, $value, $old );
  * 	}
  *
  * 	// Property manager.
@@ -489,13 +489,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * class.
 	 *
 	 * If the second parameter is <tt>TRUE</tt>, the provided properties will be converted
-	 * to an array ({@link ConvertToArray()}.
+	 * to an array ({@link convertToArray()}.
 	 *
 	 * @param mixed					$theProperties		Properties or <tt>NULL</tt>.
 	 * @param bool					$asArray			<tt>TRUE</tt> convert to array.
 	 * @throws \InvalidArgumentException
 	 *
-	 * @uses ConvertToArray()
+	 * @uses convertToArray()
 	 *
 	 * @example
 	 * <code>
@@ -592,7 +592,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 				// Flatten to array.
 				//
 				if( $asArray )
-					static::ConvertToArray( $theProperties );
+					static::convertToArray( $theProperties );
 
 				//
 				// Handle arrays.
@@ -2426,7 +2426,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		//
 		// Convert to array.
 		//
-		self::ConvertToArray( $copy );
+		self::convertToArray( $copy );
 
 		return $copy;																// ==>
 
@@ -2506,7 +2506,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function toArray()
 	{
-		self::ConvertToArray( $this->mProperties );
+		self::convertToArray( $this->mProperties );
 
 	} // toArray.
 
@@ -2521,7 +2521,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 
 	/*===================================================================================
-	 *	ConvertToArray 																	*
+	 *	convertToArray 																	*
 	 *==================================================================================*/
 
 	/**
@@ -2578,7 +2578,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 *
 	 * // Convert embedded structures to array.
-	 * Container::ConvertToArray( $object );
+	 * Container::convertToArray( $object );
 	 *
 	 * // Array
 	 * // (
@@ -2597,7 +2597,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 * </code>
 	 */
-	static function ConvertToArray( &$theStructure )
+	static function convertToArray( &$theStructure )
 	{
 		//
 		// Handle structures.
@@ -2616,15 +2616,15 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			// Iterate keys.
 			//
 			foreach( array_keys( $theStructure ) as $key )
-				static::ConvertToArray( $theStructure[ $key ] );
+				static::convertToArray( $theStructure[ $key ] );
 
 		} // Provided a structure.
 
-	} // ConvertToArray.
+	} // convertToArray.
 
 
 	/*===================================================================================
-	 *	IsArray																			*
+	 *	isArray																			*
 	 *==================================================================================*/
 
 	/**
@@ -2641,20 +2641,20 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @example
 	 * <code>
 	 * // Will return TRUE.
-	 * $result = Container::IsArray( [ 1, 2, 3 ] );
-	 * $result = Container::IsArray( [ 0 => 1, 1 => 2, 2 => 3 ] );
-	 * $result = Container::IsArray( new ArrayObject( [ 1, 2, 3 ] ) );
-	 * $result = Container::IsArray( new Container( [ 1, 2, 3 ] ) );
-	 * $result = Container::IsArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) );
+	 * $result = Container::isArray( [ 1, 2, 3 ] );
+	 * $result = Container::isArray( [ 0 => 1, 1 => 2, 2 => 3 ] );
+	 * $result = Container::isArray( new ArrayObject( [ 1, 2, 3 ] ) );
+	 * $result = Container::isArray( new Container( [ 1, 2, 3 ] ) );
+	 * $result = Container::isArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) );
 	 *
 	 * // Will return FALSE.
-	 * $result = Container::IsArray( [ 1 => 1 ] );
-	 * $result = Container::IsArray( [ 0 => 1, 2 => 2 ] );
-	 * $result = Container::IsArray( [ "one" => 1 ] );
+	 * $result = Container::isArray( [ 1 => 1 ] );
+	 * $result = Container::isArray( [ 0 => 1, 2 => 2 ] );
+	 * $result = Container::isArray( [ "one" => 1 ] );
 	 * any scalar value...
 	 * </code>
 	 */
-	static function IsArray( $theValue  )
+	static function isArray( $theValue  )
 	{
 		//
 		// Convert structures.
@@ -2676,13 +2676,13 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 
 		return FALSE;																// ==>
 
-	} // IsArray.
+	} // isArray.
 
 
 
 /*=======================================================================================
  *																						*
- *						PROTECTED ATTRIBUTE MANAGEMENT INTERFACE						*
+ *								STATIC ATTRIBUTE INTERFACE								*
  *																						*
  *======================================================================================*/
 
@@ -2725,7 +2725,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * class Test extends Container {
 	 * 	private $attr = NULL;
 	 * 	public function Attribute( $val = NULL, $old = FALSE ) {
-	 * 		return $this->manageAttribute( $this->attr, $val, $old );
+	 * 		return self::manageAttribute( $this->attr, $val, $old );
 	 * 	}
 	 * }
 	 *
@@ -2777,7 +2777,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 * </code>
 	 */
-	protected function manageAttribute( &$theMember, $theValue = NULL, bool $doOld = FALSE )
+	static function manageAttribute( &$theMember, $theValue = NULL, bool $doOld = FALSE )
 	{
 		//
 		// Return current value.
@@ -2867,7 +2867,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * 	public function Attribute( string $mask = NULL,
 	 * 							   bool $value = NULL,
 	 * 							   bool $old = FALSE ) {
-	 * 		return $this->manageBitfieldAttribute( $this->attr, $mask, $value, $old );
+	 * 		return self::manageBitfieldAttribute( $this->attr, $mask, $value, $old );
 	 * 	}
 	 * }
 	 *
@@ -2954,10 +2954,10 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * //
 	 * </code>
 	 */
-	protected function manageBitfieldAttribute( string &$theAttribute,
-												string  $theMask = NULL,
-												bool	$theValue = NULL,
-												bool	$doOld = FALSE )
+	static function manageBitfieldAttribute( string &$theAttribute,
+											 string  $theMask = NULL,
+											 bool	 $theValue = NULL,
+											 bool	 $doOld = FALSE )
 	{
 		//
 		// Return current value.
@@ -2995,6 +2995,15 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			 : $theAttribute;														// ==>
 
 	} // manageBitfieldAttribute.
+
+
+
+/*=======================================================================================
+ *																						*
+ *							PROTECTED PROPERTY INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
 
 
 	/*===================================================================================
@@ -3120,8 +3129,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * // )
 	 * </code>
 	 */
-	protected function manageProperty( 		$theOffset = NULL,
-									   		$theValue = NULL,
+	protected function manageProperty( 	 	$theOffset = NULL,
+									   	 	$theValue = NULL,
 									   bool $doOld = FALSE )
 	{
 		//
@@ -3304,10 +3313,10 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * //
 	 * </code>
 	 */
-	protected function manageBitfieldProperty( 		  $theOffset,
+	protected function manageBitfieldProperty(		  $theOffset,
 											   string $theMask = NULL,
-											   bool	  $theValue = NULL,
-											   bool	  $doOld = FALSE )
+											   bool   $theValue = NULL,
+											   bool   $doOld = FALSE )
 	{
 		//
 		// Save current value.
@@ -3734,7 +3743,7 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 			//
 			foreach( $theValue as $key => $value )
 				$this->traverseSchema(
-					$theSchema, $thePath, static::IsArray( $theValue ), $key, $value );
+					$theSchema, $thePath, static::isArray( $theValue ), $key, $value );
 
 			//
 			// Reset path.

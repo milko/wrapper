@@ -8,43 +8,38 @@
 
 namespace Milko\wrapper;
 
+/**
+ * Require Url trait.
+ */
+require_once( dirname(__DIR__) . "/traits/Url.php" );
+
 /*=======================================================================================
  *																						*
  *									Server.php											*
  *																						*
  *======================================================================================*/
 
-use Milko\wrapper\Url;
+use Milko\wrapper\Container;
 
 /**
- * <h4>Server object.</h4><p />
+ * <h4>Server class.</h4><p />
  *
- * This <em>abstract</em> class is the ancestor of all classes representing server
- * instances.
+ * This <em>abstract</em> class is the ancestor of all classes representing server or
+ * data source instances.
  *
- * The class is derived from the {@link Url} class and uses its properties to store the list of working databases.
+ * The class uses the {@link Url} trait to implement a data source based to an URL.
  *
- * The class features two attributes:
- *
- * <ul>
- * 	<li><tt>{@link $mDatasource}</tt>: This attribute contains a {@link Datasource} instance
- * 		which stores the server's data source name.
- * 	<li><tt>{@link $mConnection}</tt>: This attribute contains the server native connection
- * 		object, this is instantiated when the server connects.
- * </ul>
- *
- * The class implements the {@link iDatasource} interface which manages the server's
- * connection parameters and a public interface that takes care of connecting,
- * disconnecting, sleeping and waking the object, the implementation of the connection
- * workflow is delegated to a protected interface which is virtual and must be implemented
- * by concrete derived classes.
+ * The class features an attribute, <tt>{@link $mConnection}</tt>, that represents the
+ * native server connection object: a protected abstract method, {@link connectionCreate()},
+ * must be implemented by derived concrete classes to instantiate the connection.
  *
  * The sleep and wake workflow ensures that the connection is closed before the object
  * goes to sleep and opened when it wakes, this is to handle native connection objects that
  * cannot be serialised in the session.
  *
- * When a connection is open, none of the {@link Datasource} properties can be modified,
- * attempting to do so will trigger an exception.
+ * Note that the class doesn't prevent changing the connection parameters while connected,
+ * this means that if you do so, the current connection will not reflect the object's
+ * attributes.
  *
  * The class implements the following public interface:
  *
@@ -59,18 +54,6 @@ use Milko\wrapper\Url;
  * 		<li><b>{@link Connection()}</b>: Return the current server native connection.
  * 		<li><b>{@link isConnected()}</b>: Return the connection status.
  * 	 </ul>
- * 	<li>Database management:
- * 	 <ul>
- * 		<li><b>{@link NewDatabase()}</b>: Create a {@link Database} instance.
- * 		<li><b>{@link GetDatabase()}</b>: Return an existing {@link Database} instance.
- * 		<li><b>{@link DelDatabase()}</b>: Drop a {@link Database} instance.
- * 		<li><b>{@link ListDatabases()}</b>: List server databases.
- * 	 </ul>
- * 	<li>Working database management:
- * 	 <ul>
- * 		<li><b>{@link ListWorkingDatabases()}</b>: Return working database instances.
- * 		<li><b>{@link ForgetWorkingDatabase()}</b>: Unregister working database.
- * 	 </ul>
  * </ul>
  *
  * The class declares the following protected interface which must be implemented in derived
@@ -82,29 +65,41 @@ use Milko\wrapper\Url;
  * 		<li><b>{@link connectionCreate()}</b>: Create a native connection.
  * 		<li><b>{@link connectionDestruct()}</b>: Close a native connection.
  * 	 </ul>
- * 	<li>Database management:
- * 	 <ul>
- * 		<li><b>{@link databaseCreate()}</b>: Create a {@link Database} instance.
- * 		<li><b>{@link databaseRetrieve()}</b>: Return an existing {@link Database} instance.
- * 		<li><b>{@link databaseList()}</b>: List server databases.
- * 	 </ul>
  * </ul>
+ *
+ * In derived concrete classes you can use the {@link Container} inherited features to
+ * implement a list of dependent objects, such as a list of databases for a database server,
+ * or a list of collections for a database.
  *
  *	@package	Core
  *
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
- *	@since		06/02/2016
+ *	@since		17/06/2016
  *
- *	@example	/test/Server.php
- *	@example
+ * @example
  * <code>
- * $server = new Milko\wrapper\Server( 'protocol://user:pass@host:9090' );
- * $connection = $server->Connect();
+ * // Instantiate empty object.
+ * $server = new Server();
+ * $server->Protocol( "mongodb" );
+ * $server->Host( "localhost" );
+ * ...
+ * $server->Connect();
+ * // Work with server.
+ *
+ * // Instantiate from data source name.
+ * $server = new Server( "mongodb://user:password@localhost:27017?option=value" );
+ * $server->Connect();
+ * // Work with server.
  * </code>
  */
-abstract class Server extends Url
+abstract class Server extends Container
 {
+	/**
+	 * Declare traits.
+	 */
+	use \Url;
+
 	/**
 	 * <h4>Server connection object.</h4><p />
 	 *
@@ -113,7 +108,7 @@ abstract class Server extends Url
 	 *
 	 * Before the object goes to sleep ({@link __sleep()}), this attribute will be set to
 	 * <tt>TRUE</tt> if a connection was open and to <tt>NULL</tt> if not: this determines
-	 * whether a connection should be restored when the object is waken (@link __wakeup()}).
+	 * whether a connection should be restored when the object is waken {@link __wakeup()}.
 	 *
 	 * @var mixed
 	 */
@@ -128,6 +123,50 @@ abstract class Server extends Url
  *																						*
  *======================================================================================*/
 
+
+
+	/*===================================================================================
+	 *	__construct																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate class.</h4><p />
+	 *
+	 * The object must be instantiated from a data source name which will be passed to the
+	 * {@link Url} trait. The native connection options should be passed in the
+	 * {@link Query()} part of the URL.
+	 *
+	 * @param string			$theConnection		Data source name.
+	 *
+	 * @uses URL()
+	 *
+	 * @example
+	 * <code>
+	 * // Set server attributes.
+	 * $dsn = new Server();
+	 * $dsn->Protocol( 'html' );
+	 * $dsn->Host( 'example.net' );
+	 * ...
+	 *
+	 * // Instantiate from data source name.
+	 * $dsn = new Server( 'html://user:pass@host:8080/dir/file?arg=val#frag' );
+	 * $dsn = new Server( 'protocol://user:password@host1:9090,host2,host3:9191/dir/file?arg=val#frag' );
+	 * </code>
+	 */
+	public function __construct( string $theConnection = NULL )
+	{
+		//
+		// Call parent constructor.
+		//
+		parent::__construct();
+
+		//
+		// Handle connection path.
+		//
+		if( $theConnection !== NULL )
+			$this->URL( $theConnection );
+
+	} // Constructor.
 
 
 	/*===================================================================================
@@ -159,8 +198,7 @@ abstract class Server extends Url
 	 * <h4>Put the object to sleep.</h4><p />
 	 *
 	 * This method will close the connection and replace the connection resource with
-	 * <tt>TRUE</tt> if the connection was open, this will be used by the {@link __wakeup()}
-	 * method to re-open the connection.
+	 * <tt>TRUE</tt> if the connection was open, or with <tt>NULL</tt> if not.
 	 *
 	 * @uses Disconnect()
 	 */
@@ -182,7 +220,7 @@ abstract class Server extends Url
 	 * <h4>Wake the object from sleep.</h4><p />
 	 *
 	 * This method will re-open the connection if it was closed by the {@link __sleep()}
-	 * method.
+	 * method, that is, if the {@link $mConnection} attribute is <tt>TRUE</tt>.
 	 *
 	 * @uses Connect()
 	 */
@@ -191,104 +229,32 @@ abstract class Server extends Url
 		//
 		// Open closed connection.
 		//
-		if( $this->mConnection === TRUE )
+		if( $this->mConnection !== NULL )
 			$this->Connect();
 
 	} // __wakeup.
 
 
-
-/*=======================================================================================
- *																						*
- *								PUBLIC ARRAY ACCESS INTERFACE							*
- *																						*
- *======================================================================================*/
-
-
-
 	/*===================================================================================
-	 *	offsetSet																		*
+	 *	__toString																		*
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Set a value at a given offset.</h4><p />
+	 * <h4>Return data source name</h4><p />
 	 *
-	 * We overload this method to prevent modifying object properties when the server is
-	 * connected.
+	 * In this class we consider the data source name as the server's name, when cast to a
+	 * string the data source URL will be returned. In derived concrete classes you should
+	 * be careful to shadow sensitive data such as user names and passwords.
 	 *
-	 * @param string				$theOffset			Offset.
-	 * @param mixed					$theValue			Value to set at offset.
-	 * @throws \RuntimeException
+	 * @return string
+	 *
+	 * @uses URL()
 	 */
-	public function offsetSet( $theOffset, $theValue )
+	public function __toString()
 	{
-		//
-		// Check if connected.
-		//
-		if( $this->isConnected() )
-		{
-			//
-			// Check relevant offsets.
-			//
-			if( in_array( $theOffset,
-				[
-					self::PROT, self::USER, self::PASS, self::HOST,
-					self::PORT, self::PATH, self::QUERY, self::FRAG
-				]) )
-				throw new \RuntimeException(
-					"Cannot modify properties while server is connected."
-				);																// !@! ==>
+		return (string)$this->URL();												// ==>
 
-		} // Server is connected.
-
-		//
-		// Call parent method.
-		//
-		parent::offsetSet( $theOffset, $theValue );
-
-	} // offsetSet.
-
-
-	/*===================================================================================
-	 *	offsetUnset																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Reset a value at a given offset.</h4><p />
-	 *
-	 * We overload this method to prevent removing object properties when the server is
-	 * connected.
-	 *
-	 * @param string				$theOffset			Offset.
-	 * @throws \BadMethodCallException
-	 */
-	public function offsetUnset( $theOffset )
-	{
-		//
-		// Check if connected.
-		//
-		if( $this->isConnected() )
-		{
-			//
-			// Check relevant offsets.
-			//
-			if( in_array( $theOffset,
-				[
-					self::PROT, self::USER, self::PASS, self::HOST,
-					self::PORT, self::PATH, self::QUERY, self::FRAG
-				]) )
-				throw new \RuntimeException(
-					"Cannot reset properties while server is connected."
-				);																// !@! ==>
-
-		} // Server is connected.
-
-		//
-		// Call parent method.
-		//
-		parent::offsetUnset( $theOffset );
-
-	} // offsetUnset.
+	} // __toString.
 
 
 
@@ -307,17 +273,30 @@ abstract class Server extends Url
 	/**
 	 * <h4>Open server connection.</h4><p />
 	 *
-	 * This method should be used to create and open the server connection, if the
-	 * connection is already open, the method should do nothing.
+	 * This method can be used to create and open the server connection, if the connection
+	 * is already open, the method will do nothing.
 	 *
-	 * The method should return the native connection object, or raise an exception if
-	 * unable to open the connection.
-	 *
-	 * The method is abstract, concrete derived classes must implement it.
+	 * The method will return the native connection object, or raise an exception if unable
+	 * to open the connection.
 	 *
 	 * @return mixed				Native connection object.
+	 *
+	 * @uses URL( )
+	 * @uses isConnected( )
+	 * @uses connectionCreate()
 	 */
-	abstract public function Connect();
+	public function Connect()
+	{
+		//
+		// Create connection if not conected.
+		//
+		if( ! $this->isConnected() )
+			$this->mConnection =
+				$this->connectionCreate();
+
+		return $this->mConnection;													// ==>
+
+	} // Connect.
 
 
 	/*===================================================================================
@@ -327,16 +306,39 @@ abstract class Server extends Url
 	/**
 	 * <h4>Close server connection.</h4><p />
 	 *
-	 * This method should be used to close and destruct the server connection, if no
-	 * connection was open, the method should do nothing.
+	 * This method can be used to close and destruct the server connection, if no connection
+	 * was open, the method will do nothing.
 	 *
-	 * The method should return <tt>TRUE</tt> if it closed a connection
-	 *
-	 * The method is abstract, concrete derived classes must implement it.
+	 * The method will return <tt>TRUE</tt> if it closed a connection
 	 *
 	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
+	 *
+	 * @uses isConnected()
+	 * @uses connectionDestruct()
 	 */
-	abstract public function Disconnect();
+	public function Disconnect( $theOptions = NULL )
+	{
+		//
+		// Check if connected.
+		//
+		if( $this->isConnected() )
+		{
+			//
+			// Destruct connection.
+			//
+			$this->connectionDestruct();
+
+			//
+			// Reset native connection attribute.
+			//
+			$this->mConnection = NULL;
+
+			return TRUE;															// ==>
+		}
+
+		return FALSE;																// ==>
+
+	} // Disconnect.
 
 
 	/*===================================================================================
@@ -367,6 +369,10 @@ abstract class Server extends Url
 	 *
 	 * This method returns a boolean flag indicating whether the connection is open or not.
 	 *
+	 * In this abstract class we simply check whether the native connection attribute is not
+	 * <tt>NULL</tt>, in concrete derived classes you can overload this method to check for
+	 * a more specific value.
+	 *
 	 * @return boolean				<tt>TRUE</tt> is connected.
 	 * @throws \RuntimeException
 	 */
@@ -375,6 +381,57 @@ abstract class Server extends Url
 		return ( $this->mConnection !== NULL );										// ==>
 
 	} // isConnected.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED CONNECTION INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	connectionCreate																*
+	 *==================================================================================*/
+
+	/**
+	 * Open connection.
+	 *
+	 * This method should create the actual connection and return the native connection
+	 * object; in this class the method is virtual, it is the responsibility of concrete
+	 * derived classes to implement this method.
+	 *
+	 * This method assumes the caller has checked whether the connection was already open
+	 * and if the previously opened connection was closed.
+	 *
+	 * This method assumes the data source name ({@link URL()} to hold the connection
+	 * parameters.
+	 *
+	 * If the operation fails, the method should raise an exception.
+	 *
+	 * @return mixed				The native connection.
+	 */
+	abstract protected function connectionCreate();
+
+
+	/*===================================================================================
+	 *	connectionDestruct																*
+	 *==================================================================================*/
+
+	/**
+	 * Close connection.
+	 *
+	 * This method should close the open connection, in this class the method is virtual, it
+	 * is the responsibility of concrete classes to implement this method.
+	 *
+	 * This method assumes the caller has checked whether a connection is open, it should
+	 * assume the {@link $mConnection} attribute holds a valid native connection object.
+	 *
+	 * If the operation fails, the method should raise an exception.
+	 */
+	abstract protected function connectionDestruct();
 
 
 

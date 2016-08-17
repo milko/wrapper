@@ -17,7 +17,10 @@
  */
 require_once(dirname( dirname(__DIR__) ) . "/includes.local.php");
 
-use Milko\wrapper\Url;
+/**
+ * Include test class.
+ */
+require_once(dirname(__DIR__) . "/TestUrlClass.php");
 
 /**
  * Url unit tests
@@ -55,230 +58,72 @@ class UrlTest extends PHPUnit_Framework_TestCase
 
 
 	/*===================================================================================
-	 *	provideConstructor																*
+	 *	provideConstructorExceptions													*
 	 *==================================================================================*/
 
 	/**
-	 * Provide data to __construct() test.
+	 * Provide data to URL() test.
 	 *
 	 * The data elements are:
 	 *
 	 * <ul>
 	 * 	<li><tt>$1</tt>: Data parameter.
-	 * 	<li><tt>$3</tt>: Expected object <tt>getArrayCopy()</tt>.
 	 * </ul>
 	 */
-	public function provideConstructor()
+	public function provideConstructorExceptions()
 	{
 		//
 		// Return test data.
 		//
 		return [
 			[
-				NULL,
-				[]
+				''
 			],
 			[
-				'prot://host',
-				[
-					Url::PROT => "prot",
-					Url::HOST => "host"
-				]
+				'prot://host:port'
 			],
 			[
-				'prot://host:8080',
-				[
-					Url::PROT => "prot",
-					Url::HOST => "host",
-					Url::PORT => 8080
-				]
+				'prot://host:port?=val'
 			],
 			[
-				'prot://user@host:8080',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::HOST => "host",
-					Url::PORT => 8080
-				]
-			],
-			[
-				'prot://user:pass@host:8080',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080
-				]
-			],
-			[
-				'prot://user:pass@host:8080/dir',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080,
-					Url::PATH => "/dir"
-				]
-			],
-			[
-				'prot://user:pass@host:8080/dir/file',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080,
-					Url::PATH => "/dir/file"
-				]
-			],
-			[
-				'prot://user:pass@host:8080/dir/file?key=val',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080,
-					Url::PATH => "/dir/file",
-					Url::QUERY => [ "key" => "val" ]
-				]
-			],
-			[
-				'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080,
-					Url::PATH => "/dir/file",
-					Url::QUERY => [
-						"key" => "val",
-						"arg" => "val",
-						"uni" => NULL
-					]
-				]
-			],
-			[
-				'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni#frag',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => "host",
-					Url::PORT => 8080,
-					Url::PATH => "/dir/file",
-					Url::QUERY => [
-						"key" => "val",
-						"arg" => "val",
-						"uni" => NULL
-					],
-					Url::FRAG => "frag"
-				]
-			],
-			[
-				'prot://user:pass@host1:8080,host2:9090/dir/file?key=val&arg=val&uni#frag',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => [ "host1", "host2" ],
-					Url::PORT => [ 8080, 9090 ],
-					Url::PATH => "/dir/file",
-					Url::QUERY => [
-						"key" => "val",
-						"arg" => "val",
-						"uni" => NULL
-					],
-					Url::FRAG => "frag"
-				]
-			],
-			[
-				'prot://user:pass@host1:8080,host2:8181,host3:8282/dir/file?key=val&arg=val&uni#frag',
-				[
-					Url::PROT => "prot",
-					Url::USER => "user",
-					Url::PASS => "pass",
-					Url::HOST => [ "host1", "host2", "host3" ],
-					Url::PORT => [ 8080, 8181, 8282 ],
-					Url::PATH => "/dir/file",
-					Url::QUERY => [
-						"key" => "val",
-						"arg" => "val",
-						"uni" => NULL
-					],
-					Url::FRAG => "frag"
-				]
+				'prot://host:port?=val#uno#due'
 			]
 		];
 
-	} // provideConstructor.
+	} // provideConstructorExceptions.
 
 
 	/*===================================================================================
-	 *	provideOffsetSet																*
+	 *	providePortExceptions															*
 	 *==================================================================================*/
 
 	/**
-	 * Provide data to offsetSet() test.
+	 * Provide data to Port() test.
 	 *
 	 * The data elements are:
 	 *
 	 * <ul>
-	 * 	<li><tt>$1</tt>: Offset.
-	 * 	<li><tt>$2</tt>: Value.
+	 * 	<li><tt>$1</tt>: Data parameter.
 	 * </ul>
 	 */
-	public function provideOffsetSet()
+	public function providePortExceptions()
 	{
 		//
 		// Return test data.
 		//
 		return [
-			"offsetSet( Url::PORT, 'string' )" => [
-				Url::PORT,
-				"string"
+			[
+				"port"
 			],
-			"offsetSet( Url::PORT, [ 80, 90, 'string' ] )" => [
-		Url::PORT,
-		[ 80, 90, "string" ]
-	]
-		];
-
-	} // provideOffsetSet.
-
-
-	/*===================================================================================
-	 *	provideOffsetUnset																*
-	 *==================================================================================*/
-
-	/**
-	 * Provide data to offsetUnset() test.
-	 *
-	 * The data elements are:
-	 *
-	 * <ul>
-	 * 	<li><tt>$1</tt>: Offset.
-	 * </ul>
-	 */
-	public function provideOffsetUnset()
-	{
-		//
-		// Return test data.
-		//
-		return [
-			"offsetSet( Url::PROT, NULL )" => [
-				Url::PROT
+			[
+				[ "port" ]
 			],
-			"offsetSet( Url::HOST, NULL )" => [
-				Url::HOST
+			[
+				[ 8080, "" ]
 			]
 		];
 
-	} // provideOffsetUnset.
+	} // providePortExceptions.
 
 
 
@@ -295,85 +140,543 @@ class UrlTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Test __construct()
+	 * Test URL()
 	 *
-	 * @covers       Url::__construct()
-	 * @dataProvider provideConstructor
-	 *
-	 * @param $parameter
-	 * @param $expected
+	 * @covers       Url::URL()
 	 */
-	public function testConstructor( $parameter, $expected )
+	public function testConstructor()
 	{
 		//
-		// Init local storage.
+		// Make tests.
 		//
-		$message = "new Url( $parameter )";
-		$offsets = [
-			Url::FRAG => "Fragment",
-			Url::HOST => "Host",
-			Url::PATH => "Path",
-			Url::PASS => "Password",
-			Url::PORT => "Port",
-			Url::PROT => "Protocol",
-			Url::QUERY => "Query",
-			Url::USER => "User"
-		];
+		$message = "new Url()";
+		$test = new test_Url();
+		$this->assertNull( $test->Protocol(), $message );
+		$this->assertNull( $test->Host(), $message );
+		$this->assertNull( $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( '', $test->URL(), $message );
 
-		//
-		// Instantiate object.
-		//
-		$object = new Url( $parameter );
+		$parameter = 'prot://host';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertNull( $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-		//
-		// Get copy.
-		//
-		$copy = $object->getArrayCopy();
+		$parameter = 'prot://host:8080';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-		//
-		// Check properties.
-		//
-		$this->assertEquals( $copy, $expected, $message );
+		$parameter = 'prot://user@host:8080';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-		//
-		// Check URL.
-		//
-		$this->assertEquals( (string)$object, $parameter, $message );
-		$this->assertEquals( $object->URL(), $parameter, $message );
+		$parameter = 'prot://user:pass@host:8080';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-		//
-		// Check method accessors.
-		//
-		foreach( $offsets as $offset => $method )
-		{
-			if( $object->offsetExists( $offset ) )
-				$this->assertEquals( $object->$method(), $object[ $offset ], $message );
-		}
+		$parameter = 'prot://user:pass@host:8080/dir';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir', $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-		//
-		// Re-create object from properties.
-		//
-		if( count( $copy ) )
-		{
-			//
-			// Build object.
-			//
-			$object = new Url();
-			foreach( $offsets as $offset => $method )
-			{
-				if( array_key_exists( $offset, $copy ) )
-					$object->$method( $copy[ $offset ] );
-			}
+		$parameter = 'prot://user:pass@host:8080/dir/file';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
-			//
-			// Make tests.
-			//
-			$this->assertEquals( $copy, $expected, $message );
-			$this->assertEquals( (string)$object, $parameter, $message );
-			$this->assertEquals( $object->URL(), $parameter, $message );
-		}
+		$parameter = 'prot://user:pass@host:8080/dir/file?key=val';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[ 'key' => 'val' ],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
+
+		$parameter = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
+
+		$parameter = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni#frag';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
+
+		$parameter = 'prot://user:pass@host1:8080,host2:9090/dir/file?key=val&arg=val&uni#frag';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( [ "host1", "host2" ], $test->Host(), $message );
+		$this->assertEquals( [ 8080, 9090 ], $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
+
+		$parameter = 'prot://user:pass@host1:8080,host2:8181,host3:8282/dir/file?key=val&arg=val&uni#frag';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url( $parameter );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( [ "host1", "host2", "host3" ], $test->Host(), $message );
+		$this->assertEquals( [ 8080, 8181, 8282 ], $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $parameter, $test->URL(), $message );
 
 	} // testConstructor.
+
+
+	/*===================================================================================
+	 *	testConstructorAttributes														*
+	 *==================================================================================*/
+
+	/**
+	 * Test URL()
+	 *
+	 * @covers       Url::URL()
+	 * @covers       Url::Protocol()
+	 * @covers       Url::Host()
+	 * @covers       Url::Port()
+	 * @covers       Url::User()
+	 * @covers       Url::Password()
+	 * @covers       Url::Path()
+	 * @covers       Url::Query()
+	 * @covers       Url::Fragment()
+	 */
+	public function testConstructorAttributes()
+	{
+		//
+		// Make tests.
+		//
+		$url = "prot://";
+		$parameter = 'prot';
+		$message = "Protocol( $parameter )";
+		$test = new test_Url();
+		$test->Protocol( $parameter );
+		$this->assertEquals( $parameter, $test->Protocol(), $message );
+		$this->assertNull( $test->Host(), $message );
+		$this->assertNull( $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = "prot://host";
+		$parameter = 'host';
+		$message = "Host( '$parameter' )";
+		$test = new test_Url();
+		$test->Host( $parameter );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertNull( $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = "prot://host:8080";
+		$parameter = '8080';
+		$message = "Port( '$parameter' )";
+		$test = new test_Url();
+		$test->Port( $parameter );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertNull( $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user@host:8080';
+		$parameter = 'user';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url();
+		$test->User( $parameter );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertNull( $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080';
+		$parameter = 'pass';
+		$message = "Password( '$parameter' )";
+		$test = new test_Url();
+		$test->Password( $parameter );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertNull( $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir';
+		$parameter = '/dir';
+		$message = "Path( '$parameter' )";
+		$test = new test_Url();
+		$test->Path( $parameter );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir', $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file';
+		$parameter = '/dir/file';
+		$message = "Path( '$parameter' )";
+		$test = new test_Url();
+		$test->Path( $parameter );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file?key=val';
+		$parameter = 'key=val';
+		$message = "Query( '$parameter' )";
+		$test = new test_Url();
+		$test->Query( $parameter );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[ 'key' => 'val' ],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file?key=val';
+		$parameter = '[ "key" => "val" ]';
+		$message = "Query( '$parameter' )";
+		$test = new test_Url();
+		$test->Query( [ "key" => "val" ] );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[ 'key' => 'val' ],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni';
+		$parameter = 'key=val&arg=val&uni';
+		$message = "Query( '$parameter' )";
+		$test = new test_Url();
+		$test->Query( $parameter );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni';
+		$parameter = 'key=val&arg=val&uni';
+		$message = "Query( [ \"key\" => \"val\", \"arg\" => \"val\", \"uni\" => NULL ] )";
+		$test = new test_Url();
+		$test->Query( [ "key" => "val", "arg" => "val", "uni" => NULL ] );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertNull( $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni#frag';
+		$parameter = 'frag';
+		$message = "new Url( '$parameter' )";
+		$test = new test_Url();
+		$test->Fragment( $parameter );
+		$test->Query( 'key=val&arg=val&uni' );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( 8080 );
+		$test->Host( 'host' );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( 'host', $test->Host(), $message );
+		$this->assertEquals( 8080, $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host1:8080,host2:9090/dir/file?key=val&arg=val&uni#frag';
+		$parameter = '[ "host1", "host2" ]';
+		$message = "Host( '$parameter' )";
+		$test = new test_Url();
+		$test->Fragment( 'frag' );
+		$test->Query( 'key=val&arg=val&uni' );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( [ 8080, 9090 ] );
+		$test->Host( [ "host1", "host2" ] );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( [ "host1", "host2" ], $test->Host(), $message );
+		$this->assertEquals( [ 8080, 9090 ], $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+		$url = 'prot://user:pass@host1:8080,host2:8181,host3:8282/dir/file?key=val&arg=val&uni#frag';
+		$parameter = '[ "host1", "host2", "host3" ]';
+		$message = "Host( '$parameter' )";
+		$test = new test_Url();
+		$test->Fragment( 'frag' );
+		$test->Query( 'key=val&arg=val&uni' );
+		$test->Path( '/dir/file' );
+		$test->Password( 'pass' );
+		$test->User( 'user' );
+		$test->Port( [ 8080, 8181, 8282 ] );
+		$test->Host( [ "host1", "host2", "host3" ] );
+		$test->Protocol( 'prot' );
+		$this->assertEquals( 'prot', $test->Protocol(), $message );
+		$this->assertEquals( [ "host1", "host2", "host3" ], $test->Host(), $message );
+		$this->assertEquals( [ 8080, 8181, 8282 ], $test->Port(), $message );
+		$this->assertEquals( 'user', $test->User(), $message );
+		$this->assertEquals( 'pass', $test->Password(), $message );
+		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals(
+			[
+				"key" => "val",
+				"arg" => "val",
+				"uni" => NULL
+			],
+			$test->Query(),
+			$message );
+		$this->assertEquals( 'frag', $test->Fragment(), $message );
+		$this->assertEquals( $url, $test->URL(), $message );
+
+	} // testConstructorAttributes.
 
 
 	/*===================================================================================
@@ -381,66 +684,139 @@ class UrlTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Test __construct() exceptions.
+	 * Test URL() exceptions.
 	 *
-	 * @covers       Url::__construct()
+	 * @covers       Url::URL()
 	 * @expectedException InvalidArgumentException
+	 * @dataProvider provideConstructorExceptions
+	 *
+	 * @param $parameter
 	 */
-	public function testConstructorExceptions()
+	public function testConstructorExceptions( $parameter )
 	{
 		//
-		// Test instantiation.
+		// Test exceptions.
 		//
-		$object = new Url( '' );
+		$this->mObject->URL( $parameter );
 
 	} // testConstructorExceptions.
 
 
 	/*===================================================================================
-	 *	testOffsetSet																	*
+	 *	testProtocol																	*
 	 *==================================================================================*/
 
 	/**
-	 * Test offsetSet().
+	 * Test Protocol() exceptions.
 	 *
-	 * @covers       Url::offsetSet()
-	 * @dataProvider provideOffsetSet
-	 * @expectedException InvalidArgumentException
-	 *
-	 * @param $offset
-	 * @param $value
+	 * @covers       Url::Protocol()
+	 * @expectedException BadMethodCallException
 	 */
-	public function testOffsetSet( $offset, $value )
+	public function testProtocol( )
 	{
 		//
-		// Try setting non numeric port.
+		// Test exceptions.
 		//
-		$this->mObject->offsetSet( $offset, $value );
+		$this->mObject->Protocol( FALSE );
 
-	} // testOffsetSet.
+	} // testProtocol.
 
 
 	/*===================================================================================
-	 *	testOffsetUnset																	*
+	 *	testHost																		*
 	 *==================================================================================*/
 
 	/**
-	 * Test offsetUnset().
+	 * Test Host() exceptions.
 	 *
-	 * @covers       Url::offsetUnset()
-	 * @dataProvider provideOffsetUnset
+	 * @covers       Url::Host()
 	 * @expectedException BadMethodCallException
-	 *
-	 * @param $offset
 	 */
-	public function testOffsetUnset( $offset )
+	public function testHost( )
 	{
 		//
-		// Try setting non numeric port.
+		// Test exceptions.
 		//
-		$this->mObject->offsetUnset( $offset );
+		$this->mObject->Host( FALSE );
 
-	} // testOffsetUnset.
+	} // testHost.
+
+
+	/*===================================================================================
+	 *	testPort																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test Port() exceptions.
+	 *
+	 * @covers       Url::Port()
+	 * @dataProvider providePortExceptions
+	 * @expectedException InvalidArgumentException
+	 */
+	public function testPort( $parameter )
+	{
+		//
+		// Test exceptions.
+		//
+		$this->mObject->Port( $parameter );
+
+	} // testPort.
+
+
+	/*===================================================================================
+	 *	testUser																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test User() exceptions.
+	 *
+	 * @covers       Url::User()
+	 */
+	public function testUser( )
+	{
+		//
+		// Test reset password.
+		//
+		$message = '$this->mObject->User( FALSE )';
+		$this->mObject->User( FALSE );
+		$this->assertNull( $this->mObject->Password(), $message );
+		$this->assertEquals(
+			'protocol://host:80/directory/file?key=val#frag',
+			$this->mObject->URL(),
+			$message );
+
+	} // testUser.
+
+
+	/*===================================================================================
+	 *	testQuery																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test Query() exceptions.
+	 *
+	 * @covers       Url::Query()
+	 */
+	public function testQuery( )
+	{
+		//
+		// Test query.
+		//
+		$message = '$this->mObject->Query( "key=val&uni" )';
+		$this->mObject->Query( "key=val&uni" );
+		$this->assertEquals(
+			[ "key" => "val", "uni" => NULL ],
+			$this->mObject->Query(),
+			$message );
+
+		$message = '$this->mObject->Query( [ "key" => "val", "uni" => NULL ] )';
+		$this->mObject->Query( [ "key" => "val", "uni" => NULL ] );
+		$this->assertEquals(
+			[ "key" => "val", "uni" => NULL ],
+			$this->mObject->Query(),
+			$message );
+
+	} // testQuery.
 
 
 
@@ -464,7 +840,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate object.
 		//
-		$this->mObject = new Url(
+		$this->mObject = new test_Url(
 			'protocol://user:password@host:80/directory/file?key=val#frag'
 		);
 

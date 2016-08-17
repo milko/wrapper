@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Container object test class.
+ * Container class test class.
  *
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
@@ -32,7 +32,7 @@ class test_Container extends \Milko\wrapper\Container
 	//
 	public function Attribute( $theValue = NULL, $getOld = FALSE )
 	{
-		return $this->manageAttribute( $this->attribute, $theValue, $getOld );
+		return self::manageAttribute( $this->attribute, $theValue, $getOld );
 	}
 
 	//
@@ -42,7 +42,7 @@ class test_Container extends \Milko\wrapper\Container
 								bool	$theValue = NULL,
 								bool	$doOld = FALSE )
 	{
-		return $this->manageBitfieldAttribute(
+		return self::manageBitfieldAttribute(
 			$this->flag, $theMask, $theValue, $doOld );
 	}
 

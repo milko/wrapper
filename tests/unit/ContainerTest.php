@@ -528,7 +528,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Provide test parameters to IsArray() test.
+	 * Provide test parameters to isArray() test.
 	 *
 	 * The data elements are:
 	 *
@@ -543,60 +543,60 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		// Return test data.
 		//
 		return [
-			'IsArray( [] )' => [
+			'isArray( [] )' => [
 				[],
 				TRUE
 			],
-			'IsArray( new ArrayObject() )' => [
+			'isArray( new ArrayObject() )' => [
 				new ArrayObject(),
 				TRUE
 			],
-			'IsArray( new Container() )' => [
+			'isArray( new Container() )' => [
 				new Container(),
 				TRUE
 			],
-			'IsArray( [ 1, 2, 3 ] )' => [
+			'isArray( [ 1, 2, 3 ] )' => [
 				[ 1, 2, 3 ],
 				TRUE
 			],
-			'IsArray( [ 0 => 1, 1 => 2, 2 => 3 ] )' => [
+			'isArray( [ 0 => 1, 1 => 2, 2 => 3 ] )' => [
 				[ 0 => 1, 1 => 2, 2 => 3 ],
 				TRUE
 			],
-			'IsArray( new ArrayObject( [ 1, 2, 3 ] ) )' => [
+			'isArray( new ArrayObject( [ 1, 2, 3 ] ) )' => [
 				new ArrayObject( [ 1, 2, 3 ] ),
 				TRUE
 			],
-			'IsArray( new Container( [ 1, 2, 3 ] ) )' => [
+			'isArray( new Container( [ 1, 2, 3 ] ) )' => [
 				new Container( [ 1, 2, 3 ] ),
 				TRUE
 			],
-			'IsArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) )' => [
+			'isArray( new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ) )' => [
 				new ArrayObject( [ 0 => 1, 1 => 2, 2 => 3 ] ),
 				TRUE
 			],
 
-			'IsArray( [ 1 => 1 ] )' => [
+			'isArray( [ 1 => 1 ] )' => [
 				[ 1 => 1 ],
 				FALSE
 			],
-			'IsArray( [ 0 => 1, 2 => 2 ] )' => [
+			'isArray( [ 0 => 1, 2 => 2 ] )' => [
 				[ 0 => 1, 2 => 2 ],
 				FALSE
 			],
-			'IsArray( [ "one" => 1 ] )' => [
+			'isArray( [ "one" => 1 ] )' => [
 				[ "one" => 1 ],
 				FALSE
 			],
-			'IsArray( new ArrayObject([ "one" => 1 ]) )' => [
+			'isArray( new ArrayObject([ "one" => 1 ]) )' => [
 				new ArrayObject([ "one" => 1 ]),
 				FALSE
 			],
-			'IsArray( "string" )' => [
+			'isArray( "string" )' => [
 				"string",
 				FALSE
 			],
-			'IsArray( 0 )' => [
+			'isArray( 0 )' => [
 				0,
 				FALSE
 			],
@@ -1948,9 +1948,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Test ConvertToArray() method
+	 * Test convertToArray() method
 	 *
-	 * @covers       test_Container::ConvertToArray()
+	 * @covers       test_Container::convertToArray()
 	 */
 	public function testConvertToArray()
 	{
@@ -2001,8 +2001,8 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Start tests.
 		//
-		Container::ConvertToArray( $this->mObject );
-		$this->assertEquals( $expected, $this->mObject, "Container::ConvertToArray()" );
+		Container::convertToArray( $this->mObject );
+		$this->assertEquals( $expected, $this->mObject, "Container::convertToArray()" );
 
 	} // testConvertToArray.
 
@@ -2012,9 +2012,9 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Test IsArray() method
+	 * Test isArray() method
 	 *
-	 * @covers       test_Container::IsArray()
+	 * @covers       test_Container::isArray()
 	 * @dataProvider provideIsArray
 	 *
 	 * @param $theParameter
@@ -2025,7 +2025,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		// Perform tests.
 		//
-		$result = test_Container::IsArray( $theParameter );
+		$result = test_Container::isArray( $theParameter );
 		if( $theExpected )
 			$this->assertTrue( $result, $theExpected );
 		else
@@ -2039,19 +2039,20 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 *==================================================================================*/
 
 	/**
-	 * Test IsArray() method
+	 * Test manageAttribute() method
 	 *
 	 * @covers       test_Container::manageAttribute()
 	 */
 	public function testManageAttribute()
 	{
 		//
-		// Instantiate test object.
+		// Init local storage.
 		//
+		$attribute = NULL;
 		$test = new test_Container();
 
 		//
-		// Start tests.
+		// Test method.
 		//
 		$result = $test->Attribute( "NEW" );
 		$message = '$result = Attribute( "NEW" )';
@@ -2075,6 +2076,31 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$message = 'attribute === NULL';
 		$this->assertNull( $test->attribute, $message );
 
+		//
+		// Test static.
+		//
+		$result = Container::manageAttribute( $attribute, "NEW" );
+		$message = 'Container::manageAttribute( $attribute, "NEW" )';
+		$this->assertEquals( $result, "NEW", $message );
+		$message = 'attribute == "NEW';
+		$this->assertEquals( $attribute, "NEW", $message );
+
+		$result = Container::manageAttribute( $attribute, "OTHER", TRUE );
+		$message = '$result = Container::manageAttribute( $attribute, "OTHER", TRUE )';
+		$this->assertEquals( $result, "NEW", $message );
+		$message = 'attribute == "OTHER';
+		$this->assertEquals( $attribute, "OTHER", $message );
+
+		$result = Container::manageAttribute( $attribute );
+		$message = 'Container::manageAttribute( $attribute )';
+		$this->assertEquals( $result, "OTHER", $message );
+
+		$result = Container::manageAttribute( $attribute, FALSE, TRUE );
+		$message = '$result = Container::manageAttribute( $attribute, FALSE, TRUE )';
+		$this->assertEquals( $result, "OTHER", $message );
+		$message = 'attribute === NULL';
+		$this->assertNull( $attribute, $message );
+
 	} // testManageAttribute.
 
 
@@ -2090,10 +2116,14 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	public function testManageFlagAttribute()
 	{
 		//
-		// Instantiate test object.
+		// Init local storage.
 		//
+		$attribute = hex2bin( "00000000" );
 		$test = new test_Container();
 
+		//
+		// Test method.
+		//
 		$message = '$result = BitfieldAttribute()';
 		$result = $test->BitfieldAttribute();
 		$this->assertEquals( "00000000", bin2hex($result), $message );
@@ -2139,6 +2169,50 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		$result = $test->BitfieldAttribute( hex2bin("ff000000" ), TRUE, TRUE );
 		$this->assertEquals( "000f", bin2hex($result), $message );
 		$this->assertEquals( "ff0f0000", bin2hex($test->flag), $message );
+
+		//
+		// Test static.
+		//
+		$message = '$result = manageBitfieldAttribute( $attribute )';
+		$result = Container::manageBitfieldAttribute( $attribute );
+		$this->assertEquals( "00000000", bin2hex($result), $message );
+		$this->assertEquals( $attribute, $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("ff000000" ), TRUE )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("ff000000" ), TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( $attribute, $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("ff0f" ), TRUE, TRUE )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("ff0f" ), TRUE, TRUE );
+		$this->assertEquals( "ff000000", bin2hex($result), $message );
+		$this->assertEquals( "ff0f0000", bin2hex($attribute), $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("f0000000" ) )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("f0000000" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("0f" ) )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("0f" ) );
+		$this->assertTrue( $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("000000ff" ) )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("000000ff" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("00f0" ) )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("00f0" ) );
+		$this->assertFalse( $result, $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("f0f00000" ), FALSE, TRUE )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("f0f00000" ), FALSE, TRUE );
+		$this->assertEquals( "ff0f0000", bin2hex($result), $message );
+		$this->assertEquals( "0f0f0000", bin2hex($attribute), $message );
+
+		$message = '$result = manageBitfieldAttribute( $attribute, hex2bin("0ff0" ), FALSE, TRUE )';
+		$result = Container::manageBitfieldAttribute( $attribute, hex2bin("0ff0" ), FALSE, TRUE );
+		$this->assertEquals( "0f0f0000", bin2hex($result), $message );
+		$this->assertEquals( "000f", bin2hex($attribute), $message );
 
 	} // testManageFlagAttribute.
 
