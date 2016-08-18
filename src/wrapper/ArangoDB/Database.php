@@ -1,27 +1,31 @@
 <?php
 
 /**
- * Collection.php
+ * Database.php
  *
- * This file contains the definition of the {@link Collection} class.
+ * This file contains the definition of the {@link Database} class.
  */
 
-namespace Milko\wrapper\MongoDB;
+namespace Milko\wrapper\ArangoDB;
 
 /*=======================================================================================
  *																						*
- *									Collection.php										*
+ *									Database.php										*
  *																						*
  *======================================================================================*/
 
 use Milko\wrapper\Client;
 
+use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+use triagens\ArangoDb\Database as ArangoDatabase;
+use triagens\ArangoDb\Connection as ArangoConnection;
+
 /**
- * <h4>MongoDB database class.</h4><p />
+ * <h4>ArangoDB database class.</h4><p />
  *
- * This <em>concrete</em> implementation of the {@link Client} class represents a
- * MongoDB database instance, it implements an object that manages a list of MongoDB
- * collections wrapped around the {@link Milko\PHPLib\MongoDB\Database} class.
+ * This <em>concrete</em> implementation of the {@link Client} class represents an
+ * ArangoDB database instance, it implements an object that manages a list of ArangoDB
+ * collections wrapped around the {@link Milko\PHPLib\ArangoDB\Database} class.
  *
  *	@package	Data
  *
@@ -29,7 +33,7 @@ use Milko\wrapper\Client;
  *	@version	1.00
  *	@since		18/06/2016
  */
-class Collection extends Client
+class Database extends Client
 {
 
 
@@ -49,13 +53,30 @@ class Collection extends Client
 	/**
 	 * <h4>Get client names.</h4><p />
 	 *
-	 * TO BE DEVELOPED OR SHADED.
+	 * We implement this method to return the list of collections hosted by the current
+	 * database.
 	 *
 	 * @return array				List of client names.
+	 *
+	 * @uses Connection()
+	 * @uses Client::listDatabases()
 	 */
 	public function Clients()
 	{
-		return [];																	// ==>
+		//
+		// Instantiate collection handler.
+		//
+		$handler = new ArangoCollectionHandler( $this->Connection() );
+
+		return
+			array_keys(
+				$handler->getAllCollections(
+					[
+						'excludeSystem' => TRUE,
+						'keys' => 'names'
+					]
+				)
+			);																		// ==>
 
 	} // Clients.
 
@@ -87,19 +108,24 @@ class Collection extends Client
 	protected function connectionCreate()
 	{
 		//
-		// Normalise options.
+		// Init local storage.
 		//
-		$options = $this->Options();
-		if( $options === NULL )
-			$options = [];
+		$name = $this->Path();
+		$clients = $this->Server()->Clients();
+		$connection = new ArangoConnection( $this->Server()->ConnectionOptions() );
 
-		return
-			$this->Server()
-				->Connection()
-				->selectCollection(
-					$this->Path(),
-					$options
-				);																	// ==>
+		//
+		// Create database.
+		//
+		if( ! in_array( $name, $clients ) )
+			ArangoDatabase::create( $connection, $name );
+
+		//
+		// Add database to connection.
+		//
+		$connection->setDatabase( $name );
+
+		return $connection;															// ==>
 
 	} // connectionCreate.
 
@@ -167,7 +193,7 @@ class Collection extends Client
 
 
 
-} // class Collection.
+} // class Database.
 
 
 ?>

@@ -8,36 +8,29 @@ require_once(dirname(__DIR__) . "/includes.local.php");
 //
 // Reference class.
 //
-use Milko\wrapper\Server;
+use Milko\wrapper\ArangoDB\Server;
 
 //
-// Test class.
+// Instantiate server.
 //
-class test_Server extends Server
-{
-	//
-	// Declare connection method.
-	//
-	protected function connectionCreate()
-	{
-		return "Is connected";
-	}
+$server = new Server( 'tcp://milko:xC%yUmGwaXbE3$Z8@127.0.0.1:8529' );
+//$database = $server->Client( "UnitTest_Tests", [] );
+//$collection = $database->Client( "Collection_Tests", [] );
+//
+//
+// Connect collection.
+//
+$server->Connect();
 
-	//
-	// Declare disconnection method.
-	//
-	protected function connectionDestruct()
-	{
-		return "Is not connected";
-	}
-}
+//// Insert record to create collection.
+//$collection->Connection()->insertOne( [ "name" => "test" ] );
 
-$x = "/dir/file/frag";
-print_r( explode( '/', $x ) );
-exit;
+// Get databases list.
+$result = $server->Clients();
+echo( "Databases: " ); print_r( $result );
 
-// Instantiate from URL.
-$test = new test_Server( 'prot://user:pass@host/database?@user@=val&@password@=password#frag' );
-print_r( $test );
+//// Get collections list.
+//$result = $database->Clients();
+//echo( "Collections: " ); print_r( $result );
 
 ?>

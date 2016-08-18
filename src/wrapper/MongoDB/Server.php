@@ -1,16 +1,16 @@
 <?php
 
 /**
- * ClientServer.php
+ * Server.php
  *
- * This file contains the definition of the {@link ClientServer} class.
+ * This file contains the definition of the MongoDB {@link Server} class.
  */
 
 namespace Milko\wrapper\MongoDB;
 
 /*=======================================================================================
  *																						*
- *									ClientServer.php									*
+ *										Server.php										*
  *																						*
  *======================================================================================*/
 
@@ -152,7 +152,7 @@ class Server extends ClientServer
 
 
 	/*===================================================================================
-	 *	clientCreate()																	*
+	 *	clientCreate																	*
 	 *==================================================================================*/
 
 	/**
