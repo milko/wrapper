@@ -83,8 +83,8 @@ class ServerTest extends PHPUnit_Framework_TestCase
 
 		$result = $this->mObject->Connect();
 		$this->assertTrue( $this->mObject->isConnected(), "isConnected() == TRUE" );
-		$this->assertEquals( "Is connected", $this->mObject->Connection(), "Connection() == 'Is connected'" );
-		$this->assertEquals( "Is connected", $result, "Connection() == 'Is connected'" );
+		$this->assertEquals( "Server is connected", $this->mObject->Connection(), "Connection() == 'Server is connected'" );
+		$this->assertEquals( "Server is connected", $result, "Connection() == 'Server is connected'" );
 
 		$result = $this->mObject->Disconnect();
 		$this->assertTrue( $result, "Disconnect() == TRUE" );

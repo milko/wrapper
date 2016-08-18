@@ -122,6 +122,62 @@ abstract class Server extends Container
 	const kOPTION_USER_PASS = "@pass@";
 
 	/**
+	 * Protocol tag.
+	 *
+	 * This represents the protocol tag.
+	 */
+	const kTAG_PROT = "PROT";
+
+	/**
+	 * Host tag.
+	 *
+	 * This represents the host tag.
+	 */
+	const kTAG_HOST = "HOST";
+
+	/**
+	 * Port tag.
+	 *
+	 * This represents the port tag.
+	 */
+	const kTAG_PORT = "PORT";
+
+	/**
+	 * User tag.
+	 *
+	 * This represents the user code tag.
+	 */
+	const kTAG_USER = "USER";
+
+	/**
+	 * Password tag.
+	 *
+	 * This represents the user password tag.
+	 */
+	const kTAG_PASS = "PASS";
+
+	/**
+	 * Path tag.
+	 *
+	 * This represents the path tag.
+	 */
+	const kTAG_PATH = "PATH";
+
+	/**
+	 * Options tag.
+	 *
+	 * This represents the options tag.
+	 */
+	const kTAG_OPTS = "OPTS";
+
+	/**
+	 * Fragment tag.
+	 *
+	 * This represents the fragment tag.
+	 */
+	const kTAG_FRAG = "FRAG";
+
+	/**
 	 * <h4>Server connection object.</h4><p />
 	 *
 	 * This data member holds the <i>server connection object</i>, it is the native object

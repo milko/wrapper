@@ -27,7 +27,7 @@ use Milko\wrapper\Container;
  *	<li><tt>{@link $mUserCode}</tt>: The user name.
  *	<li><tt>{@link $mUserPass}</tt>: The user password.
  *	<li><tt>{@link $mPath}</tt>: The path.
- *	<li><tt>{@link $mQuery}</tt>: The query parameters.
+ *	<li><tt>{@link $mOptions}</tt>: The query parameters.
  *	<li><tt>{@link $mFragment}</tt>: The fragment.
  * </ul>
  *
@@ -41,7 +41,7 @@ use Milko\wrapper\Container;
  *	<li><tt>{@link User()}</tt>: The user name.
  *	<li><tt>{@link Password()}</tt>: The user password.
  *	<li><tt>{@link Path()}</tt>: The path.
- *	<li><tt>{@link Query()}</tt>: The query parameters.
+ *	<li><tt>{@link Options()}</tt>: The URL query parameters.
  *	<li><tt>{@link Fragment}</tt>: The fragment.
  *	<li><tt>{@link URL()}</tt>: The URL.
  * </ul>
@@ -157,7 +157,7 @@ use Milko\wrapper\Container;
  * // string(4) "frag"
  *
  * // Get query.
- * $result = $dsn->Query();
+ * $result = $dsn->Options();
  * $result = $dsn[ Url::QUERY ];
  * // Array
  * // (
@@ -292,23 +292,14 @@ trait Url
 	protected $mPath = NULL;
 
 	/**
-	 * Query.
+	 * Options.
 	 *
 	 * This attribute contains the URL query parameters, it is an array featuring the key
 	 * as the array key and the value as the array value.
 	 *
 	 * @var array
 	 */
-	protected $mQuery = NULL;
-
-	/**
-	 * Fragment.
-	 *
-	 * This attribute contains the parameter provided after the hashmark <tt>#</tt>.
-	 *
-	 * @var string
-	 */
-	protected $mFragment = NULL;
+	protected $mOptions = NULL;
 
 
 
@@ -605,7 +596,7 @@ trait Url
 	 * <h4>Manage path.</h4><p />
 	 *
 	 * We implement this method by using {@link manageAttribute()} with the {@link $mPath}
-	 * attribute.
+	 * attribute, we also strip the leading directory token from the path.
 	 *
 	 * @param mixed				$theValue			Value or operation.
 	 * @return string			Data source path.
@@ -633,10 +624,10 @@ trait Url
 		 && ($theValue !== FALSE) )
 		{
 			//
-			// Add directory token.
+			// Remove directory token.
 			//
-			if( substr( $theValue, 0, 1 ) != '/' )
-			$theValue = "/$theValue";
+			if( substr( $theValue, 0, 1 ) == '/' )
+				$theValue = substr( $theValue, 1 );
 
 		} // New path.
 
@@ -646,14 +637,14 @@ trait Url
 
 
 	/*===================================================================================
-	 *	Query																			*
+	 *	Options																			*
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Manage query.</h4><p />
+	 * <h4>Manage options.</h4><p />
 	 *
-	 * We implement this method by using {@link manageAttribute()} with the {@link $mQuery}
-	 * attribute.
+	 * We implement this method by using {@link manageAttribute()} with the
+	 * {@link $mOptions} attribute.
 	 *
 	 * New values can be provided as arrays in which the key represents the query key and
 	 * the value the query value, or as a string.
@@ -670,24 +661,24 @@ trait Url
 	 *
 	 * @example
 	 * <code>
-	 * // Set query by array.
-	 * $test = $dsn->Query( [ 'arg' => 'val' ] );
+	 * // Set options by array.
+	 * $test = $dsn->Options( [ 'arg' => 'val' ] );
 	 *
-	 * // Set query by string.
-	 * $test = $dsn->Query( 'arg=val' );
+	 * // Set options by string.
+	 * $test = $dsn->Options( 'arg=val' );
 	 *
-	 * // Invalid query.
-	 * $test = $dsn->Query( '=value' );
+	 * // Invalid options.
+	 * $test = $dsn->Options( '=value' );
 	 * // Will raise an exception.
 	 *
-	 * // Retrieve current query.
-	 * $test = $dsn->Query();
+	 * // Retrieve current options.
+	 * $test = $dsn->Options();
 	 *
-	 * // Remove query.
-	 * $test = $dsn->Query( FALSE );
+	 * // Remove options.
+	 * $test = $dsn->Options( FALSE );
 	 * </code>
 	 */
-	public function Query( $theValue = NULL )
+	public function Options( $theValue = NULL )
 	{
 		//
 		// Compile query.
@@ -749,9 +740,9 @@ trait Url
 
 		} // Provided a string.
 
-		return Container::manageAttribute( $this->mQuery, $theValue );				// ==>
+		return Container::manageAttribute( $this->mOptions, $theValue );				// ==>
 
-	} // Query.
+	} // Options.
 
 
 	/*===================================================================================
@@ -807,14 +798,32 @@ trait Url
 	 * This method can be used to set the object attributes from an URL, or retrieve the
 	 * URL from the object attributes.
 	 *
-	 * The method accepts a single parameter that represents the URL to load or the
-	 * operation: if you provide <tt>NULL</tt> it is assumed you want to retrieve the URL
-	 * based on the current object attributes; if you provide a string, it is assumed you
-	 * want to load the object attributes by parsing the provided URL.
+	 * The first parameter of the method represents the URL to load or the operation: if you
+	 * provide <tt>NULL</tt> it is assumed you want to retrieve the URL based on the current
+	 * object attributes; if you provide a string, it is assumed you want to load the object
+	 * attributes by parsing the provided URL.
 	 *
-	 * The method will return the URL string.
+	 * The second parameter of the method is an optional array containing a list of tags
+	 * representing the elements to be <em>excluded</em> from the resulting URL, these can
+	 * be:
+	 *
+	 * <ul>
+	 * 	<li><tt>{@link kTAG_PROT}</tt>: Protocol.
+	 * 	<li><tt>{@link kTAG_HOST}</tt>: Host (will also exclude port).
+	 * 	<li><tt>{@link kTAG_PORT}</tt>: Port.
+	 * 	<li><tt>{@link kTAG_USER}</tt>: User code (will also exclude password).
+	 * 	<li><tt>{@link kTAG_PASS}</tt>: User password.
+	 * 	<li><tt>{@link kTAG_PATH}</tt>: Path.
+	 * 	<li><tt>{@link kTAG_OPTS}</tt>: Options.
+	 * 	<li><tt>{@link kTAG_FRAG}</tt>: Fragment.
+	 * </ul>
+	 *
+	 * Note that these constants must be defined in the class that uses this trait.
+	 *
+	 * The method will return an URL string.
 	 *
 	 * @param string			$theUrl				URL to load or <tt>NULL</tt>.
+	 * @param array				$theExcluded		List of element tags to be excluded.
 	 * @return string			The URL.
 	 * @throws InvalidArgumentException
 	 *
@@ -831,9 +840,13 @@ trait Url
 	 * $test->Host( 'newHost' );
 	 * $dsn = $test->URL();
 	 * // 'protocol://user:pass@newHost:9090/dir/file?arg=val#frag'
+	 *
+	 * // Retrieve URL excluding credentials ans path.
+	 * $dsn = $test->URL( NULL, [ self::kTAG_USER, self::kTAG_PATH ] );
+	 * // 'protocol://newHost:9090?arg=val#frag'
 	 * </code>
 	 */
-	public function URL( string $theUrl = NULL )
+	public function URL( string $theUrl = NULL, array $theExcluded = [] )
 	{
 		//
 		// Load URL.
@@ -862,7 +875,7 @@ trait Url
 				$this->mUserCode = NULL;
 				$this->mUserPass = NULL;
 				$this->mPath = NULL;
-				$this->mQuery = NULL;
+				$this->mOptions = NULL;
 				$this->mFragment = NULL;
 
 				//
@@ -874,7 +887,7 @@ trait Url
 				$this->User( parse_url( $theUrl, PHP_URL_USER ) );
 				$this->Password( parse_url( $theUrl, PHP_URL_PASS ) );
 				$this->Path( parse_url( $theUrl, PHP_URL_PATH ) );
-				$this->Query( parse_url( $theUrl, PHP_URL_QUERY ) );
+				$this->Options( parse_url( $theUrl, PHP_URL_QUERY ) );
 				$this->Fragment( parse_url( $theUrl, PHP_URL_FRAGMENT ) );
 
 				//
@@ -930,13 +943,15 @@ trait Url
 		//
 		// Set protocol.
 		//
-		if( $this->mProtocol !== NULL )
+		if( ($this->mProtocol !== NULL)
+		 && (! in_array( self::kTAG_PROT, $theExcluded )) )
 			$dsn .= ($this->mProtocol.'://');
 
 		//
 		// Handle credentials.
 		//
-		if( $this->mUserCode !== NULL )
+		if( ($this->mUserCode !== NULL)
+		 && (! in_array( self::kTAG_USER, $theExcluded )) )
 		{
 			//
 			// Set user.
@@ -946,7 +961,8 @@ trait Url
 			//
 			// Set password.
 			//
-			if( $this->mUserPass !== NULL )
+			if( ($this->mUserPass !== NULL)
+			 && (! in_array( self::kTAG_PASS, $theExcluded )) )
 				$dsn .= ":$this->mUserPass";
 
 			//
@@ -959,8 +975,14 @@ trait Url
 		//
 		// Add host and port.
 		//
-		if( $this->mHost !== NULL )
+		if( ($this->mHost !== NULL)
+		 && (! in_array( self::kTAG_HOST, $theExcluded )) )
 		{
+			//
+			// Check port.
+			//
+			$do_port = ! in_array( self::kTAG_PORT, $theExcluded );
+
 			//
 			// Add hosts.
 			//
@@ -971,9 +993,14 @@ trait Url
 				//
 				$list = [];
 				foreach( $this->mHost as $key => $value )
-					$list[] = ( $this->mPort[ $key ] !== NULL )
-							? ($this->mHost[ $key ] . ':' . $this->mPort[ $key ])
-							: $this->mHost[ $key ];
+				{
+					if( $do_port )
+						$list[] = ( $this->mPort[ $key ] !== NULL )
+								? ($this->mHost[ $key ] . ':' . $this->mPort[ $key ])
+								: $this->mHost[ $key ];
+					else
+						$list[] = $this->mHost[ $key ];
+				}
 
 				$dsn .= implode( ',', $list );
 			}
@@ -987,7 +1014,8 @@ trait Url
 				//
 				// Add port.
 				//
-				if( $this->mPort !== NULL )
+				if( $do_port
+				 && ($this->mPort !== NULL) )
 					$dsn .= ":$this->mPort";
 			}
 		}
@@ -997,23 +1025,21 @@ trait Url
 		// We add a leading slash
 		// if the parameter does not start with one.
 		//
-		if( $this->mPath !== NULL )
-		{
-			if( ! (substr( $this->mPath, 0, 1 ) == '/') )
-				$dsn .= '/';
-			$dsn .= $this->mPath;
-		}
+		if( ($this->mPath !== NULL)
+		 && (! in_array( self::kTAG_PATH, $theExcluded )) )
+			$dsn .= ('/' . $this->mPath);
 
 		//
 		// Set options.
 		//
-		if( $this->mQuery !== NULL )
+		if( ($this->mOptions !== NULL)
+		 && (! in_array( self::kTAG_OPTS, $theExcluded )) )
 		{
 			//
 			// Format query.
 			//
 			$query = [];
-			foreach( $this->mQuery as $key => $value )
+			foreach( $this->mOptions as $key => $value )
 				$query[] = ( $value !== NULL )
 					? "$key=$value"
 					: $key;
@@ -1027,7 +1053,8 @@ trait Url
 		//
 		// Set fragment.
 		//
-		if( $this->mFragment !== NULL )
+		if( ($this->mFragment !== NULL)
+		 && (! in_array( self::kTAG_FRAG, $theExcluded )) )
 			$dsn .= "#$this->mFragment";
 
 		return $dsn;																// ==>

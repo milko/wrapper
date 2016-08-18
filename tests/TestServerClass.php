@@ -18,7 +18,7 @@ class test_Server extends \Milko\wrapper\Server
 	//
 	protected function connectionCreate()
 	{
-		return "Is connected";
+		return "Server is connected";
 	}
 
 	//
@@ -26,7 +26,7 @@ class test_Server extends \Milko\wrapper\Server
 	//
 	protected function connectionDestruct()
 	{
-		return "Is not connected";
+		return "Server is not connected";
 	}
 }
 

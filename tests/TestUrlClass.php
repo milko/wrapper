@@ -23,6 +23,18 @@ class test_Url
 	//
 	use Url;
 
+	/**
+	 * Component tags.
+	 */
+	const kTAG_PROT = "PROT";
+	const kTAG_HOST = "HOST";
+	const kTAG_PORT = "PORT";
+	const kTAG_USER = "USER";
+	const kTAG_PASS = "PASS";
+	const kTAG_PATH = "PATH";
+	const kTAG_OPTS = "OPTS";
+	const kTAG_FRAG = "FRAG";
+
 	//
 	// Connection string.
 	//

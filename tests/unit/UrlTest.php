@@ -157,7 +157,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( '', $test->URL(), $message );
 
@@ -170,7 +170,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -183,7 +183,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -196,7 +196,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -209,7 +209,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -221,8 +221,8 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir', $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertEquals( 'dir', $test->Path(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -234,8 +234,8 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
 
@@ -247,10 +247,10 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[ 'key' => 'val' ],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
@@ -263,14 +263,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
@@ -283,14 +283,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
@@ -303,14 +303,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( [ 8080, 9090 ], $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
@@ -323,14 +323,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( [ 8080, 8181, 8282 ], $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $parameter, $test->URL(), $message );
@@ -352,7 +352,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 	 * @covers       Url::User()
 	 * @covers       Url::Password()
 	 * @covers       Url::Path()
-	 * @covers       Url::Query()
+	 * @covers       Url::Options()
 	 * @covers       Url::Fragment()
 	 */
 	public function testConstructorAttributes()
@@ -371,7 +371,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -387,7 +387,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -404,7 +404,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertNull( $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -422,7 +422,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertNull( $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -441,7 +441,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
 		$this->assertNull( $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -460,8 +460,8 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir', $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertEquals( 'dir', $test->Path(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
@@ -480,16 +480,16 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
-		$this->assertNull( $test->Query(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
+		$this->assertNull( $test->Options(), $message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
 		$url = 'prot://user:pass@host:8080/dir/file?key=val';
 		$parameter = 'key=val';
-		$message = "Query( '$parameter' )";
+		$message = "Options( '$parameter' )";
 		$test = new test_Url();
-		$test->Query( $parameter );
+		$test->Options( $parameter );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -501,19 +501,19 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[ 'key' => 'val' ],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
 		$url = 'prot://user:pass@host:8080/dir/file?key=val';
 		$parameter = '[ "key" => "val" ]';
-		$message = "Query( '$parameter' )";
+		$message = "Options( '$parameter' )";
 		$test = new test_Url();
-		$test->Query( [ "key" => "val" ] );
+		$test->Options( [ "key" => "val" ] );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -525,19 +525,19 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[ 'key' => 'val' ],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
 		$url = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni';
 		$parameter = 'key=val&arg=val&uni';
-		$message = "Query( '$parameter' )";
+		$message = "Options( '$parameter' )";
 		$test = new test_Url();
-		$test->Query( $parameter );
+		$test->Options( $parameter );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -549,23 +549,23 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
 
 		$url = 'prot://user:pass@host:8080/dir/file?key=val&arg=val&uni';
 		$parameter = 'key=val&arg=val&uni';
-		$message = "Query( [ \"key\" => \"val\", \"arg\" => \"val\", \"uni\" => NULL ] )";
+		$message = "Options( [ \"key\" => \"val\", \"arg\" => \"val\", \"uni\" => NULL ] )";
 		$test = new test_Url();
-		$test->Query( [ "key" => "val", "arg" => "val", "uni" => NULL ] );
+		$test->Options( [ "key" => "val", "arg" => "val", "uni" => NULL ] );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -577,14 +577,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertNull( $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
@@ -594,7 +594,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$message = "new Url( '$parameter' )";
 		$test = new test_Url();
 		$test->Fragment( $parameter );
-		$test->Query( 'key=val&arg=val&uni' );
+		$test->Options( 'key=val&arg=val&uni' );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -606,14 +606,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 8080, $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
@@ -623,7 +623,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$message = "Host( '$parameter' )";
 		$test = new test_Url();
 		$test->Fragment( 'frag' );
-		$test->Query( 'key=val&arg=val&uni' );
+		$test->Options( 'key=val&arg=val&uni' );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -635,14 +635,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( [ 8080, 9090 ], $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
@@ -652,7 +652,7 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$message = "Host( '$parameter' )";
 		$test = new test_Url();
 		$test->Fragment( 'frag' );
-		$test->Query( 'key=val&arg=val&uni' );
+		$test->Options( 'key=val&arg=val&uni' );
 		$test->Path( '/dir/file' );
 		$test->Password( 'pass' );
 		$test->User( 'user' );
@@ -664,14 +664,14 @@ class UrlTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( [ 8080, 8181, 8282 ], $test->Port(), $message );
 		$this->assertEquals( 'user', $test->User(), $message );
 		$this->assertEquals( 'pass', $test->Password(), $message );
-		$this->assertEquals( '/dir/file', $test->Path(), $message );
+		$this->assertEquals( 'dir/file', $test->Path(), $message );
 		$this->assertEquals(
 			[
 				"key" => "val",
 				"arg" => "val",
 				"uni" => NULL
 			],
-			$test->Query(),
+			$test->Options(),
 			$message );
 		$this->assertEquals( 'frag', $test->Fragment(), $message );
 		$this->assertEquals( $url, $test->URL(), $message );
@@ -789,34 +789,138 @@ class UrlTest extends PHPUnit_Framework_TestCase
 
 
 	/*===================================================================================
-	 *	testQuery																		*
+	 *	testOptions																		*
 	 *==================================================================================*/
 
 	/**
-	 * Test Query() exceptions.
+	 * Test Options() exceptions.
 	 *
-	 * @covers       Url::Query()
+	 * @covers       Url::Options()
 	 */
-	public function testQuery( )
+	public function testOptions( )
 	{
 		//
 		// Test query.
 		//
-		$message = '$this->mObject->Query( "key=val&uni" )';
-		$this->mObject->Query( "key=val&uni" );
+		$message = '$this->mObject->Options( "key=val&uni" )';
+		$this->mObject->Options( "key=val&uni" );
 		$this->assertEquals(
 			[ "key" => "val", "uni" => NULL ],
-			$this->mObject->Query(),
+			$this->mObject->Options(),
 			$message );
 
-		$message = '$this->mObject->Query( [ "key" => "val", "uni" => NULL ] )';
-		$this->mObject->Query( [ "key" => "val", "uni" => NULL ] );
+		$message = '$this->mObject->Options( [ "key" => "val", "uni" => NULL ] )';
+		$this->mObject->Options( [ "key" => "val", "uni" => NULL ] );
 		$this->assertEquals(
 			[ "key" => "val", "uni" => NULL ],
-			$this->mObject->Query(),
+			$this->mObject->Options(),
 			$message );
 
-	} // testQuery.
+	} // testOptions.
+
+
+	/*===================================================================================
+	 *	testURL																			*
+	 *==================================================================================*/
+
+	/**
+	 * Test URL() exceptions.
+	 *
+	 * @covers       Url::URL()
+	 */
+	public function testURL( )
+	{
+		//
+		// Test single URL exceptions.
+		//
+		$message = 'Exclude from URL [ PROT ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_PROT ] );
+		$this->assertSame(
+			'user:password@host:80/directory/file?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ HOST ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_HOST ] );
+		$this->assertSame(
+			'protocol://user:password@/directory/file?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ PORT ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_PORT ] );
+		$this->assertSame(
+			'protocol://user:password@host/directory/file?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ USER ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_USER ] );
+		$this->assertSame(
+			'protocol://host:80/directory/file?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ PASS ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_PASS ] );
+		$this->assertSame(
+			'protocol://user@host:80/directory/file?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ PATH ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_PATH ] );
+		$this->assertSame(
+			'protocol://user:password@host:80?key=val#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ OPTS ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_OPTS ] );
+		$this->assertSame(
+			'protocol://user:password@host:80/directory/file#frag',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ FRAG ]';
+		$result = $this->mObject->URL( NULL, [ test_Url::kTAG_FRAG ] );
+		$this->assertSame(
+			'protocol://user:password@host:80/directory/file?key=val',
+			$result,
+			$message );
+
+		//
+		// Test multiple URL exceptions.
+		//
+		$message = 'Exclude from URL [ PATH, OPTS, FRAG ]';
+		$result = $this->mObject->URL(
+			NULL,
+			[
+				test_Url::kTAG_PATH,
+				test_Url::kTAG_OPTS,
+				test_Url::kTAG_FRAG
+			]
+		);
+		$this->assertSame(
+			'protocol://user:password@host:80',
+			$result,
+			$message );
+
+		$message = 'Exclude from URL [ USER, PATH, OPTS ]';
+		$result = $this->mObject->URL(
+			NULL,
+			[
+				test_Url::kTAG_USER,
+				test_Url::kTAG_PATH,
+				test_Url::kTAG_OPTS
+			]
+		);
+		$this->assertSame(
+			'protocol://host:80#frag',
+			$result,
+			$message );
+
+	} // testURL.
 
 
 
