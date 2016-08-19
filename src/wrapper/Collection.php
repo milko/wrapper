@@ -58,7 +58,7 @@ interface Collection
 	/**
 	 * <h4>Drop collection.</h4><p />
 	 *
-	 * Delete the current database.
+	 * Delete the current collection and disconnect it.
 	 */
 	public function Drop();
 

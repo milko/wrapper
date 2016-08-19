@@ -148,6 +148,8 @@ class Collection extends Client
 	 * We implement this method by using the drop() method of the collection handler class
 	 * after ensuring the collection is connected.
 	 *
+	 * We then disconnect the collection.
+	 *
 	 * @uses isConnected()
 	 * @uses Connect()
 	 * @uses Connection()
@@ -165,7 +167,18 @@ class Collection extends Client
 		// Check collection.
 		//
 		if( $this->Connection()->getId() !== NULL )
+		{
+			//
+			// Drop collection.
+			//
 			$this->mCollectionHandler->drop( $this->Connection()->getName() );
+
+			//
+			// Disconnect collection.
+			//
+			$this->Disconnect();
+
+		} // Collection is active.
 
 	} // Drop.
 

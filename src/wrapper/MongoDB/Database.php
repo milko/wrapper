@@ -122,6 +122,8 @@ class Database extends Client
 	 * We implement this method by using the drop() method of the MongoDB database class
 	 * after ensuring the database is connected.
 	 *
+	 * We don't disconnect the database because this is not needed.
+	 *
 	 * @uses isConnected()
 	 * @uses Connect()
 	 * @uses Connection()

@@ -49,7 +49,7 @@ interface Database
 	/**
 	 * <h4>Drop database.</h4><p />
 	 *
-	 * Delete the current database.
+	 * Delete the current database and disconnect it.
 	 */
 	public function Drop();
 

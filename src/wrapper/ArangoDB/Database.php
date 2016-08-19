@@ -118,6 +118,8 @@ class Database extends Client
 	 * We implement this method by using the drop() method of the ArangoDB database class
 	 * after ensuring the database is connected.
 	 *
+	 * We then disconnect the database.
+	 *
 	 * @uses isConnected()
 	 * @uses Connect()
 	 * @uses Connection()
@@ -137,6 +139,11 @@ class Database extends Client
 		// Drop database.
 		//
 		ArangoDatabase::delete( $this->Server()->Connection(), $this->Path() );
+
+		//
+		// Disconnect database.
+		//
+		$this->Disconnect();
 
 	} // Drop.
 

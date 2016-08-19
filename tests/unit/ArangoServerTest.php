@@ -485,6 +485,11 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 		);
 
 		/**
+		 * Drop database.
+		 */
+		$database->Drop();
+
+		/**
 		 * Write stuff to the collection.
 		 */
 		$collection->SetOne( [ "name" => "test" ] );
