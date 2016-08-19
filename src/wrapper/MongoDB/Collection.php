@@ -15,6 +15,7 @@ namespace Milko\wrapper\MongoDB;
  *======================================================================================*/
 
 use Milko\wrapper\Client;
+use Milko\wrapper\Container;
 
 /**
  * <h4>MongoDB database class.</h4><p />
@@ -30,6 +31,7 @@ use Milko\wrapper\Client;
  *	@since		18/06/2016
  */
 class Collection extends Client
+				 implements \Milko\wrapper\Collection
 {
 
 
@@ -63,6 +65,137 @@ class Collection extends Client
 
 /*=======================================================================================
  *																						*
+ *								PUBLIC COLLECTION INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Drop																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Drop collection.</h4><p />
+	 *
+	 * We implement this method by using the drop() method of the MongoDB collection class
+	 * after ensuring the collection is connected.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Collection::drop()
+	 */
+	public function Drop()
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		//
+		// Drop collection.
+		//
+		$this->Connection()->drop();
+
+	} // Drop.
+
+
+	/*===================================================================================
+	 *																					*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Store a document.</h4><p />
+	 *
+	 * We use the replaceOne() method for existing objects, or the insertOne() for new ones.
+	 *
+	 * @param mixed					$theDocument		Document to store.
+	 * @return mixed				The document key.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses Container::convertToArray()
+	 * @uses \MongoDB\Collection::findOne()
+	 * @uses \MongoDB\Collection::insertOne()
+	 */
+	public function SetOne( $theDocument )
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		//
+		// Flatten to array.
+		//
+		Container::convertToArray( $theDocument );
+
+		//
+		// Check key.
+		//
+		if( array_key_exists( '_id', $theDocument ) )
+		{
+			//
+			// Check if it exists.
+			//
+			if( $this->Connection()->count( [ '_id' => $theDocument[ '_id' ] ] ) )
+			{
+				//
+				// Replace.
+				//
+				$this->mConnection->replaceOne(
+					[ '_id' => $theDocument[ '_id' ] ],
+					$theDocument );
+
+				return $theDocument[ '_id' ];										// ==>
+
+			} // Found document.
+
+		} // Has key.
+
+		return
+			$this->Connection()->insertOne( $theDocument )
+				->getInsertedId();													// ==>
+
+	} // SetOne.
+
+
+	/*===================================================================================
+	 *	Records																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return record count.</h4><p />
+	 *
+	 * We use the count() method of the connection.
+	 *
+	 * @return int					Collection record count.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Collection::count()
+	 */
+	public function Records()
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		return $this->Connection()->count();										// ==>
+
+	} // Records.
+
+
+
+/*=======================================================================================
+ *																						*
  *								PROTECTED CONNECTION INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -80,7 +213,7 @@ class Collection extends Client
 	 * name as the connection string, stripped from the options that are sent to the native
 	 * {@link Client} constructor.
 	 *
-	 * @return mixed				The native connection.
+	 * @return Collection			The native connection.
 	 *
 	 * @uses Client::__construct()
 	 */
@@ -113,10 +246,7 @@ class Collection extends Client
 	 *
 	 * In this method we do nothing.
 	 */
-	protected function connectionDestruct()
-	{
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 
@@ -159,10 +289,94 @@ class Collection extends Client
 	 *
 	 * @param Client				$theClient			Client instance.
 	 */
-	protected function clientDestruct( Client $theClient )
-	{
+	protected function clientDestruct( Client $theClient )	{}
 
-	} // clientDestruct.
+
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED SERVER INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	serverCreate																	*
+	 *==================================================================================*/
+
+	/**
+	 * Instantiate server.
+	 *
+	 * We implement this method to instantiate a MongoDB server and a database instance
+	 * according to the current object's {@link Path()}.
+	 *
+	 * The method will first instantiate the {@link Server} instance, it will then use the
+	 * first element of the {@link Path()} to instantiate the {@link Database} and strip
+	 * that element from the current path; any subsequent path elements will be handled by
+	 * the constructor to add sub-clients to the current object.
+	 *
+	 * If the current object has less than 2 elements in the path, the method will raise an
+	 * exception.
+	 *
+	 * @return Client				The database instance.
+	 * @throws \RuntimeException
+	 */
+	protected function serverCreate()
+	{
+		//
+		// Check path.
+		//
+		if( $this->mPath !== NULL )
+		{
+			//
+			// Get elements.
+			//
+			$tmp = explode( '/', $this->mPath );
+			if( count( $tmp ) > 1 )
+			{
+				//
+				// Instantiate anonymous server.
+				//
+				$server =
+					new Server(
+						$this->URL(
+							NULL,
+							[
+								self::kTAG_USER,
+								self::kTAG_PATH,
+								self::kTAG_OPTS,
+								self::kTAG_FRAG
+							]
+						)
+					);
+
+				//
+				// Instantiate database.
+				// We also strip the name from the path list.
+				//
+				$database = $server->Client( array_shift( $tmp ) );
+
+				//
+				// Update path excluding the database name.
+				//
+				$this->Path( implode( '/', $tmp ) );
+
+				return $database;													// ==>
+
+			} // Has at least two elements.
+
+			throw new \RuntimeException(
+				"Missing database name in path."
+			);																	// !@! ==>
+
+		} // Has path.
+
+		throw new \RuntimeException(
+			"Missing path."
+		);																		// !@! ==>
+
+	} // serverCreate.
 
 
 

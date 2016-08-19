@@ -495,6 +495,16 @@ class ClientServerTest extends PHPUnit_Framework_TestCase
 			'$collection->Options() === NULL'
 		);
 
+		/**
+		 * Get "Collection" by offset.
+		 */
+		$nested = $object[ "Database" ][ "Collection" ];
+		$this->assertSame(
+			$nested,
+			$collection,
+			'$collection == $object[ "Database" ][ "Collection" ]'
+		);
+
 	} // testConstruct.
 
 

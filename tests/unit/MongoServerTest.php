@@ -86,12 +86,12 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		$this->assertInstanceOf(
 			\MongoDB\Client::class,
 			$this->mObject->Connection(),
-			"Connection() == \MongoDB\Client::class"
+			"Connection() == \\MongoDB\\Client::class"
 		);
 		$this->assertInstanceOf(
 			\MongoDB\Client::class,
 			$result,
-			"$result == \MongoDB\Client::class"
+			'$result == \\MongoDB\\Client::class'
 		);
 
 		$result = $this->mObject->Disconnect();
@@ -114,17 +114,17 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 	public function testClient()
 	{
 		/**
-		 * Test adding single client "Directory".
+		 * Test adding database "UnitTests".
 		 */
-		$result = $this->mObject->Client( "Directory", [] );
+		$result = $this->mObject->Client( "UnitTests", [] );
 		$this->assertTrue(
-			$this->mObject->offsetExists( "Directory" ),
-			'$this->mObject->Client( "Directory", [] ) => offsetExists( "Directory" )'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->Client( "Directory", [] ) => offsetExists( "UnitTests" )'
 		);
 		$this->assertSame(
 			$result,
-			$this->mObject->Client( "Directory" ),
-			'$this->mObject->Client( "Directory", [] ) == $result'
+			$this->mObject->Client( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [] ) == $result'
 		);
 		$this->assertSame(
 			$this->mObject,
@@ -134,7 +134,7 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		$this->assertInstanceOf(
 			\MongoDB\Client::class,
 			$this->mObject->Connection(),
-			"$this->mObject->Connection() == \MongoDB\Client::class"
+			'$this->mObject->Connection() == \\MongoDB\\Client::class'
 		);
 		$this->assertNull(
 			$result->Connection(),
@@ -156,32 +156,30 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 			'$this->mObject->Port() == $result->Port()'
 		);
 		$this->assertSame(
-			"Directory",
+			"UnitTests",
 			$result->Path(),
 			'$this->mObject->Path() == $result->Path()'
 		);
 
 		/**
-		 * Test adding single client "File" with options.
+		 * Test adding database "UnitTests" with options.
 		 */
 		$result = $this->mObject->Client(
-			"File",
+			"UnitTests",
 			[
 				test_MongoServer::kOPTION_NAME => "TheFileName",
 				test_MongoServer::kOPTION_USER_CODE => "TheUserCode",
-				test_MongoServer::kOPTION_USER_PASS => "TheUserPass",
-				"opt1" => "val1",
-				"opt2" => "val2"
+				test_MongoServer::kOPTION_USER_PASS => "TheUserPass"
 			]
 		);
 		$this->assertTrue(
-			$this->mObject->offsetExists( "File" ),
-			'$this->mObject->Client( "File", [ ... ] ) => offsetExists( "File" )'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [ ... ] ) => offsetExists( "UnitTests" )'
 		);
 		$this->assertSame(
 			$result,
-			$this->mObject->Client( "File" ),
-			'$this->mObject->Client( "File", [] ) == $result'
+			$this->mObject->Client( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [] ) == $result'
 		);
 		$this->assertSame(
 			$this->mObject,
@@ -191,7 +189,7 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		$this->assertInstanceOf(
 			\MongoDB\Client::class,
 			$this->mObject->Connection(),
-			"$this->mObject->Connection() == \MongoDB\Client::class"
+			'$this->mObject->Connection() == \\MongoDB\\Client::class'
 		);
 		$this->assertNull(
 			$result->Connection(),
@@ -227,14 +225,6 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 			$result->Password(),
 			'"TheUserPass" == $result->Password()'
 		);
-		$this->assertSame(
-			[
-				"opt1" => "val1",
-				"opt2" => "val2"
-			],
-			$result->Options(),
-			'[ ... ] == $result->Options()'
-		);
 
 	} // testClient.
 
@@ -254,18 +244,16 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		 * Test instantiating from NewClient().
 		 */
 		$result = $this->mObject->NewClient(
-			"Test",
+			"UnitTests",
 			[
 				test_MongoServer::kOPTION_NAME => "TheFileName",
 				test_MongoServer::kOPTION_USER_CODE => "TheUserCode",
-				test_MongoServer::kOPTION_USER_PASS => "TheUserPass",
-				"opt1" => "val1",
-				"opt2" => "val2"
+				test_MongoServer::kOPTION_USER_PASS => "TheUserPass"
 			]
 		);
 		$this->assertFalse(
-			$this->mObject->offsetExists( "Test" ),
-			'$this->mObject->offsetExists( "Test" ) === FALSE'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->offsetExists( "UnitTests" ) === FALSE'
 		);
 		$this->assertSame(
 			$this->mObject,
@@ -310,14 +298,6 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 			$result->Password(),
 			'"TheUserPass" == $result->Password()'
 		);
-		$this->assertSame(
-			[
-				"opt1" => "val1",
-				"opt2" => "val2"
-			],
-			$result->Options(),
-			'[ ... ] == $result->Options()'
-		);
 
 	} // testNewClient.
 
@@ -336,65 +316,50 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		/**
 		 * Test nested instantiating.
 		 */
-		$object = new test_ClientServer(
-			'protocol://user:password@host:80/Database/Collection?key=val#frag'
+		$object = new test_MongoServer(
+			'mongodb://localhost:27017/UnitTests/Collection'
 		);
 
 		/**
 		 * Check client server object.
 		 */
 		$this->assertTrue(
-			$object->offsetExists( "Database" ),
-			'$object->offsetExists( "Database" ) === TRUE'
+			$object->offsetExists( "UnitTests" ),
+			'$object->offsetExists( "UnitTests" ) === TRUE'
 		);
 		$this->assertTrue(
 			$object->isConnected(),
 			'$object->isConnected() === TRUE'
 		);
-		$this->assertSame(
-			"ClientServer is connected",
+		$this->assertInstanceOf(
+			\MongoDB\Client::class,
 			$object->Connection(),
-			'$object->Connection() == "ClientServer is connected"'
+			"Connection() == \\MongoDB\\Client::class"
 		);
 		$this->assertSame(
-			"protocol",
+			"mongodb",
 			$object->Protocol(),
-			'$object->Protocol() == "protocol'
+			'$object->Protocol() == "mongodb'
 		);
 		$this->assertSame(
-			"host",
+			"localhost",
 			$object->Host(),
-			'$object->Host() == "host'
+			'$object->Host() == "localhost'
 		);
 		$this->assertSame(
-			80,
+			27017,
 			$object->Port(),
-			'$object->Port() == 80'
+			'$object->Port() == 27017'
 		);
 		$this->assertNull(
 			$object->Path(),
 			'$object->Path() === NULL'
 		);
-		$this->assertSame(
-			"user",
-			$object->User(),
-			'$object->User() == "user"'
-		);
-		$this->assertSame(
-			"password",
-			$object->Password(),
-			'$object->Password() == "password"'
-		);
-		$this->assertSame(
-			[ "key" => "val" ],
-			$object->Options(),
-			'$object->Options() == [ "key" => "val" ]'
-		);
 
 		/**
 		 * Get database.
 		 */
-		$database = $object->Client( "Database" );
+		$database = $object->Client( "UnitTests" );
 
 		/**
 		 * Test first level client.
@@ -404,10 +369,10 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 			$database->Server(),
 			'$object == $database->Server()'
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			\MongoDB\Database::class,
 			$database->Connection(),
-			'"Client is connected" == $database->Connection()'
+			"Connection() == \\MongoDB\\Database::class"
 		);
 		$this->assertTrue(
 			$database->offsetExists( "Collection" ),
@@ -429,9 +394,9 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 			'$object->Port() == $database->Port()'
 		);
 		$this->assertSame(
-			"Database",
+			"UnitTests",
 			$database->Path(),
-			'"Database" == $database->Path()'
+			'"UnitTests" == $database->Path()'
 		);
 		$this->assertNull(
 			$database->User(),
@@ -494,6 +459,48 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		$this->assertNull(
 			$collection->Options(),
 			'$collection->Options() === NULL'
+		);
+
+		/**
+		 * Get "Collection" by offset.
+		 */
+		$nested = $object[ "UnitTests" ][ "Collection" ];
+		$this->assertSame(
+			$nested,
+			$collection,
+			'$collection == $object[ "UnitTests" ][ "Collection" ]'
+		);
+
+		/**
+		 * Check collection connection.
+		 */
+		$this->assertFalse(
+			$collection->isConnected(),
+			'$collection->isConnected()'
+		);
+		$collection->Connect();
+		$this->assertTrue(
+			$collection->isConnected(),
+			'$collection->isConnected()'
+		);
+
+		/**
+		 * Write stuff to the collection.
+		 */
+		$collection->SetOne( [ "name" => "test" ] );
+		$this->assertGreaterThan(
+			0,
+			$collection->Records(),
+			'$collection->count()'
+		);
+
+		/**
+		 * Check databases list.
+		 */
+		$this->assertContains(
+			"UnitTests",
+			array_keys( $object->Clients() ),
+			'Database "UnitTests" exists'
 		);
 
 	} // testConstruct.

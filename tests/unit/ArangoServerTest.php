@@ -1,9 +1,9 @@
 <?php
 
 /**
- * ClientTest.php
+ * ArangoServerTest.php
  *
- * This file contains the unit tests of the {@link Milko\wrapper\Client} class.
+ * This file contains the unit tests of the {@link Milko\wrapper\ClientServer} class.
  *
  *	@package	Test
  *
@@ -20,39 +20,30 @@ require_once(dirname( dirname(__DIR__) ) . "/includes.local.php");
 /**
  * Include test classes.
  */
-require_once(dirname(__DIR__) . "/TestClientClass.php");
-require_once(dirname(__DIR__) . "/TestClientServerClass.php");
+require_once(dirname(__DIR__) . "/TestArangoServerClass.php");
+require_once(dirname(__DIR__) . "/TestArangoDatabaseClass.php");
+require_once(dirname(__DIR__) . "/TestArangoCollectionClass.php");
 
-use Milko\wrapper\Client;
-use Milko\wrapper\ClientServer;
+use Milko\wrapper\ArangoDB\Server;
 
 /**
- * Client unit tests
+ * Arango Server unit tests
  *
  * We overload the parent class by implementing the abstract protected interface.
  *
- *	@covers		Milko\wrapper\Container
+ *	@covers		Server
  *
  *	@package	Test
  *	@author		Milko Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/08/2016
  */
-class ClientTest extends PHPUnit_Framework_TestCase
+class ArangoServerTest extends PHPUnit_Framework_TestCase
 {
 	/**
-	 * Server.
+	 * Data.
 	 *
-	 * This attribute stores the client server instance.
-	 *
-	 * @var object
-	 */
-	public $mServer = NULL;
-
-	/**
-	 * Client.
-	 *
-	 * This attribute stores the client instance.
+	 * This attribute stores the test object instance.
 	 *
 	 * @var object
 	 */
@@ -76,7 +67,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Test Connect()
 	 *
-	 * @covers       ClientServer::Connect()
+	 * @covers       \Milko\wrapper\ClientServer::Connect()
 	 * @covers       ClientServer::Disconnect()
 	 * @covers       ClientServer::isConnected()
 	 * @covers       ClientServer::createConnection()
@@ -92,15 +83,15 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
 		$result = $this->mObject->Connect();
 		$this->assertTrue( $this->mObject->isConnected(), "isConnected() == TRUE" );
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			\triagens\ArangoDb\Connection::class,
 			$this->mObject->Connection(),
-			"Connection() == 'Client is connected'"
+			"Connection() == \\triagens\\ArangoDb\\Connection::class"
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			\triagens\ArangoDb\Connection::class,
 			$result,
-			"Connection() == 'Client is connected'"
+			'$result == \\triagens\\ArangoDb\\Connection::class'
 		);
 
 		$result = $this->mObject->Disconnect();
@@ -123,27 +114,27 @@ class ClientTest extends PHPUnit_Framework_TestCase
 	public function testClient()
 	{
 		/**
-		 * Test adding single client "Directory".
+		 * Test adding database "UnitTests".
 		 */
-		$result = $this->mObject->Client( "Directory", [] );
+		$result = $this->mObject->Client( "UnitTests", [] );
 		$this->assertTrue(
-			$this->mObject->offsetExists( "Directory" ),
-			'$this->mObject->Client( "Directory", [] ) => offsetExists( "Directory" )'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->Client( "Directory", [] ) => offsetExists( "UnitTests" )'
 		);
 		$this->assertSame(
 			$result,
-			$this->mObject->Client( "Directory" ),
-			'$this->mObject->Client( "Directory", [] ) == $result'
+			$this->mObject->Client( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [] ) == $result'
 		);
 		$this->assertSame(
 			$this->mObject,
 			$result->Server(),
 			'$result->Server() == $this->mObject'
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			triagens\ArangoDb\Connection::class,
 			$this->mObject->Connection(),
-			'$this->mObject->Connection() == "Client is connected"'
+			'$this->mObject->Connection() == \\triagens\\ArangoDb\\Connection::class'
 		);
 		$this->assertNull(
 			$result->Connection(),
@@ -165,42 +156,40 @@ class ClientTest extends PHPUnit_Framework_TestCase
 			'$this->mObject->Port() == $result->Port()'
 		);
 		$this->assertSame(
-			"Directory",
+			"UnitTests",
 			$result->Path(),
 			'$this->mObject->Path() == $result->Path()'
 		);
 
 		/**
-		 * Test adding single client "File" with options.
+		 * Test adding database "UnitTests" with options.
 		 */
 		$result = $this->mObject->Client(
-			"File",
+			"UnitTests",
 			[
-				ClientServer::kOPTION_NAME => "TheFileName",
-				ClientServer::kOPTION_USER_CODE => "TheUserCode",
-				ClientServer::kOPTION_USER_PASS => "TheUserPass",
-				"opt1" => "val1",
-				"opt2" => "val2"
+				test_ArangoServer::kOPTION_NAME => "TheFileName",
+				test_ArangoServer::kOPTION_USER_CODE => "TheUserCode",
+				test_ArangoServer::kOPTION_USER_PASS => "TheUserPass"
 			]
 		);
 		$this->assertTrue(
-			$this->mObject->offsetExists( "File" ),
-			'$this->mObject->Client( "File", [ ... ] ) => offsetExists( "File" )'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [ ... ] ) => offsetExists( "UnitTests" )'
 		);
 		$this->assertSame(
 			$result,
-			$this->mObject->Client( "File" ),
-			'$this->mObject->Client( "File", [] ) == $result'
+			$this->mObject->Client( "UnitTests" ),
+			'$this->mObject->Client( "UnitTests", [] ) == $result'
 		);
 		$this->assertSame(
 			$this->mObject,
 			$result->Server(),
 			'$result->Server() == $this->mObject'
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			triagens\ArangoDb\Connection::class,
 			$this->mObject->Connection(),
-			'$this->mObject->Connection() == "Client is connected"'
+			'$this->mObject->Connection() == \\triagens\\ArangoDb\\Connection::class'
 		);
 		$this->assertNull(
 			$result->Connection(),
@@ -236,14 +225,6 @@ class ClientTest extends PHPUnit_Framework_TestCase
 			$result->Password(),
 			'"TheUserPass" == $result->Password()'
 		);
-		$this->assertSame(
-			[
-				"opt1" => "val1",
-				"opt2" => "val2"
-			],
-			$result->Options(),
-			'[ ... ] == $result->Options()'
-		);
 
 	} // testClient.
 
@@ -263,18 +244,16 @@ class ClientTest extends PHPUnit_Framework_TestCase
 		 * Test instantiating from NewClient().
 		 */
 		$result = $this->mObject->NewClient(
-			"Test",
+			"UnitTests",
 			[
-				ClientServer::kOPTION_NAME => "TheFileName",
-				ClientServer::kOPTION_USER_CODE => "TheUserCode",
-				ClientServer::kOPTION_USER_PASS => "TheUserPass",
-				"opt1" => "val1",
-				"opt2" => "val2"
+				test_ArangoServer::kOPTION_NAME => "TheFileName",
+				test_ArangoServer::kOPTION_USER_CODE => "TheUserCode",
+				test_ArangoServer::kOPTION_USER_PASS => "TheUserPass"
 			]
 		);
 		$this->assertFalse(
-			$this->mObject->offsetExists( "Test" ),
-			'$this->mObject->offsetExists( "Test" ) === FALSE'
+			$this->mObject->offsetExists( "UnitTests" ),
+			'$this->mObject->offsetExists( "UnitTests" ) === FALSE'
 		);
 		$this->assertSame(
 			$this->mObject,
@@ -319,14 +298,6 @@ class ClientTest extends PHPUnit_Framework_TestCase
 			$result->Password(),
 			'"TheUserPass" == $result->Password()'
 		);
-		$this->assertSame(
-			[
-				"opt1" => "val1",
-				"opt2" => "val2"
-			],
-			$result->Options(),
-			'[ ... ] == $result->Options()'
-		);
 
 	} // testNewClient.
 
@@ -345,66 +316,50 @@ class ClientTest extends PHPUnit_Framework_TestCase
 		/**
 		 * Test nested instantiating.
 		 */
-		$object = new test_Client(
-			'protocol://user:password@host:80/Server/Database/Collection?key=val#frag'
+		$object = new test_ArangoServer(
+			'tcp://UnitTests:testuser@localhost:8529/UnitTests/Collection?createCollection=1'
 		);
 
 		/**
-		 * Check client object.
+		 * Check client server object.
 		 */
 		$this->assertTrue(
-			$object->offsetExists( "Database" ),
-			'$object->offsetExists( "Database" ) === TRUE'
+			$object->offsetExists( "UnitTests" ),
+			'$object->offsetExists( "UnitTests" ) === TRUE'
 		);
 		$this->assertTrue(
 			$object->isConnected(),
 			'$object->isConnected() === TRUE'
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			triagens\ArangoDb\Connection::class,
 			$object->Connection(),
-			'$object->Connection() === "Client is connected"'
+			"Connection() == \\triagens\\ArangoDb\\Connection::class"
 		);
 		$this->assertSame(
-			"protocol",
+			"tcp",
 			$object->Protocol(),
-			'$object->Protocol() == "protocol'
+			'$object->Protocol() == "tcp'
 		);
 		$this->assertSame(
-			"host",
+			"localhost",
 			$object->Host(),
-			'$object->Host() == "host'
+			'$object->Host() == "localhost'
 		);
 		$this->assertSame(
-			80,
+			8529,
 			$object->Port(),
-			'$object->Port() == 80'
+			'$object->Port() == 8529'
 		);
-		$this->assertEquals(
-			"Server",
+		$this->assertNull(
 			$object->Path(),
-			'$object->Path() === "Server"'
-		);
-		$this->assertSame(
-			"user",
-			$object->User(),
-			'$object->User() == "user"'
-		);
-		$this->assertSame(
-			"password",
-			$object->Password(),
-			'$object->Password() == "password"'
-		);
-		$this->assertSame(
-			[ "key" => "val" ],
-			$object->Options(),
-			'$object->Options() == [ "key" => "val" ]'
+			'$object->Path() === NULL'
 		);
 
 		/**
 		 * Get database.
 		 */
-		$database = $object->Client( "Database" );
+		$database = $object->Client( "UnitTests" );
 
 		/**
 		 * Test first level client.
@@ -414,10 +369,10 @@ class ClientTest extends PHPUnit_Framework_TestCase
 			$database->Server(),
 			'$object == $database->Server()'
 		);
-		$this->assertSame(
-			"Client is connected",
+		$this->assertInstanceOf(
+			\triagens\ArangoDb\Connection::class,
 			$database->Connection(),
-			'"Client is connected" == $database->Connection()'
+			"Connection() == \\triagens\\ArangoDb\\Connection::class"
 		);
 		$this->assertTrue(
 			$database->offsetExists( "Collection" ),
@@ -439,9 +394,9 @@ class ClientTest extends PHPUnit_Framework_TestCase
 			'$object->Port() == $database->Port()'
 		);
 		$this->assertSame(
-			"Database",
+			"UnitTests",
 			$database->Path(),
-			'"Database" == $database->Path()'
+			'"UnitTests" == $database->Path()'
 		);
 		$this->assertNull(
 			$database->User(),
@@ -507,40 +462,72 @@ class ClientTest extends PHPUnit_Framework_TestCase
 		);
 
 		/**
-		 * Get server
+		 * Get "Collection" by offset.
 		 */
-		$server = $object->Server();
+		$nested = $object[ "UnitTests" ][ "Collection" ];
+		$this->assertSame(
+			$nested,
+			$collection,
+			'$collection == $object[ "UnitTests" ][ "Collection" ]'
+		);
 
 		/**
-		 * Test server access.
+		 * Check collection connection.
 		 */
-		$this->assertInstanceOf(
-			test_ClientServer::class,
-			$server,
-			'$server instanceof test_ClientServer'
+		$this->assertFalse(
+			$collection->isConnected(),
+			'$collection->isConnected()'
 		);
-		$this->assertSame(
-			$object,
-			$server->Client( "Server" ),
-			'$object == $server->Client( "Server" )'
+		$collection->Connect();
+		$this->assertTrue(
+			$collection->isConnected(),
+			'$collection->isConnected()'
 		);
-		$this->assertSame(
-			$object,
-			$server[ "Server" ],
-			'$object == $server[ "Server" ]'
+
+		/**
+		 * Write stuff to the collection.
+		 */
+		$collection->SetOne( [ "name" => "test" ] );
+		$this->assertGreaterThan(
+			0,
+			$collection->Records(),
+			'$collection->count()'
 		);
-		$this->assertSame(
-			$database,
-			$server[ "Server" ][ "Database" ],
-			'$object == $server[ "Server" ][ "Database" ]'
-		);
-		$this->assertSame(
-			$collection,
-			$server[ "Server" ][ "Database" ][ "Collection" ],
-			'$object == $server[ "Server" ][ "Database" ][ "Collection" ]'
+
+		/**
+		 * Check databases list.
+		 */
+		$this->assertContains(
+			"UnitTests",
+			array_keys( $object->Clients() ),
+			'Database "UnitTests" exists'
 		);
 
 	} // testConstruct.
+
+
+	/*===================================================================================
+	 *	testClients																		*
+	 *==================================================================================*/
+
+	/**
+	 * Test Clients()
+	 *
+	 * @covers       Server::Clients()
+	 */
+	public function testClients()
+	{
+		/**
+		 * Test clients list.
+		 */
+		$result = $this->mObject->Clients();
+		$this->assertInternalType(
+			"array",
+			$result,
+			'$result is array'
+		);
+
+	} // testClients.
 
 
 
@@ -562,18 +549,10 @@ class ClientTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		//
-		// Instantiate client server.
+		// Instantiate object.
 		//
-		$this->mServer = new test_ClientServer(
-			'protocol://user:password@host:80?key=val#frag'
-		);
-
-		//
-		// Instantiate client.
-		//
-		$this->mObject = new test_Client(
-			$this->mServer,
-			'protocol://user:pass@host:80/Client?opt=val#frag'
+		$this->mObject = new test_ArangoServer(
+			'tcp://UnitTests:testuser@localhost:8529?createCollection=1'
 		);
 
 	} // testConstructor.
@@ -581,7 +560,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
 
 
-} // class ClientTest.
+} // class ArangoServerTest.
 
 
 ?>

@@ -42,7 +42,7 @@ class test_ClientServer extends \Milko\wrapper\ClientServer
 	//
 	protected function clientCreate()
 	{
-		return new test_Client( $this );
+		return new test_Client( NULL, $this );
 	}
 
 	//

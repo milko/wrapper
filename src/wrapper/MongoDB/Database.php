@@ -15,6 +15,7 @@ namespace Milko\wrapper\MongoDB;
  *======================================================================================*/
 
 use Milko\wrapper\Client;
+use Milko\wrapper\ClientServer;
 
 /**
  * <h4>MongoDB database class.</h4><p />
@@ -28,8 +29,26 @@ use Milko\wrapper\Client;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate server.
+ * $server = new Server( 'mongodb://localhost:27017' );
+ *
+ * // Instantiate database "Database".
+ * $database = new Database( $server, "mongodb://localhost:27017/Database" );
+ *
+ * // Instantiate database "Database" and add it to server clients.
+ * $database = $server->Client( "Database", [] );
+ *
+ * // Instantiate server and database.
+ * $server = new Server( 'mongodb://localhost:27017/Database' );
+ * $database = $server->Client( "Database" );
+ * $database = $server[ "Database" ];
+ * </code>
  */
 class Database extends Client
+			   implements \Milko\wrapper\Database
 {
 
 
@@ -54,8 +73,10 @@ class Database extends Client
 	 *
 	 * @return array				List of client names.
 	 *
+	 * @uses isConnected()
+	 * @uses Connect()
 	 * @uses Connection()
-	 * @uses Client::listDatabases()
+	 * @uses \MongoDB\Database::listCollections()
 	 */
 	public function Clients()
 	{
@@ -85,6 +106,46 @@ class Database extends Client
 
 /*=======================================================================================
  *																						*
+ *								PUBLIC DATABASE INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Drop																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Drop database.</h4><p />
+	 *
+	 * We implement this method by using the drop() method of the MongoDB database class
+	 * after ensuring the database is connected.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Database::drop()
+	 */
+	public function Drop()
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		//
+		// Drop database.
+		//
+		$this->Connection()->drop();
+
+	} // Drop.
+
+
+
+/*=======================================================================================
+ *																						*
  *								PROTECTED CONNECTION INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -104,7 +165,9 @@ class Database extends Client
 	 *
 	 * @return mixed				The native connection.
 	 *
-	 * @uses Client::__construct()
+	 * @uses Options()
+	 * @uses Server()
+	 * @uses \MongoDB\Client::selectDatabase()
 	 */
 	protected function connectionCreate()
 	{
@@ -135,10 +198,7 @@ class Database extends Client
 	 *
 	 * In this method we do nothing.
 	 */
-	protected function connectionDestruct()
-	{
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 
@@ -151,7 +211,7 @@ class Database extends Client
 
 
 	/*===================================================================================
-	 *	clientCreate()																	*
+	 *	clientCreate																	*
 	 *==================================================================================*/
 
 	/**
@@ -159,13 +219,11 @@ class Database extends Client
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
-	 * @param string				$theName			Client name.
-	 * @param array					$theOptions			Creation options.
 	 * @return Client				The {@link Client} instance.
 	 */
 	protected function clientCreate()
 	{
-		return new Collection( $this );												// ==>
+		return new Collection( NULL, $this );										// ==>
 
 	} // clientCreate.
 
@@ -181,10 +239,48 @@ class Database extends Client
 	 *
 	 * @param Client				$theClient			Client instance.
 	 */
-	protected function clientDestruct( Client $theClient )
-	{
+	protected function clientDestruct( Client $theClient )	{}
 
-	} // clientDestruct.
+
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED SERVER INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	serverCreate																	*
+	 *==================================================================================*/
+
+	/**
+	 * Instantiate server.
+	 *
+	 * We implement this method to instantiate a MongoDB server instance according to the
+	 * current object attributes.
+	 *
+	 * We provide the current object's data source name, excluding the credentials, path,
+	 * options and fragment, to the {@link Server} constructor.
+	 *
+	 * @return Server				The server instance.
+	 */
+	protected function serverCreate()
+	{
+		return new Server(
+			$this->URL(
+				NULL,
+				[
+					self::kTAG_USER,
+					self::kTAG_PATH,
+					self::kTAG_OPTS,
+					self::kTAG_FRAG
+				]
+			)
+		);																			// ==>
+
+	} // serverCreate.
 
 
 

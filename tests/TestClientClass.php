@@ -42,7 +42,7 @@ class test_Client extends \Milko\wrapper\Client
 	//
 	protected function clientCreate()
 	{
-		return new test_Client( $this );
+		return new test_Client( NULL, $this );
 	}
 
 	//
@@ -51,6 +51,24 @@ class test_Client extends \Milko\wrapper\Client
 	protected function clientDestruct( \Milko\wrapper\Client $theClient )
 	{
 		// Do nothing;
+	}
+
+	//
+	// Implement server instantiation metod.
+	//
+	protected function serverCreate()
+	{
+		return new test_ClientServer(
+			$this->URL(
+				NULL,
+				[
+					self::kTAG_USER,
+					self::kTAG_PATH,
+					self::kTAG_OPTS,
+					self::kTAG_FRAG
+				]
+			)
+		);
 	}
 }
 

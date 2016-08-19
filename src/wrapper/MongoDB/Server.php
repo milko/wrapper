@@ -29,6 +29,28 @@ use MongoDB\Client;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate server.
+ * $server = new Server( 'mongodb://localhost:27017' );
+ *
+ * // List databases.
+ * $list = $server->Clients();
+ *
+ * // Instantiate database.
+ * $database = $server->Client( "DatabaseName", [] );
+ *
+ * // Create database and collection with options.
+ * $collection = new Collection( 'mongodb://localhost:27017/Database/Collection?connectTimeoutMS=300000' );
+ * $database = $collection->Server();
+ * $server = $database->Server();
+ *
+ * // Create server, database and collection.
+ * $server = new Server( 'mongodb://localhost:27017' );
+ * $database = $server->Client( "Database", [] );
+ * $collection = $database->Client( $Collection, [] );
+ * </code>
  */
 class Server extends ClientServer
 {
@@ -55,6 +77,8 @@ class Server extends ClientServer
 	 *
 	 * @return array				List of client names.
 	 *
+	 * @uses isConnected()
+	 * @uses Connect()
 	 * @uses Connection()
 	 * @uses Client::listDatabases()
 	 */
@@ -105,7 +129,9 @@ class Server extends ClientServer
 	 *
 	 * @return mixed				The native connection.
 	 *
-	 * @uses \MongoDB\Client::__construct()
+	 * @uses URL()
+	 * @uses Options()
+	 * @uses Client::__construct()
 	 */
 	protected function connectionCreate()
 	{
@@ -119,7 +145,11 @@ class Server extends ClientServer
 		return new Client(
 			$this->URL(
 				NULL,
-				[ self::kTAG_PATH, self::kTAG_OPTS, self::kTAG_FRAG ]
+				[
+					self::kTAG_PATH,
+					self::kTAG_OPTS,
+					self::kTAG_FRAG
+				]
 			),
 			$options
 		);																			// ==>
@@ -136,10 +166,7 @@ class Server extends ClientServer
 	 *
 	 * In this method we do nothing.
 	 */
-	protected function connectionDestruct()
-	{
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 
@@ -160,13 +187,11 @@ class Server extends ClientServer
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
-	 * @param string					$theName	Client name.
-	 * @param array						$theOptions	Creation options.
-	 * @return \Milko\wrapper\Client	The {@link Client} instance.
+	 * @return \Milko\wrapper\Client	The Client instance.
 	 */
 	protected function clientCreate()
 	{
-		return new Database( $this );												// ==>
+		return new Database( NULL, $this );												// ==>
 
 	} // clientCreate.
 
@@ -180,12 +205,9 @@ class Server extends ClientServer
 	 *
 	 * In this method we do nothing.
 	 *
-	 * @param Client				$theClient			Client instance.
+	 * @param \Milko\wrapper\Client		$theClient	Client instance.
 	 */
-	protected function clientDestruct( \Milko\wrapper\Client $theClient )
-	{
-
-	} // clientDestruct.
+	protected function clientDestruct( \Milko\wrapper\Client $theClient )	{}
 
 
 

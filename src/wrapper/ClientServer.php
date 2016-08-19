@@ -60,6 +60,51 @@ use Milko\wrapper\Client;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/06/2016
+ *
+ * @example
+ * <code>
+ * // Note that you need to derive the class to use it.
+ *
+ * // Instantiate client server.
+ * $server = new ClientServer( "protocol://user:pass@host?opt=val" );
+ *
+ * // Connect server.
+ * $server->Connect();
+ *
+ * // List available clients.
+ * $list = $server->Clients();
+ *
+ * // Add anew client.
+ * $client = $server->Client( "Client1", [] );
+ *
+ * // Add new client with custom name and credentials.
+ * $client =
+ * 	$server->Client(
+ * 		"Client2", [
+ * 			self::kOPTION_NAME => "Custom",
+ * 			self::kOPTION_USER_CODE => "user",
+ * 			self::kOPTION_USER_PASS => "pass"
+ * 		]
+ * 	);
+ *
+ * // Retrieve "Client1".
+ * $client = $server->Client( "Client1" );
+ *
+ * // Instantiate server with nested clients.
+ * $server = new ClientServer( "protocol://user:pass@host/Database/Collection/Document?opt=val" );
+ * // Will create a server containing client "Database",
+ * $database = $server->Client( "Database" );
+ * $database = $server[ "Database" ];
+ * // client "Database" will contain client "Collection",
+ * $collection = $database->Client( "Collection" );
+ * $collection = $database[ "Collection" ];
+ * // client "Collection" will contain client "Document".
+ * $document = $collection->Client( "Document" );
+ * $document = $collection[ "Document" ];
+ *
+ * // Access nested client.
+ * $document = $server[ "Database" ][ "Collection" ][ "Document" ];
+ * </code>
  */
 abstract class ClientServer extends Server
 {
@@ -124,12 +169,13 @@ abstract class ClientServer extends Server
 	 * $server = new ConcreteClientServer( "protocol://user:pass@host?opt=val" );
 	 *
 	 * // Instantiate client server and nested clients.
-	 * // We suppose the ClientServer instance is a database server.
-	 * $server = new DatabaseServer( "protocol://user:pass@host/Database/Table?opt=val" );
-	 * // Get database.
-	 * $database = $server->Client( "Database" );
-	 * // Get table.
-	 * $table = $database->Client( "Table" );
+	 * $server = new DatabaseServer( "protocol://user:pass@host/Directory/File?opt=val" );
+	 * // Get "Directory".
+	 * $directory = $server->Client( "Directory" );
+	 * $directory = $server[ "Directory" ];
+	 * // Get "File".
+	 * $file = $directory->Client( "File" );
+	 * $file = $server[ "Directory" ][ "File" ];
 	 * </code>
 	 */
 	public function __construct( string $theConnection = NULL )
@@ -205,6 +251,31 @@ abstract class ClientServer extends Server
 	 *
 	 * @uses clientDestruct()
 	 * @uses NewClient()
+	 *
+	 * @example
+	 * <code>
+	 * // Add new client.
+	 * $client = $server->Client( "Client1", [] );
+	 *
+	 * // Add new client with custom name and credentials.
+	 * $client =
+	 * 	$server->Client(
+	 * 		"Client2", [
+	 * 			self::kOPTION_NAME => "Custom",
+	 * 			self::kOPTION_USER_CODE => "user",
+	 * 			self::kOPTION_USER_PASS => "pass"
+	 * 		]
+	 * 	);
+	 *
+	 * // Retrieve client.
+	 * $client = $server->Client( "Client1" );
+	 * // Will retrieve the client with internal name "Client1".
+	 * $client = $server->Client( "Client2" );
+	 * // Will retrieve the client with internal name "Custom".
+	 *
+	 * // Forget client.
+	 * $server->Client( "Client1", FALSE );
+	 * </code>
 	 */
 	public function Client( string $theName, $theOptions = NULL )
 	{
@@ -258,9 +329,10 @@ abstract class ClientServer extends Server
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Get client names.</h4><p />
+	 * <h4>Get available clients info.</h4><p />
 	 *
-	 * This method can be used to retrieve the list of the current server client names.
+	 * This method can be used to retrieve information regarding the available clients of
+	 * the current object.
 	 *
 	 * The returned list should include all clients that belong to the current object,
 	 * including those that are not yet stored in the clients list. A concrete example
@@ -269,12 +341,12 @@ abstract class ClientServer extends Server
 	 * method; the latter list can be obtained by iterating the current object.
 	 *
 	 * The returned list should feature the client names in the array keys and native client
-	 * data in the array values, the nature of the data depends on the concrete
+	 * information in the array values, the nature of the data depends on the concrete
 	 * implementation of the derived class.
 	 *
 	 * The method must be implemented in derived concrete classes.
 	 *
-	 * @return array				List of client names.
+	 * @return array				List of clients info.
 	 */
 	abstract public function Clients();
 
@@ -313,10 +385,26 @@ abstract class ClientServer extends Server
 	 *
 	 * @uses isConnected()
 	 * @uses Connect()
-	 * @uses clientCreate()()
+	 * @uses clientCreate()
 	 * @uses Protocol()
 	 * @uses Host()
 	 * @uses Port()
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate new client.
+	 * $client = $server->NewClient( "Client1" );
+	 *
+	 * // Instantiate new client with custom name and credentials.
+	 * $client =
+	 * 	$server->NewClient(
+	 * 		"Client2", [
+	 * 			self::kOPTION_NAME => "Custom",
+	 * 			self::kOPTION_USER_CODE => "user",
+	 * 			self::kOPTION_USER_PASS => "pass"
+	 * 		]
+	 * 	);
+	 * </code>
 	 */
 	public function NewClient( string $theName, array $theOptions = [] )
 	{
@@ -399,11 +487,11 @@ abstract class ClientServer extends Server
 
 
 	/*===================================================================================
-	 *	clientCreate()																	*
+	 *	clientCreate																	*
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * Instantiate empty client.
 	 *
 	 * This method should return an empty {@link Client} instance.
 	 *
@@ -412,8 +500,6 @@ abstract class ClientServer extends Server
 	 *
 	 * If the operation fails, the method should raise an exception.
 	 *
-	 * @param string				$theName			Client name.
-	 * @param array					$theOptions			Creation options.
 	 * @return Client				The {@link Client} instance.
 	 */
 	abstract protected function clientCreate();

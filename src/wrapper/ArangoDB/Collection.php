@@ -15,13 +15,19 @@ namespace Milko\wrapper\ArangoDB;
  *======================================================================================*/
 
 use Milko\wrapper\Client;
+use Milko\wrapper\Container;
+use Milko\wrapper\ClientServer;
+
+use triagens\ArangoDb\Collection as ArangoCollection;
+use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
+use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
 
 /**
- * <h4>MongoDB database class.</h4><p />
+ * <h4>ArangoDB database class.</h4><p />
  *
  * This <em>concrete</em> implementation of the {@link Client} class represents a
- * MongoDB database instance, it implements an object that manages a list of MongoDB
- * collections wrapped around the {@link Milko\PHPLib\MongoDB\Database} class.
+ * ArangoDB database instance, it implements an object that manages a list of ArangoDB
+ * collections wrapped around the {@link Milko\PHPLib\ArangoDB\Database} class.
  *
  *	@package	Data
  *
@@ -30,15 +36,78 @@ use Milko\wrapper\Client;
  *	@since		18/06/2016
  */
 class Collection extends Client
+				 implements \Milko\wrapper\Collection
 {
+	/**
+	 * <h4>Document handler.</h4>
+	 *
+	 * This data member holds the document handler.
+	 *
+	 * @var ArangoDocumentHandler
+	 */
+	protected $mDocumentHandler = NULL;
+
+	/**
+	 * <h4>Collection handler.</h4>
+	 *
+	 * This data member holds the collection handler.
+	 *
+	 * @var ArangoCollectionHandler
+	 */
+	protected $mCollectionHandler = NULL;
 
 
 
-	/*=======================================================================================
-	 *																						*
-	 *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
-	 *																						*
-	 *======================================================================================*/
+
+/*=======================================================================================
+ *																						*
+ *										MAGIC											*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	__construct																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate class.</h4><p />
+	 *
+	 * We overload the constructor to set the document and collection handler attributes.
+	 *
+	 * @param ClientServer|Client	$theServer		Client server.
+	 * @param string				$theConnection	Data source name.
+	 * @throws \InvalidArgumentException
+	 */
+	public function __construct( string $theConnection = NULL, $theServer = NULL )
+	{
+		//
+		// Call parent constructor.
+		//
+		parent::__construct( $theConnection, $theServer );
+
+		//
+		// Store document handler.
+		//
+		$this->mDocumentHandler
+			= new ArangoDocumentHandler( $this->Server()->Connection() );
+
+		//
+		// Store collection handler.
+		//
+		$this->mCollectionHandler
+			= new ArangoCollectionHandler( $this->Server()->Connection() );
+
+	} // Constructor.
+
+
+
+/*=======================================================================================
+ *																						*
+ *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
+ *																						*
+ *======================================================================================*/
 
 
 
@@ -61,11 +130,139 @@ class Collection extends Client
 
 
 
-	/*=======================================================================================
-	 *																						*
-	 *								PROTECTED CONNECTION INTERFACE							*
-	 *																						*
-	 *======================================================================================*/
+/*=======================================================================================
+ *																						*
+ *								PUBLIC COLLECTION INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Drop																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Drop collection.</h4><p />
+	 *
+	 * We implement this method by using the drop() method of the collection handler class
+	 * after ensuring the collection is connected.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses ArangoCollectionHandler::drop()
+	 */
+	public function Drop()
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		//
+		// Check collection.
+		//
+		if( $this->Connection()->getId() !== NULL )
+			$this->mCollectionHandler->drop( $this->Connection()->getName() );
+
+	} // Drop.
+
+
+	/*===================================================================================
+	 *	Records																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return record count.</h4><p />
+	 *
+	 * We use the count() method of the collection handler.
+	 *
+	 * @return int					Collection record count.
+	 *
+	 * @uses isConnected()
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses Connection()
+	 * @uses ArangoCollectionHandler::count()
+	 */
+	public function Records()
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		return $this->mCollectionHandler->count(
+			$this->Connection()->getName()
+		);																			// ==>
+
+	} // Records.
+
+
+	/*===================================================================================
+	 *	SetOne																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Store a document.</h4><p />
+	 *
+	 * We use the document handler replaceById() method for existing objects, or the
+	 * save() method for new ones.
+	 *
+	 * @param mixed					$theDocument		Document to store.
+	 * @return mixed				The document key.
+	 */
+	public function SetOne( $theDocument )
+	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
+		//
+		// Init local storage.
+		//
+		$name = $this->Connection()->getName();
+		Container::convertToArray( $theDocument );
+
+		//
+		// Check key.
+		//
+		if( array_key_exists( '_key', $theDocument ) )
+		{
+			//
+			// Check if it exists.
+			//
+			if( $this->mDocumentHandler->has( $name, $theDocument[ '_key' ] ) )
+			{
+				//
+				// Replace.
+				//
+				$this->mDocumentHandler
+					->replaceById( $name, $theDocument[ '_key' ], $theDocument );
+
+				return $theDocument[ '_key' ];										// ==>
+
+			} // Found document.
+
+		} // Has key.
+
+		return
+			$this->mDocumentHandler->save( $this->Connection(), $theDocument );		// ==>
+
+	} // SetOne.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED CONNECTION INTERFACE							*
+ *																						*
+ *======================================================================================*/
 
 
 
@@ -80,7 +277,7 @@ class Collection extends Client
 	 * name as the connection string, stripped from the options that are sent to the native
 	 * {@link Client} constructor.
 	 *
-	 * @return mixed				The native connection.
+	 * @return ArangoCollection		The native connection.
 	 *
 	 * @uses Client::__construct()
 	 */
@@ -93,13 +290,15 @@ class Collection extends Client
 		if( $options === NULL )
 			$options = [];
 
+		//
+		// Return existing collection.
+		//
+		if( $this->mCollectionHandler->has( $this->Path() ) )
+			return $this->mCollectionHandler->get( $this->Path() );					// ==>
+
 		return
-			$this->Server()
-				->Connection()
-				->selectCollection(
-					$this->Path(),
-					$options
-				);																	// ==>
+			$this->mCollectionHandler->get(
+				$this->mCollectionHandler->create( $this->Path(), $options ) );		// ==>
 
 	} // connectionCreate.
 
@@ -120,11 +319,11 @@ class Collection extends Client
 
 
 
-	/*=======================================================================================
-	 *																						*
-	 *								PROTECTED DATABASE INTERFACE							*
-	 *																						*
-	 *======================================================================================*/
+/*=======================================================================================
+ *																						*
+ *								PROTECTED DATABASE INTERFACE							*
+ *																						*
+ *======================================================================================*/
 
 
 
@@ -163,6 +362,93 @@ class Collection extends Client
 	{
 
 	} // clientDestruct.
+
+
+
+/*=======================================================================================
+ *																						*
+ *								PROTECTED SERVER INTERFACE								*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	serverCreate																	*
+	 *==================================================================================*/
+
+	/**
+	 * Instantiate server.
+	 *
+	 * We implement this method to instantiate an ArangoDB server and a database instance
+	 * according to the current object's {@link Path()}.
+	 *
+	 * The method will first instantiate the {@link Server} instance, it will then use the
+	 * first element of the {@link Path()} to instantiate the {@link Database} and strip
+	 * that element from the current path; any subsequent path elements will be handled by
+	 * the constructor to add sub-clients to the current object.
+	 *
+	 * If the current object has less than 2 elements in the path, the method will raise an
+	 * exception.
+	 *
+	 * @return Client				The database instance.
+	 * @throws \RuntimeException
+	 */
+	protected function serverCreate()
+	{
+		//
+		// Check path.
+		//
+		if( $this->mPath !== NULL )
+		{
+			//
+			// Get elements.
+			//
+			$tmp = explode( '/', $this->mPath );
+			if( count( $tmp ) > 1 )
+			{
+				//
+				// Instantiate anonymous server.
+				//
+				$server =
+					new Server(
+						$this->URL(
+							NULL,
+							[
+								self::kTAG_USER,
+								self::kTAG_PATH,
+								self::kTAG_OPTS,
+								self::kTAG_FRAG
+							]
+						)
+					);
+
+				//
+				// Instantiate database.
+				// We also strip the name from the path list.
+				//
+				$database = $server->Client( array_shift( $tmp ) );
+
+				//
+				// Update path excluding the database name.
+				//
+				$this->Path( implode( '/', $tmp ) );
+
+				return $database;													// ==>
+
+			} // Has at least two elements.
+
+			throw new \RuntimeException(
+				"Missing database name in path."
+			);																	// !@! ==>
+
+		} // Has path.
+
+		throw new \RuntimeException(
+			"Missing path."
+		);																		// !@! ==>
+
+	} // serverCreate.
 
 
 

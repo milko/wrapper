@@ -301,6 +301,15 @@ trait Url
 	 */
 	protected $mOptions = NULL;
 
+	/**
+	 * Fragment.
+	 *
+	 * This attribute contains the URL fragment.
+	 *
+	 * @var string
+	 */
+	protected $mFragment = NULL;
+
 
 
 

@@ -23,7 +23,7 @@ use triagens\ArangoDb\UpdatePolicy as ArangoUpdatePolicy;
 use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
 
 /**
- * <h4>MongoDB client class.</h4><p />
+ * <h4>ArangoDB client class.</h4><p />
  *
  * This <em>concrete</em> implementation of the {@link ClientServer} class represents an
  * ArangoDB database server, it implements an object that manages a list of ArangoDB
@@ -34,6 +34,19 @@ use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate server.
+ * $server = new Server( 'tcp://localhost:8529?createCollection=1' );
+ *
+ * // List databases.
+ * $list = $server->Clients();
+ *
+ * // Instantiate database.
+ * $database = $server->Client( "DatabaseName", [] );
+ * // Start working with database...
+ * </code>
  */
 class Server extends ClientServer
 {
@@ -61,10 +74,18 @@ class Server extends ClientServer
 	 * @return array				List of client names.
 	 *
 	 * @uses Connection()
+	 * @uses ConnectionOptions()
 	 * @uses ArangoDatabase::listUserDatabases()
+	 * @uses ArangoDatabase::getInfo()
 	 */
 	public function Clients()
 	{
+		//
+		// Connect object.
+		//
+		if( ! $this->isConnected() )
+			$this->Connect();
+
 		//
 		// Get user databases list.
 		//
@@ -74,8 +95,17 @@ class Server extends ClientServer
 		// Prepare result.
 		//
 		$clients = [];
+		$options = $this->ConnectionOptions();
 		foreach( $list as $name )
-			$clients[ $name ] = NULL;
+			$clients[ $name ] =
+				ArangoDatabase::getInfo(
+					new ArangoConnection(
+						array_merge(
+							$options,
+							[ ArangoConnectionOptions::OPTION_DATABASE => $name ]
+						)
+					)
+				)[ 'result' ];
 
 		return $clients;															// ==>
 
@@ -167,23 +197,26 @@ class Server extends ClientServer
 		//
 		// Set connection time-out.
 		//
-		if( ! array_key_exists( ArangoConnectionOptions::OPTION_TIMEOUT, $options ) )
-			$options[ ArangoConnectionOptions::OPTION_TIMEOUT ]
-				= 3;
+		$options[ ArangoConnectionOptions::OPTION_TIMEOUT ]
+			= ( array_key_exists( ArangoConnectionOptions::OPTION_TIMEOUT, $options ) )
+			? (int)$options[ ArangoConnectionOptions::OPTION_TIMEOUT ]
+			: 3;
 
 		//
 		// Set time-out reconnect.
 		//
-		if( ! array_key_exists( ArangoConnectionOptions::OPTION_RECONNECT, $options ) )
-			$options[ ArangoConnectionOptions::OPTION_RECONNECT ]
-				= TRUE;
+		$options[ ArangoConnectionOptions::OPTION_RECONNECT ]
+			= ( array_key_exists( ArangoConnectionOptions::OPTION_RECONNECT, $options ) )
+			? (bool)$options[ ArangoConnectionOptions::OPTION_RECONNECT ]
+			: TRUE;
 
 		//
 		// Set creation option.
 		//
-		if( ! array_key_exists( ArangoConnectionOptions::OPTION_CREATE, $options ) )
-			$options[ ArangoConnectionOptions::OPTION_CREATE ]
-				= TRUE;
+		$options[ ArangoConnectionOptions::OPTION_CREATE ]
+			= ( array_key_exists( ArangoConnectionOptions::OPTION_CREATE, $options ) )
+			? (bool)$options[ ArangoConnectionOptions::OPTION_CREATE ]
+			: TRUE;
 
 		//
 		// Set update policy.
@@ -194,7 +227,7 @@ class Server extends ClientServer
 
 		return $options;															// ==>
 
-	} // Clients.
+	} // ConnectionOptions.
 
 
 
@@ -238,10 +271,7 @@ class Server extends ClientServer
 	 *
 	 * In this method we do nothing.
 	 */
-	protected function connectionDestruct()
-	{
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 
@@ -262,13 +292,11 @@ class Server extends ClientServer
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
-	 * @param string				$theName			Client name.
-	 * @param array					$theOptions			Creation options.
 	 * @return Client				The {@link Client} instance.
 	 */
 	protected function clientCreate()
 	{
-//		return new Client( $this );													// ==>
+		return new Database( NULL, $this );											// ==>
 
 	} // clientCreate.
 
@@ -284,10 +312,7 @@ class Server extends ClientServer
 	 *
 	 * @param Client				$theClient			Client instance.
 	 */
-	protected function clientDestruct( Client $theClient )
-	{
-
-	} // clientDestruct.
+	protected function clientDestruct( Client $theClient )	{}
 
 
 

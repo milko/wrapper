@@ -6,31 +6,33 @@
 require_once(dirname(__DIR__) . "/includes.local.php");
 
 //
-// Reference class.
+// Include test classes.
 //
-use Milko\wrapper\ArangoDB\Server;
+require_once(dirname(__DIR__) . "/tests/TestClientServerClass.php");
+require_once(dirname(__DIR__) . "/tests/TestClientClass.php");
+
+//
+// Reference classes.
+//
+use Milko\wrapper\ClientServer;
+use Milko\wrapper\Client;
 
 //
 // Instantiate server.
 //
-$server = new Server( 'tcp://milko:xC%yUmGwaXbE3$Z8@127.0.0.1:8529' );
-//$database = $server->Client( "UnitTest_Tests", [] );
-//$collection = $database->Client( "Collection_Tests", [] );
-//
-//
-// Connect collection.
-//
-$server->Connect();
+$server = new test_ClientServer(
+	'protocol://user:password@host:80?key=val#frag'
+);
 
-//// Insert record to create collection.
-//$collection->Connection()->insertOne( [ "name" => "test" ] );
+//
+// Create and register client.
+//
+$client = $server->Client( "Directory", [] );
 
-// Get databases list.
-$result = $server->Clients();
-echo( "Databases: " ); print_r( $result );
-
-//// Get collections list.
-//$result = $database->Clients();
-//echo( "Collections: " ); print_r( $result );
+//
+// Create empty client.
+//
+$client = new test_Client();
+print_r($client);
 
 ?>
