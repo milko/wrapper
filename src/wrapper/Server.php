@@ -393,7 +393,7 @@ abstract class Server extends Container
 	 * @uses isConnected()
 	 * @uses connectionDestruct()
 	 */
-	public function Disconnect( $theOptions = NULL )
+	public function Disconnect()
 	{
 		//
 		// Check if connected.
@@ -408,7 +408,7 @@ abstract class Server extends Container
 			//
 			// Reset native connection attribute.
 			//
-			$this->mConnection = NULL;
+			$this->mConnection = TRUE;
 
 			return TRUE;															// ==>
 		}
@@ -446,16 +446,16 @@ abstract class Server extends Container
 	 *
 	 * This method returns a boolean flag indicating whether the connection is open or not.
 	 *
-	 * In this abstract class we simply check whether the native connection attribute is not
-	 * <tt>NULL</tt>, in concrete derived classes you can overload this method to check for
-	 * a more specific value.
+	 * In this abstract class we simply check whether the native connection attribute is
+	 * neither <tt>NULL</tt>, nor <tt>TRUE</tt>.
 	 *
 	 * @return boolean				<tt>TRUE</tt> is connected.
 	 * @throws \RuntimeException
 	 */
 	public function isConnected()
 	{
-		return ( $this->mConnection !== NULL );										// ==>
+		return
+			! ( ($this->mConnection === NULL) || ($this->mConnection === TRUE) );	// ==>
 
 	} // isConnected.
 

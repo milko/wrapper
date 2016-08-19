@@ -21,6 +21,7 @@ use Milko\wrapper\ClientServer;
 use triagens\ArangoDb\Collection as ArangoCollection;
 use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
 use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+use triagens\ArangoDb\ServerException as ArangoServerException;
 
 /**
  * <h4>ArangoDB database class.</h4><p />
@@ -61,50 +62,6 @@ class Collection extends Client
 
 /*=======================================================================================
  *																						*
- *										MAGIC											*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	__construct																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Instantiate class.</h4><p />
-	 *
-	 * We overload the constructor to set the document and collection handler attributes.
-	 *
-	 * @param ClientServer|Client	$theServer		Client server.
-	 * @param string				$theConnection	Data source name.
-	 * @throws \InvalidArgumentException
-	 */
-	public function __construct( string $theConnection = NULL, $theServer = NULL )
-	{
-		//
-		// Call parent constructor.
-		//
-		parent::__construct( $theConnection, $theServer );
-
-		//
-		// Store document handler.
-		//
-		$this->mDocumentHandler
-			= new ArangoDocumentHandler( $this->Server()->Connection() );
-
-		//
-		// Store collection handler.
-		//
-		$this->mCollectionHandler
-			= new ArangoCollectionHandler( $this->Server()->Connection() );
-
-	} // Constructor.
-
-
-
-/*=======================================================================================
- *																						*
  *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -124,6 +81,11 @@ class Collection extends Client
 	 */
 	public function Clients()
 	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
 		return [];																	// ==>
 
 	} // Clients.
@@ -160,8 +122,7 @@ class Collection extends Client
 		//
 		// Connect object.
 		//
-		if( ! $this->isConnected() )
-			$this->Connect();
+		$this->Connect();
 
 		//
 		// Check collection.
@@ -205,8 +166,7 @@ class Collection extends Client
 		//
 		// Connect object.
 		//
-		if( ! $this->isConnected() )
-			$this->Connect();
+		$this->Connect();
 
 		return $this->mCollectionHandler->count(
 			$this->Connection()->getName()
@@ -233,8 +193,7 @@ class Collection extends Client
 		//
 		// Connect object.
 		//
-		if( ! $this->isConnected() )
-			$this->Connect();
+		$this->Connect();
 
 		//
 		// Init local storage.
@@ -252,15 +211,12 @@ class Collection extends Client
 			//
 			if( $this->mDocumentHandler->has( $name, $theDocument[ '_key' ] ) )
 			{
-				//
-				// Replace.
-				//
 				$this->mDocumentHandler
 					->replaceById( $name, $theDocument[ '_key' ], $theDocument );
 
 				return $theDocument[ '_key' ];										// ==>
 
-			} // Found document.
+			} // Document exists.
 
 		} // Has key.
 
@@ -304,6 +260,18 @@ class Collection extends Client
 			$options = [];
 
 		//
+		// Store document handler.
+		//
+		$this->mDocumentHandler
+			= new ArangoDocumentHandler( $this->Server()->Connection() );
+
+		//
+		// Store collection handler.
+		//
+		$this->mCollectionHandler
+			= new ArangoCollectionHandler( $this->Server()->Connection() );
+
+		//
 		// Return existing collection.
 		//
 		if( $this->mCollectionHandler->has( $this->Path() ) )
@@ -323,10 +291,12 @@ class Collection extends Client
 	/**
 	 * Close connection.
 	 *
-	 * In this method we do nothing.
+	 * We overload this method to reset the document and collection handlers.
 	 */
 	protected function connectionDestruct()
 	{
+		$this->mDocumentHandler = NULL;
+		$this->mCollectionHandler = NULL;
 
 	} // connectionDestruct.
 
@@ -371,10 +341,7 @@ class Collection extends Client
 	 *
 	 * @param Client				$theClient			Client instance.
 	 */
-	protected function clientDestruct( Client $theClient )
-	{
-
-	} // clientDestruct.
+	protected function clientDestruct( Client $theClient )	{}
 
 
 

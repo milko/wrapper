@@ -50,6 +50,9 @@ interface Database
 	 * <h4>Drop database.</h4><p />
 	 *
 	 * Delete the current database and disconnect it.
+	 *
+	 * Note that once that database has been dropped you can restore it (empty) by calling
+	 * its <tt>Connect()</tt> method.
 	 */
 	public function Drop();
 

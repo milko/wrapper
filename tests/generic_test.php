@@ -6,33 +6,134 @@
 require_once(dirname(__DIR__) . "/includes.local.php");
 
 //
-// Include test classes.
+// Enable exception logging.
 //
-require_once(dirname(__DIR__) . "/tests/TestClientServerClass.php");
-require_once(dirname(__DIR__) . "/tests/TestClientClass.php");
+triagens\ArangoDb\Exception::enableLogging();
 
 //
 // Reference classes.
 //
-use Milko\wrapper\ClientServer;
-use Milko\wrapper\Client;
+use Milko\wrapper\ArangoDB\Server;
 
 //
 // Instantiate server.
 //
-$server = new test_ClientServer(
-	'protocol://user:password@host:80?key=val#frag'
+$server = new Server(
+	'tcp://UnitTests:testuser@localhost:8529?createCollection=1'
 );
 
 //
-// Create and register client.
+// Create and register database.
 //
-$client = $server->Client( "Directory", [] );
+$database = $server->Client( "UnitTests", [] );
 
 //
-// Create empty client.
+// Create and register collection.
 //
-$client = new test_Client();
-print_r($client);
+$collection = $database->Client( "UnitCollection", [] );
+
+//
+// Write to the collection.
+//
+$collection->SetOne( [ "name" => "test" ] );
+
+//exit;
+
+////
+//// Check identities.
+////
+//echo("\n\n" . '$server === $database->Server()' . "\n");
+//var_dump( ($server === $database->Server()) );
+//
+//echo("\n" . '$database === $server[ "UnitTests" ]' . "\n");
+//var_dump( ($database === $server[ "UnitTests" ]) );
+//echo("\n" . '$database === $server->Client( "UnitTests" )' . "\n");
+//var_dump( ($database === $server->Client( "UnitTests" )) );
+//echo("\n" . '$database === $collection->Server()' . "\n");
+//var_dump( ($database === $collection->Server()) );
+//
+//echo("\n" . '$collection === $database[ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $database[ "UnitCollection" ]) );
+//echo("\n" . '$collection === $database->Client( "UnitCollection" )' . "\n");
+//var_dump( ($collection === $database->Client( "UnitCollection" )) );
+//echo("\n" . '$collection === $server[ "UnitTests" ][ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $server[ "UnitTests" ][ "UnitCollection" ]) );
+
+//exit;
+
+//
+// Drop database.
+//
+$database->Drop();
+
+//sleep( 3 );
+
+////
+//// Check identities.
+////
+//echo("\n\n" . '$server === $database->Server()' . "\n");
+//var_dump( ($server === $database->Server()) );
+//
+//echo("\n" . '$database === $server[ "UnitTests" ]' . "\n");
+//var_dump( ($database === $server[ "UnitTests" ]) );
+//echo("\n" . '$database === $server->Client( "UnitTests" )' . "\n");
+//var_dump( ($database === $server->Client( "UnitTests" )) );
+//echo("\n" . '$database === $collection->Server()' . "\n");
+//var_dump( ($database === $collection->Server()) );
+//
+//echo("\n" . '$collection === $database[ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $database[ "UnitCollection" ]) );
+//echo("\n" . '$collection === $database->Client( "UnitCollection" )' . "\n");
+//var_dump( ($collection === $database->Client( "UnitCollection" )) );
+//echo("\n" . '$collection === $server[ "UnitTests" ][ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $server[ "UnitTests" ][ "UnitCollection" ]) );
+
+////
+//// Show objects.
+////
+//echo("\nServer:\n");
+//print_r( $server );
+//echo("\nDatabase:\n");
+//print_r( $database );
+//echo("\nCollection:\n");
+//print_r( $collection );
+
+//exit;
+
+//
+// Check collection connection.
+//
+//var_dump( $collection->Connection() );
+
+//
+// Connect database.
+//
+$database->Connect();
+
+////
+//// Check identities.
+////
+//echo("\n\n" . '$server === $database->Server()' . "\n");
+//var_dump( ($server === $database->Server()) );
+//
+//echo("\n" . '$database === $server[ "UnitTests" ]' . "\n");
+//var_dump( ($database === $server[ "UnitTests" ]) );
+//echo("\n" . '$database === $server->Client( "UnitTests" )' . "\n");
+//var_dump( ($database === $server->Client( "UnitTests" )) );
+//echo("\n" . '$database === $collection->Server()' . "\n");
+//var_dump( ($database === $collection->Server()) );
+//
+//echo("\n" . '$collection === $database[ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $database[ "UnitCollection" ]) );
+//echo("\n" . '$collection === $database->Client( "UnitCollection" )' . "\n");
+//var_dump( ($collection === $database->Client( "UnitCollection" )) );
+//echo("\n" . '$collection === $server[ "UnitTests" ][ "UnitCollection" ]' . "\n");
+//var_dump( ($collection === $server[ "UnitTests" ][ "UnitCollection" ]) );
+
+//
+// Write to the collection.
+//
+$collection->SetOne( [ "name" => "test" ] );
+//
 
 ?>

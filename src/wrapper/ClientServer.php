@@ -132,6 +132,21 @@ abstract class ClientServer extends Server
 	 */
 	const kOPTION_USER_PASS = "@pass@";
 
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * This data member holds a flag that determines whether connections and disconnections
+	 * should be nested. This essentially means that when disconnecting, if the flag is set,
+	 * all clients belonging to the current server will also be disconnected, including
+	 * nested ones. This also holds for connecting: when the current object is connected,
+	 * any nested object that was disconnected will also get re-connected.
+	 *
+	 * If the flag is off (default), only the current object gets connected or disconnected.
+	 *
+	 * @var bool
+	 */
+	static $mNestedConnections = FALSE;
+
 
 
 
@@ -206,6 +221,119 @@ abstract class ClientServer extends Server
 		} // Has path.
 
 	} // Constructor.
+
+
+
+/*=======================================================================================
+ *																						*
+ *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Connect																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Open server connection.</h4><p />
+	 *
+	 * We overload this method to handle the {@link $mNestedConnections} flag: if the flag
+	 * is set and the current object got connected, the method will be called on all the
+	 * object clients.
+	 *
+	 * @return mixed				Native connection object.
+	 *
+	 * @uses URL( )
+	 * @uses isConnected( )
+	 * @uses connectionCreate()
+	 */
+	public function Connect()
+	{
+		//
+		// Create connection if not conected.
+		//
+		if( ! $this->isConnected() )
+		{
+			//
+			// Connect current object.
+			//
+			$connection = parent::Connect();
+
+			//
+			// Propagate to clients.
+			// Note the static::
+			// it is intended.
+			//
+			if( static::$mNestedConnections )
+			{
+				//
+				// Iterate clients.
+				//
+				foreach( $this as $client )
+					$client->Connect();
+
+			} // Propagate connections.
+
+			return $connection;														// ==>
+
+		} // Not already connected.
+
+		return $this->mConnection;													// ==>
+
+	} // Connect.
+
+
+	/*===================================================================================
+	 *	Disconnect																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Close server connection.</h4><p />
+	 *
+	 * We overload this method to handle the {@link $mNestedConnections} flag: if the flag
+	 * is set and the current object got disconnected, the method will be called on all the
+	 * object clients.
+	 *
+	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
+	 *
+	 * @uses isConnected()
+	 * @uses connectionDestruct()
+	 */
+	public function Disconnect()
+	{
+		//
+		// Check if connected.
+		//
+		if( $this->isConnected() )
+		{
+			//
+			// Disconnect object.
+			//
+			$status = parent::Disconnect();
+
+			//
+			// Propagate to clients.
+			// Note the static::
+			// it is intended.
+			//
+			if( static::$mNestedConnections )
+			{
+				//
+				// Iterate clients.
+				//
+				foreach( $this->array_values() as $client )
+					$client->Disconnect();
+
+			} // Propagate disconnections.
+
+			return $status;															// ==>
+		}
+
+		return FALSE;																// ==>
+
+	} // Disconnect.
 
 
 

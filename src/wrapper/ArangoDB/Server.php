@@ -50,14 +50,25 @@ use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
  */
 class Server extends ClientServer
 {
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * We set the flag on to cascade connections and disconnections.
+	 *
+	 * See {@link ClientServer::$mNestedConnections}.
+	 *
+	 * @var bool
+	 */
+	static $mNestedConnections = TRUE;
 
 
 
-/*=======================================================================================
- *																						*
- *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
- *																						*
- *======================================================================================*/
+
+	/*=======================================================================================
+	 *																						*
+	 *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
+	 *																						*
+	 *======================================================================================*/
 
 
 

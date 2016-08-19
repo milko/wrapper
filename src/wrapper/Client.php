@@ -265,49 +265,6 @@ abstract class Client extends ClientServer
 
 /*=======================================================================================
  *																						*
- *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	Connect																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Open server connection.</h4><p />
-	 *
-	 * We overload this method to ensure parent objects are also connected.
-	 *
-	 * @return mixed				Native connection object.
-	 *
-	 * @uses URL( )
-	 * @uses isConnected( )
-	 * @uses connectionCreate()
-	 */
-	public function Connect()
-	{
-		//
-		// Connect parent objects.
-		//
-@@@		$this->Server()->Connect();
-
-		//
-		// Create connection if not conected.
-		//
-		if( ! $this->isConnected() )
-			$this->mConnection =
-				$this->connectionCreate();
-
-		return $this->mConnection;													// ==>
-
-	} // Connect.
-
-
-
-/*=======================================================================================
- *																						*
  *							PUBLIC MEMBER ACCESSOR INTERFACE							*
  *																						*
  *======================================================================================*/

@@ -97,7 +97,7 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 		$result = $this->mObject->Disconnect();
 		$this->assertTrue( $result, "Disconnect() == TRUE" );
 		$this->assertFalse( $this->mObject->isConnected(), "isConnected() == FALSE" );
-		$this->assertNull( $this->mObject->Connection(), "Conection() === NULL" );
+		$this->assertTrue( $this->mObject->Connection(), "Conection() === TRUE" );
 
 	} // testConnection.
 
@@ -488,6 +488,11 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 		 * Drop database.
 		 */
 		$database->Drop();
+
+		/**
+		 * Connect database.
+		 */
+		$database->Connect();
 
 		/**
 		 * Write stuff to the collection.

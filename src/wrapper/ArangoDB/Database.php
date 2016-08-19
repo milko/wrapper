@@ -82,6 +82,11 @@ class Database extends Client
 	public function Clients()
 	{
 		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		//
 		// Instantiate collection handler.
 		//
 		$handler = new ArangoCollectionHandler( $this->Connection() );
@@ -132,8 +137,7 @@ class Database extends Client
 		//
 		// Connect object.
 		//
-		if( ! $this->isConnected() )
-			$this->Connect();
+		$this->Connect();
 
 		//
 		// Drop database.
@@ -179,7 +183,7 @@ class Database extends Client
 		//
 		$name = $this->Path();
 		$connection = new ArangoConnection( $this->Server()->ConnectionOptions() );
-		$clients = ArangoDatabase::listDatabases( $connection )[ 'result' ];
+		$clients = ArangoDatabase::listUserDatabases( $connection )[ 'result' ];
 
 		//
 		// Create database.
@@ -207,10 +211,7 @@ class Database extends Client
 	 *
 	 * In this method we do nothing.
 	 */
-	protected function connectionDestruct()
-	{
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 
@@ -251,10 +252,7 @@ class Database extends Client
 	 *
 	 * @param Client				$theClient			Client instance.
 	 */
-	protected function clientDestruct( Client $theClient )
-	{
-
-	} // clientDestruct.
+	protected function clientDestruct( Client $theClient )	{}
 
 
 
