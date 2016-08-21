@@ -32,6 +32,8 @@ $database = $server->Client( "UnitTests", [] );
 //
 $collection = $database->Client( "UnitCollection", [] );
 
+//exit;
+
 //
 // Write to the collection.
 //

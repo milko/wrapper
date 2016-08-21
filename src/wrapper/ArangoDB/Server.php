@@ -64,11 +64,11 @@ class Server extends ClientServer
 
 
 
-	/*=======================================================================================
-	 *																						*
-	 *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
-	 *																						*
-	 *======================================================================================*/
+/*=======================================================================================
+ *																						*
+ *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
+ *																						*
+ *======================================================================================*/
 
 
 
@@ -268,7 +268,13 @@ class Server extends ClientServer
 	 */
 	protected function connectionCreate()
 	{
-		return new ArangoConnection( $this->ConnectionOptions() );					// ==>
+		//
+		// Set connection options.
+		//
+		$options = $this->ConnectionOptions();
+		$options[ ArangoConnectionOptions::OPTION_DATABASE ] = '_system';
+
+		return new ArangoConnection( $options );									// ==>
 
 	} // connectionCreate.
 

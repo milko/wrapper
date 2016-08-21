@@ -16,9 +16,10 @@ namespace Milko\wrapper\ArangoDB;
 
 use Milko\wrapper\Client;
 
-use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
 use triagens\ArangoDb\Database as ArangoDatabase;
 use triagens\ArangoDb\Connection as ArangoConnection;
+use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
 
 /**
  * <h4>ArangoDB database class.</h4><p />
@@ -179,17 +180,17 @@ class Database extends Client
 	protected function connectionCreate()
 	{
 		//
-		// Init local storage.
+		// Create connection.
 		//
 		$name = $this->Path();
-		$connection = new ArangoConnection( $this->Server()->ConnectionOptions() );
-		$clients = ArangoDatabase::listUserDatabases( $connection )[ 'result' ];
+		$options = $this->Server()->ConnectionOptions();
+		$options[ ArangoConnectionOptions::OPTION_DATABASE ] = '_system';
+		$connection = new ArangoConnection( $options );
 
 		//
 		// Create database.
 		//
-
-		if( ! in_array( $name, $clients ) )
+		if( ! in_array( $name, ArangoDatabase::listUserDatabases( $connection )[ 'result' ] ) )
 			ArangoDatabase::create( $connection, $name );
 
 		//
