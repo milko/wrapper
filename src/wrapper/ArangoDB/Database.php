@@ -59,92 +59,6 @@ class Database extends Client
 
 /*=======================================================================================
  *																						*
- *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	Connect																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Open server connection.</h4><p />
-	 *
-	 * We overload this method to handle client connections: in ArangoDB we disconnect all
-	 * collections when disconnecting the database, this means that we need to reconnect
-	 * eventual disconnected collections when reconnecting.
-	 *
-	 * @return mixed				Native connection object.
-	 *
-	 * @uses isConnected( )
-	 * @uses connectionCreate()
-	 */
-	public function Connect()
-	{
-		//
-		// Check connection.
-		//
-		if( ! $this->isConnected() )
-		{
-			//
-			// Create connection.
-			//
-			$this->mConnection = $this->connectionCreate();
-
-			//
-			// Connect collections.
-			//
-			foreach( $this as $client )
-				$client->Connect();
-
-		} // Was not connected.
-
-		return $this->mConnection;													// ==>
-
-	} // Connect.
-
-
-	/*===================================================================================
-	 *	Disconnect																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Close server connection.</h4><p />
-	 *
-	 * We overload this method to handle client connections: in ArangoDB we disconnect all
-	 * collections when disconnecting the database.
-	 *
-	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
-	 *
-	 * @uses connectionDrop()
-	 */
-	public function Disconnect()
-	{
-		//
-		// Disconnect object.
-		//
-		if( $this->connectionDrop() )
-		{
-			//
-			// Disconnect clients.
-			//
-			foreach( $this as $client )
-				$client->Disconnect();
-
-			return TRUE;															// ==>
-
-		} // Was connected.
-
-		return FALSE;																// ==>
-
-	} // Disconnect.
-
-
-
-/*=======================================================================================
- *																						*
  *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -212,24 +126,63 @@ class Database extends Client
 	 *
 	 * We then disconnect the database.
 	 *
+	 * Note that the clients still will hold their properties, which means that if you call
+	 * {@link Connect()} on the database, <em>all</em> collection clients will be restored,
+	 * although empty. This means that if you want to get rid of the collections you need
+	 * to remove the clients after dropping the database.
+	 *
 	 * @uses isConnected()
-	 * @uses Connect()
-	 * @uses Connection()
+	 * @uses Disconnect()
 	 * @uses Path()
 	 * @uses Server()
 	 * @uses ArangoDatabase::delete()
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate server.
+	 * $server = new Server( 'tcp://localhost:8529?createCollection=1' );
+	 *
+	 * // Instantiate database "Database".
+	 * $database = $server->Client( "Database", [] );
+	 *
+	 * // Add some collections.
+	 * $collection1 = $database->Client( "Collection1", [] );
+	 * $collection2 = $database->Client( "Collection2", [] );
+	 * $collection3 = $database->Client( "Collection3", [] );
+	 *
+	 * // Write some data.
+	 *
+	 * // Drop the database.
+	 * $database->Drop();
+	 *
+	 * // Now you have no collections.
+	 *
+	 * // Restore database.
+	 * $database->Connect();
+	 *
+	 * // Now you have a database with three empty collections.
+	 * // If you had removed the clients before connecting the database
+	 * // you would not have the empty collections.
+	 * </code>
 	 */
 	public function Drop()
 	{
 		//
-		// Drop database.
+		// Check if connected.
 		//
-		ArangoDatabase::delete( $this->Server()->Connection(), $this->Path() );
+		if( $this->isConnected() )
+		{
+			//
+			// Drop database.
+			//
+			ArangoDatabase::delete( $this->Server()->Connection(), $this->Path() );
 
-		//
-		// Disconnect database.
-		//
-		$this->Disconnect();
+			//
+			// Disconnect database.
+			//
+			$this->Disconnect();
+
+		} // Is connected.
 
 	} // Drop.
 
@@ -248,7 +201,7 @@ class Database extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * We implement this method by using the current object's {@link URL()} data source
 	 * name as the connection string, stripped from the options that are sent to the native
@@ -289,11 +242,29 @@ class Database extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 */
 	protected function connectionDestruct()	{}
+
+
+	/*===================================================================================
+	 *	nestedConnections																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * We set the flag <tt>ON</tt> for ArangoDB collections.
+	 *
+	 * @return bool					<tt>TRUE</tt> to cascade connections and disconnectons.
+	 */
+	protected function nestedConnections()
+	{
+		return TRUE;																// ==>
+
+	} // nestedConnections.
 
 
 
@@ -310,7 +281,7 @@ class Database extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * <h4>Instantiate client.</h4><p />
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
@@ -328,7 +299,7 @@ class Database extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 *
@@ -351,7 +322,7 @@ class Database extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate server.
+	 * <h4>Instantiate server.</h4><p />
 	 *
 	 * We implement this method to instantiate a MongoDB server instance according to the
 	 * current object components.

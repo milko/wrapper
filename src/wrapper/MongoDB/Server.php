@@ -121,7 +121,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * We implement this method by using the current object's {@link URL()} data source
 	 * name as the connection string, stripped from the options that are sent to the native
@@ -162,7 +162,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 */
@@ -183,7 +183,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * <h4>Instantiate client.</h4><p />
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
@@ -201,7 +201,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 *

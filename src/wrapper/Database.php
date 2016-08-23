@@ -51,8 +51,13 @@ interface Database
 	 *
 	 * Delete the current database and disconnect it.
 	 *
-	 * Note that once that database has been dropped you can restore it (empty) by calling
-	 * its <tt>Connect()</tt> method.
+	 * The object clients will still be there, so if you want to remove them you will have
+	 * to do so manually.
+	 *
+	 * Once dropped, you can re-create the database by calling its
+	 * <tt>ClientServer::Connect()</tt> method; if you haven't deleted its clients, these
+	 * will also be restored, although empty, if the result of the
+	 * {@link ClientServer::nestedConnections()} method is <tt>TRUE</tt>.
 	 */
 	public function Drop();
 

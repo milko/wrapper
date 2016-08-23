@@ -85,6 +85,28 @@ class Collection extends Client
 	 * @uses Connect()
 	 * @uses Connection()
 	 * @uses \MongoDB\Collection::drop()
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate server.
+	 * $server = new Server( 'mongodb://localhost:27017' );
+	 *
+	 * // Instantiate database "Database".
+	 * $database = $server->Client( "Database", [] );
+	 *
+	 * // Add collection.
+	 * $collection = $database->Client( "Collection", [] );
+	 *
+	 * // Write some data.
+	 *
+	 * // Drop the collection.
+	 * $collection->Drop();
+	 *
+	 * // Restore empty collection.
+	 * $collection->Connect();
+	 *
+	 * // Now you have an empty collection.
+	 * </code>
 	 */
 	public function Drop()
 	{
@@ -103,7 +125,7 @@ class Collection extends Client
 
 
 	/*===================================================================================
-	 *																					*
+	 *	SetOne																			*
 	 *==================================================================================*/
 
 	/**
@@ -207,7 +229,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * We implement this method by using the current object's {@link URL()} data source
 	 * name as the connection string, stripped from the options that are sent to the native
@@ -242,7 +264,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 */
@@ -263,7 +285,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * <h4>Instantiate client.</h4><p />
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
@@ -283,7 +305,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 *
@@ -306,7 +328,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate server.
+	 * <h4>Instantiate server.</h4><p />
 	 *
 	 * We implement this method to instantiate a MongoDB server and a database instance
 	 * according to the current object's {@link Path()}.

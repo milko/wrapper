@@ -211,6 +211,105 @@ abstract class ClientServer extends Server
 
 /*=======================================================================================
  *																						*
+ *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Connect																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Open server connection.</h4><p />
+	 *
+	 * We overload this method to propagate the operation to clients, if the result of the
+	 * {@link nestedConnections()} method is <tt>TRUE</tt>.
+	 *
+	 * Note that the clients will be only affected if the current object is disconnected.
+	 *
+	 * @return mixed				Native connection object.
+	 *
+	 * @uses isConnected( )
+	 * @uses nestedConnections( )
+	 */
+	public function Connect()
+	{
+		//
+		// Get current state.
+		//
+		$connected = $this->isConnected();
+
+		//
+		// Call parent method.
+		//
+		$connection = parent::Connect();
+
+		//
+		// Cascade to clients.
+		//
+		if( $this->nestedConnections()
+		 && (! $connected) )
+		{
+			//
+			// Connect clients.
+			//
+			foreach( $this as $client )
+				$client->Connect();
+
+		} // Has nested connections.
+
+		return $connection;															// ==>
+
+	} // Connect.
+
+
+	/*===================================================================================
+	 *	Disconnect																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Close server connection.</h4><p />
+	 *
+	 * We overload this method to propagate the operation to clients, if the result of the
+	 * {@link nestedConnections()} method is <tt>TRUE</tt>.
+	 *
+	 * Note that the clients will be only affected if the current object is connected.
+	 *
+	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
+	 *
+	 * @uses nestedConnections()
+	 */
+	public function Disconnect()
+	{
+		//
+		// Drop current connection.
+		//
+		$connected = parent::Disconnect();
+
+		//
+		// Cascade to clients.
+		//
+		if( $this->nestedConnections()
+		 && $connected )
+		{
+			//
+			// Connect clients.
+			//
+			foreach( $this as $client )
+				$client->Disconnect();
+
+		} // Has nested connections.
+
+		return $connected;															// ==>
+
+	} // Disconnect.
+
+
+
+/*=======================================================================================
+ *																						*
  *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -480,6 +579,44 @@ abstract class ClientServer extends Server
 
 /*=======================================================================================
  *																						*
+ *								PROTECTED CONNECTION INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	nestedConnections																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * This method should return <tt>TRUE</tt> if opening and closing connections should be
+	 * propagated to clients, this means that when the current object connection is closed,
+	 * all client connections should be closed; this is valid also when opening connections.
+	 *
+	 * If the flag is off, the clients will remain untouched.
+	 *
+	 * I tried doing this with a static data member, but when subclassed and accessed with
+	 * the <tt>static::</tt> prefix it still returned the parent value; I probably don't
+	 * understand how static data members work in PHP. So this is why I developed this
+	 * protected method.
+	 *
+	 * By default the flag is <tt>OFF</tt>.
+	 *
+	 * @return bool					<tt>TRUE</tt> to cascade connections and disconnectons.
+	 */
+	protected function nestedConnections()
+	{
+		return FALSE;																// ==>
+
+	} // nestedConnections.
+
+
+
+/*=======================================================================================
+ *																						*
  *								PROTECTED CLIENT INTERFACE								*
  *																						*
  *======================================================================================*/
@@ -491,7 +628,7 @@ abstract class ClientServer extends Server
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate empty client.
+	 * <h4>Instantiate empty client.</h4><p />
 	 *
 	 * This method should return an empty {@link Client} instance.
 	 *
@@ -510,7 +647,7 @@ abstract class ClientServer extends Server
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * This method should release the provided {@link Client} by releasing used resources.
 	 * The goal of this method is not to close the connection, since the client might be

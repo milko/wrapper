@@ -55,92 +55,6 @@ class Server extends ClientServer
 
 /*=======================================================================================
  *																						*
- *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	Connect																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Open server connection.</h4><p />
-	 *
-	 * We overload this method to handle client connections: in ArangoDB we disconnect all
-	 * databases when disconnecting the server, this means that we need to reconnect
-	 * eventual disconnected databases when reconnecting.
-	 *
-	 * @return mixed				Native connection object.
-	 *
-	 * @uses isConnected( )
-	 * @uses connectionCreate()
-	 */
-	public function Connect()
-	{
-		//
-		// Check connection.
-		//
-		if( ! $this->isConnected() )
-		{
-			//
-			// Create connection.
-			//
-			$this->mConnection = $this->connectionCreate();
-
-			//
-			// Connect clients.
-			//
-			foreach( $this as $client )
-				$client->Connect();
-
-		} // Was not connected.
-
-		return $this->mConnection;													// ==>
-
-	} // Connect.
-
-
-	/*===================================================================================
-	 *	Disconnect																		*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Close server connection.</h4><p />
-	 *
-	 * We overload this method to handle client connections: in ArangoDB we disconnect all
-	 * databases when disconnecting the server.
-	 *
-	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
-	 *
-	 * @uses connectionDrop()
-	 */
-	public function Disconnect()
-	{
-		//
-		// Disconnect object.
-		//
-		if( $this->connectionDrop() )
-		{
-			//
-			// Disconnect clients.
-			//
-			foreach( $this as $client )
-				$client->Disconnect();
-
-			return TRUE;															// ==>
-
-		} // Was connected.
-
-		return FALSE;																// ==>
-
-	} // Disconnect.
-
-
-
-/*=======================================================================================
- *																						*
  *							PUBLIC CLIENT MANAGEMENT INTERFACE							*
  *																						*
  *======================================================================================*/
@@ -330,7 +244,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * We implement this method by using the current object's {@link URL()} data source
 	 * name as the connection string, stripped from the options that are sent to the native
@@ -359,11 +273,29 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 */
 	protected function connectionDestruct()	{}
+
+
+	/*===================================================================================
+	 *	nestedConnections																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * We set the flag <tt>ON</tt> for ArangoDB databases.
+	 *
+	 * @return bool					<tt>TRUE</tt> to cascade connections and disconnectons.
+	 */
+	protected function nestedConnections()
+	{
+		return TRUE;																// ==>
+
+	} // nestedConnections.
 
 
 
@@ -380,7 +312,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * <h4>Instantiate client.</h4><p />
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
@@ -398,7 +330,7 @@ class Server extends ClientServer
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 *

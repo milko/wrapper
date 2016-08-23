@@ -113,9 +113,32 @@ class Collection extends Client
 	 * We then disconnect the collection.
 	 *
 	 * @uses isConnected()
-	 * @uses Connect()
 	 * @uses Connection()
+	 * @uses Path()
+	 * @uses Disconnect()
 	 * @uses ArangoCollectionHandler::drop()
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate server.
+	 * $server = new Server( 'tcp://localhost:8529?createCollection=1' );
+	 *
+	 * // Instantiate database "Database".
+	 * $database = $server->Client( "Database", [] );
+	 *
+	 * // Add collection.
+	 * $collection = $database->Client( "Collection", [] );
+	 *
+	 * // Write some data.
+	 *
+	 * // Drop the collection.
+	 * $collection->Drop();
+	 *
+	 * // Restore empty collection.
+	 * $collection->Connect();
+	 *
+	 * // Now you have an empty collection.
+	 * </code>
 	 */
 	public function Drop()
 	{
@@ -128,7 +151,7 @@ class Collection extends Client
 			// Drop collection.
 			//
 			if( $this->Connection()->getId() !== NULL )
-				$this->mCollectionHandler->drop( $this->Connection()->getName() );
+				$this->mCollectionHandler->drop( $this->Path() );
 
 			//
 			// Disconnect collection.
@@ -236,7 +259,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Drop connection.
+	 * <h4>Drop connection.</h4><p />
 	 *
 	 * We overload this method to clear the document and collection handlers.
 	 *
@@ -269,7 +292,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * We implement this method by using the current object's {@link URL()} data source
 	 * name as the connection string, stripped from the options that are sent to the native
@@ -318,17 +341,35 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * We overload this method to reset the document and collection handlers.
 	 */
 	protected function connectionDestruct()	{}
 
 
+	/*===================================================================================
+	 *	nestedConnections																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Nested connections flag.</h4><p />
+	 *
+	 * We reset the flag to <tt>OFF</tt> for ArangoDB collection clients.
+	 *
+	 * @return bool					<tt>TRUE</tt> to cascade connections and disconnectons.
+	 */
+	protected function nestedConnections()
+	{
+		return FALSE;																// ==>
+
+	} // nestedConnections.
+
+
 
 /*=======================================================================================
  *																						*
- *								PROTECTED DATABASE INTERFACE							*
+ *								PROTECTED CLIENT INTERFACE								*
  *																						*
  *======================================================================================*/
 
@@ -339,7 +380,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate client.
+	 * <h4>Instantiate client.</h4><p />
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
@@ -359,7 +400,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Close client connection.
+	 * <h4>Close client connection.</h4><p />
 	 *
 	 * In this method we do nothing.
 	 *
@@ -371,7 +412,7 @@ class Collection extends Client
 
 /*=======================================================================================
  *																						*
- *								PROTECTED SERVER INTERFACE								*
+ *								PROTECTED DATABASE INTERFACE							*
  *																						*
  *======================================================================================*/
 
@@ -382,7 +423,7 @@ class Collection extends Client
 	 *==================================================================================*/
 
 	/**
-	 * Instantiate server.
+	 * <h4>Instantiate server.</h4><p />
 	 *
 	 * We implement this method to instantiate an ArangoDB server and a database instance
 	 * according to the current object's {@link Path()}.

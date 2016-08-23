@@ -455,7 +455,7 @@ abstract class Server extends Container
 	 *==================================================================================*/
 
 	/**
-	 * Drop connection.
+	 * <h4>Drop connection.</h4><p />
 	 *
 	 * This method should drop the current connection and return <tt>TRUE</tt> if the
 	 * current object was connected, or <tt>FALSE</tt> if not.
@@ -498,7 +498,7 @@ abstract class Server extends Container
 	 *==================================================================================*/
 
 	/**
-	 * Open connection.
+	 * <h4>Open connection.</h4><p />
 	 *
 	 * This method should create the actual connection and return the native connection
 	 * object; in this class the method is virtual, it is the responsibility of concrete
@@ -522,7 +522,7 @@ abstract class Server extends Container
 	 *==================================================================================*/
 
 	/**
-	 * Close connection.
+	 * <h4>Close connection.</h4><p />
 	 *
 	 * This method should close the open connection, in this class the method is virtual, it
 	 * is the responsibility of concrete classes to implement this method.
