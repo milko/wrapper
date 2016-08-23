@@ -50,17 +50,92 @@ use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
  */
 class Server extends ClientServer
 {
-	/**
-	 * <h4>Nested connections flag.</h4><p />
-	 *
-	 * We set the flag on to cascade connections and disconnections.
-	 *
-	 * See {@link ClientServer::$mNestedConnections}.
-	 *
-	 * @var bool
-	 */
-	static $mNestedConnections = TRUE;
 
+
+
+/*=======================================================================================
+ *																						*
+ *							PUBLIC CONNECTION MANAGEMENT INTERFACE						*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	Connect																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Open server connection.</h4><p />
+	 *
+	 * We overload this method to handle client connections: in ArangoDB we disconnect all
+	 * databases when disconnecting the server, this means that we need to reconnect
+	 * eventual disconnected databases when reconnecting.
+	 *
+	 * @return mixed				Native connection object.
+	 *
+	 * @uses isConnected( )
+	 * @uses connectionCreate()
+	 */
+	public function Connect()
+	{
+		//
+		// Check connection.
+		//
+		if( ! $this->isConnected() )
+		{
+			//
+			// Create connection.
+			//
+			$this->mConnection = $this->connectionCreate();
+
+			//
+			// Connect clients.
+			//
+			foreach( $this as $client )
+				$client->Connect();
+
+		} // Was not connected.
+
+		return $this->mConnection;													// ==>
+
+	} // Connect.
+
+
+	/*===================================================================================
+	 *	Disconnect																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Close server connection.</h4><p />
+	 *
+	 * We overload this method to handle client connections: in ArangoDB we disconnect all
+	 * databases when disconnecting the server.
+	 *
+	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
+	 *
+	 * @uses connectionDrop()
+	 */
+	public function Disconnect()
+	{
+		//
+		// Disconnect object.
+		//
+		if( $this->connectionDrop() )
+		{
+			//
+			// Disconnect clients.
+			//
+			foreach( $this as $client )
+				$client->Disconnect();
+
+			return TRUE;															// ==>
+
+		} // Was connected.
+
+		return FALSE;																// ==>
+
+	} // Disconnect.
 
 
 

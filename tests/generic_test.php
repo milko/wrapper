@@ -8,7 +8,7 @@ require_once(dirname(__DIR__) . "/includes.local.php");
 //
 // Enable exception logging.
 //
-triagens\ArangoDb\Exception::enableLogging();
+//triagens\ArangoDb\Exception::enableLogging();
 
 //
 // Reference classes.
@@ -32,43 +32,48 @@ $database = $server->Client( "UnitTests", [] );
 //
 $collection = $database->Client( "UnitCollection", [] );
 
-//exit;
-
 //
 // Write to the collection.
 //
 $collection->SetOne( [ "name" => "test" ] );
 
-//exit;
-
-////
-//// Check identities.
-////
-//echo("\n\n" . '$server === $database->Server()' . "\n");
-//var_dump( ($server === $database->Server()) );
 //
-//echo("\n" . '$database === $server[ "UnitTests" ]' . "\n");
-//var_dump( ($database === $server[ "UnitTests" ]) );
-//echo("\n" . '$database === $server->Client( "UnitTests" )' . "\n");
-//var_dump( ($database === $server->Client( "UnitTests" )) );
-//echo("\n" . '$database === $collection->Server()' . "\n");
-//var_dump( ($database === $collection->Server()) );
+// Get client count.
 //
-//echo("\n" . '$collection === $database[ "UnitCollection" ]' . "\n");
-//var_dump( ($collection === $database[ "UnitCollection" ]) );
-//echo("\n" . '$collection === $database->Client( "UnitCollection" )' . "\n");
-//var_dump( ($collection === $database->Client( "UnitCollection" )) );
-//echo("\n" . '$collection === $server[ "UnitTests" ][ "UnitCollection" ]' . "\n");
-//var_dump( ($collection === $server[ "UnitTests" ][ "UnitCollection" ]) );
-
-//exit;
+//echo( "Database has " . $database->count() . " clients\n" );
 
 //
 // Drop database.
 //
 $database->Drop();
 
+//
+// Check connection in objects.
+//
+//echo( ( is_bool( $server->Connection() ) ) ? "Server disconnected\n" : "Server connected\n" );
+//echo( ( is_bool( $database->Connection() ) ) ? "Database disconnected\n" : "Database connected\n" );
+//echo( ( is_bool( $collection->Connection() ) ) ? "Collection disconnected\n" : "Collection connected\n" );
+//echo( ($collection === $database[ "UnitCollection" ])?"Collection is reference\n":"Collection is NOT reference\n" );
+
+//echo( "\n=====================\n" );
+//print_r( $collection );
+//echo( "\n=====================\n" );
+//print_r( $database[ "UnitCollection" ] );
+//echo( "\n=====================\n" );
+
+//exit;
+
 //sleep( 3 );
+
+//
+// Check database connection.
+//
+//echo( "Database: " );
+//var_dump( $database->Connection() );
+//echo( "Collection: " );
+//var_dump( $collection->Connection() );
+//
+//exit;
 
 ////
 //// Check identities.

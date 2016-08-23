@@ -490,6 +490,12 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 		$database->Drop();
 
 		/**
+		 * Connect database.
+		 * Note that we comment the following line to test automatic connection.
+		 */
+//		$database->Connect();
+
+		/**
 		 * Write stuff to the collection.
 		 */
 		$collection->SetOne( [ "name" => "test" ] );

@@ -120,26 +120,22 @@ class Collection extends Client
 	public function Drop()
 	{
 		//
-		// Connect object.
+		// Check if connected.
 		//
-		$this->Connect();
-
-		//
-		// Check collection.
-		//
-		if( $this->Connection()->getId() !== NULL )
+		if( $this->isConnected() )
 		{
 			//
 			// Drop collection.
 			//
-			$this->mCollectionHandler->drop( $this->Connection()->getName() );
+			if( $this->Connection()->getId() !== NULL )
+				$this->mCollectionHandler->drop( $this->Connection()->getName() );
 
 			//
 			// Disconnect collection.
 			//
 			$this->Disconnect();
 
-		} // Collection is active.
+		} // Is connected.
 
 	} // Drop.
 
@@ -236,6 +232,39 @@ class Collection extends Client
 
 
 	/*===================================================================================
+	 *	connectionDrop																	*
+	 *==================================================================================*/
+
+	/**
+	 * Drop connection.
+	 *
+	 * We overload this method to clear the document and collection handlers.
+	 *
+	 * @return bool					<tt>TRUE</tt> if it was disconnected.
+	 */
+	protected function connectionDrop()
+	{
+		//
+		// Clear handlers.
+		//
+		if( parent::connectionDrop() )
+		{
+			//
+			// Reset handlers.
+			//
+			$this->mDocumentHandler = NULL;
+			$this->mCollectionHandler = NULL;
+
+			return TRUE;															// ==>
+
+		} // Was disconnected.
+
+		return FALSE;																// ==>
+
+	} // connectionDrop.
+
+
+	/*===================================================================================
 	 *	connectionCreate																*
 	 *==================================================================================*/
 
@@ -293,12 +322,7 @@ class Collection extends Client
 	 *
 	 * We overload this method to reset the document and collection handlers.
 	 */
-	protected function connectionDestruct()
-	{
-		$this->mDocumentHandler = NULL;
-		$this->mCollectionHandler = NULL;
-
-	} // connectionDestruct.
+	protected function connectionDestruct()	{}
 
 
 

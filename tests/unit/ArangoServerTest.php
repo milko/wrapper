@@ -491,6 +491,7 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 
 		/**
 		 * Connect database.
+		 * Note that we need to do this with ArangoDB.
 		 */
 		$database->Connect();
 

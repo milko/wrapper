@@ -390,30 +390,11 @@ abstract class Server extends Container
 	 *
 	 * @return boolean				<tt>TRUE</tt> was connected, <tt>FALSE</tt> wasn't.
 	 *
-	 * @uses isConnected()
-	 * @uses connectionDestruct()
+	 * @uses connectionDrop()
 	 */
 	public function Disconnect()
 	{
-		//
-		// Check if connected.
-		//
-		if( $this->isConnected() )
-		{
-			//
-			// Destruct connection.
-			//
-			$this->connectionDestruct();
-
-			//
-			// Reset native connection attribute.
-			//
-			$this->mConnection = TRUE;
-
-			return TRUE;															// ==>
-		}
-
-		return FALSE;																// ==>
+		return $this->connectionDrop();												// ==>
 
 	} // Disconnect.
 
@@ -467,6 +448,49 @@ abstract class Server extends Container
  *																						*
  *======================================================================================*/
 
+
+
+	/*===================================================================================
+	 *	connectionDrop																	*
+	 *==================================================================================*/
+
+	/**
+	 * Drop connection.
+	 *
+	 * This method should drop the current connection and return <tt>TRUE</tt> if the
+	 * current object was connected, or <tt>FALSE</tt> if not.
+	 *
+	 * The method will set the {@link $mConnection} member to <tt>TRUE</tt> if the object
+	 * was connected, or leave it to <tt>NULL</tt> if not.
+	 *
+	 * @return bool					<tt>TRUE</tt> if it was disconnected.
+	 *
+	 * @uses isConnected()
+	 * @uses connectionDestruct()
+	 */
+	protected function connectionDrop()
+	{
+		//
+		// Check if connected.
+		//
+		if( $this->isConnected() )
+		{
+			//
+			// Destruct connection.
+			//
+			$this->connectionDestruct();
+
+			//
+			// Reset native connection attribute.
+			//
+			$this->mConnection = TRUE;
+
+			return TRUE;															// ==>
+		}
+
+		return FALSE;																// ==>
+
+	} // connectionDrop.
 
 
 	/*===================================================================================
