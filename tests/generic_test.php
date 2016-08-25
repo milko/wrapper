@@ -7,8 +7,10 @@ require_once(dirname(__DIR__) . "/includes.local.php");
 
 $file = "/Users/milkoskofic/Documents/Development/Git/iso-codes/iso_3166-1/it.po";
 $data = file_get_contents( $file );
-$count = preg_match_all( '/msgid ("(.+)")+/', $data, $match );
+//$count = preg_match_all( '/^msgid\s+("(.+)"$)+/', $data, $match );
+$count = preg_match_all( '/^(msgid)+/', $data, $match );
 print_r( $match );
+exit;
 $count = preg_match_all( '/msgstr ("(.+)")+/', $data, $match );
 print_r( $match );
 exit;
