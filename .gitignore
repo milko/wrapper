@@ -14,3 +14,12 @@ composer.lock
 # Project files
 analysis.txt
 files
+
+# Extensions
+extensions/
+!extensions/**/*.zep
+!extensions/**/*.json
+!extensions/**/ext/kernel/*.h
+!extensions/**/ext/kernel/*.c
+!extensions/**/ext/kernel/extended/*.h
+!extensions/**/ext/kernel/extended/*.c

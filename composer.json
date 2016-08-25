@@ -1,9 +1,9 @@
 {
 	"name": "milko/wrapper",
-	"description": "A PHP library to wrap an ontology over data",
+	"description": "A PHP library to wrap an ontology around a database",
 	"version": "0.5-dev",
 	"type": "library",
-	"keywords": ["database", "ontology", "wrapper"],
+	"keywords": ["database", "ontology", "wrapper, mongodb, arangodb"],
 	"license": "MIT",
 	"authors":
 	[

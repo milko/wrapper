@@ -183,7 +183,7 @@ abstract class ClientServer extends Server
 		//
 		// Call parent constructor.
 		//
-		parent::__construct( $theConnection );
+		Server::__construct( $theConnection );
 
 		//
 		// Handle path.
@@ -244,7 +244,7 @@ abstract class ClientServer extends Server
 		//
 		// Call parent method.
 		//
-		$connection = parent::Connect();
+		$connection = Server::Connect();
 
 		//
 		// Cascade to clients.
@@ -286,7 +286,7 @@ abstract class ClientServer extends Server
 		//
 		// Drop current connection.
 		//
-		$connected = parent::Disconnect();
+		$connected = Server::Disconnect();
 
 		//
 		// Cascade to clients.

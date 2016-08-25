@@ -8,11 +8,6 @@
  *	@since		17/08/2016
  */
 
-/**
- * Require trait.
- */
-require_once( dirname(__DIR__) . "/src/traits/Url.php" );
-
 //
 // Test class.
 //
@@ -21,7 +16,7 @@ class test_Url
 	//
 	// Trait.
 	//
-	use Url;
+	use \Milko\wrapper\Url;
 
 	/**
 	 * Component tags.

@@ -6,13 +6,15 @@
  * This file contains the definition of the Url trait.
  */
 
+namespace Milko\wrapper;
+
 /*=======================================================================================
  *																						*
  *									Url.trait.php										*
  *																						*
  *======================================================================================*/
 
-use Milko\wrapper\Container;
+//use Milko\wrapper\Container;
 
 /**
  * <h4>URL trait.</h4><p />
@@ -335,7 +337,7 @@ trait Url
 	 *
 	 * @param mixed				$theValue			Value or operation.
 	 * @return string			The data source protocol.
-	 * @throws BadMethodCallException
+	 * @throws \BadMethodCallException
 	 *
 	 * @uses Container::manageAttribute()
 	 *
@@ -358,7 +360,7 @@ trait Url
 		// Prevent resetting the attribute.
 		//
 		if( $theValue === FALSE )
-			throw new BadMethodCallException(
+			throw new \BadMethodCallException(
 				"The data source protocol is required."
 			);																	// !@! ==>
 
@@ -381,7 +383,7 @@ trait Url
 	 *
 	 * @param mixed				$theValue			Value or operation.
 	 * @return string|array		The data source host(s).
-	 * @throws BadMethodCallException
+	 * @throws \BadMethodCallException
 	 *
 	 * @uses Container::manageAttribute()
 	 *
@@ -406,7 +408,7 @@ trait Url
 		// Prevent resetting the attribute.
 		//
 		if( $theValue === FALSE )
-			throw new BadMethodCallException(
+			throw new \BadMethodCallException(
 				"The data source host is required."
 			);																	// !@! ==>
 
@@ -434,7 +436,7 @@ trait Url
 	 *
 	 * @param mixed				$theValue			Value or operation.
 	 * @return int|array		Data source port.
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 *
 	 * @uses Container::manageAttribute()
 	 *
@@ -664,7 +666,7 @@ trait Url
 	 *
 	 * @param mixed				$theValue			Value or operation.
 	 * @return array			Data source query or options.
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 *
 	 * @uses Container::manageAttribute()
 	 *
@@ -721,7 +723,7 @@ trait Url
 					// Check parameter name.
 					//
 					if( ! strlen( $name = trim( $elements[ 0 ] ) ) )
-						throw new InvalidArgumentException(
+						throw new \InvalidArgumentException(
 							"Invalid data source query." );						// !@! ==>
 
 					//
@@ -834,7 +836,7 @@ trait Url
 	 * @param string			$theUrl				URL to load or <tt>NULL</tt>.
 	 * @param array				$theExcluded		List of element tags to be excluded.
 	 * @return string			The URL.
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 *
 	 * @uses Container::manageAttribute()
 	 *
@@ -871,7 +873,7 @@ trait Url
 				// Check URL.
 				//
 				if( parse_url( $theUrl ) === FALSE )
-					throw new InvalidArgumentException(
+					throw new \InvalidArgumentException(
 						"Invalid URL string."
 					);															// !@! ==>
 
@@ -938,7 +940,7 @@ trait Url
 			// Handle empty connection string.
 			//
 			else
-				throw new InvalidArgumentException(
+				throw new \InvalidArgumentException(
 					"Empty URL string."
 				);																// !@! ==>
 

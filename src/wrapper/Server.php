@@ -8,18 +8,11 @@
 
 namespace Milko\wrapper;
 
-/**
- * Require Url trait.
- */
-require_once( dirname(__DIR__) . "/traits/Url.php" );
-
 /*=======================================================================================
  *																						*
  *									Server.php											*
  *																						*
  *======================================================================================*/
-
-use Milko\wrapper\Container;
 
 /**
  * <h4>Server class.</h4><p />
@@ -98,7 +91,7 @@ abstract class Server extends Container
 	/**
 	 * Declare traits.
 	 */
-	use \Url;
+	use Url;
 
 	/**
 	 * Database name tag.
