@@ -372,7 +372,7 @@ class ISOCodes
 	 *==================================================================================*/
 
 	/**
-	 * <h4>getIterator files.</h4><p />
+	 * <h4>Return a standards iterator.</h4><p />
 	 *
 	 * This method can be used to retrieve an iterator that can be used to scan the codes
 	 * and translations of the provided standard.
