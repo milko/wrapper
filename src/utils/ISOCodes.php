@@ -18,7 +18,8 @@ namespace Milko\utils;
  * <h4>ISO codes loader.</h4><p />
  *
  * This <em>utility</em> class can be used to compile a collection of Json files containing
- * various ISO standards from the {@link https://pkg-isocodes.alioth.debian.org} repository.
+ * various ISO standards from the {@link https://pkg-isocodes.alioth.debian.org} repository;
+ * you must have a local copy.
  *
  * The standards supported by this class are:
  *
@@ -40,10 +41,14 @@ namespace Milko\utils;
  * The language translations should be in a directory containing a set of directories whose
  * names are prefixed with <tt>iso_</tt> containing the <tt>.po</tt> files.
  *
- * The class will write two files to the output directory: <tt>schema.json</tt> containing
- * the combined schemas and a set of files, prefixed with the standard name, containing the
- * code and translations. All name fields will be an array whose index is the language code
- * and whose value is the translated name.
+ * The {@link getIterator()} method can be invoked with a specific standard and will return
+ * an iterator that can be used to scan the codes and translations of the provided standard.
+ * If invoked without parameters, the method will return an iterator to the standards
+ * schemas.
+ *
+ * The {@link Standards()} method will return the list of standards, the {@link Types()}
+ * method will return the list of data types and the {@link Languages()} method will return
+ * the list of language codes.
  *
  * We assume by default that English is the base language.
  *
@@ -52,6 +57,33 @@ namespace Milko\utils;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		25/08/2016
+ *
+ * @example
+ * <code>
+ * // Set directory paths.
+ * $po = "/some/path/to/iso-codes";
+ * $json = "/some/path/to/iso-codes/data";	// In general that is where they are.
+ *
+ * // Instantiate class.
+ * $iso = new ISOCodes( $json, $po );
+ *
+ * // Get list of standards.
+ * $standards = $iso->Standards();
+ * // Get list of types.
+ * $types = $iso->Types();
+ * // Get list of languages.
+ * $langs = $iso->Languages();
+ *
+ * // Iterate schemas.
+ * $schemas = $iso->getIterator();
+ * foreach( $schemas as $standard => $schema )
+ * 	...
+ *
+ * // Iterate countries.
+ * $countries = $iso->getIterator( ISOCodes::k3166_1 );
+ * foreach( $countries as $code => $data )
+ * 	...
+ * </code>
  */
 class ISOCodes
 {
@@ -207,7 +239,19 @@ class ISOCodes
 	 * @param string			$thePo      		PO files path.
 	 * @throws \InvalidArgumentException
 	 *
+	 * @uses loadStandards()
 	 * @uses loadLanguages()
+	 * @uses loadSchema()
+	 *
+	 * @example
+	 * <code>
+	 * // Set directory paths.
+	 * $po = "/some/path/to/iso-codes";
+	 * $json = "/some/path/to/iso-codes/data";	// In general that is where they are.
+	 *
+	 * // Instantiate class.
+	 * $iso = new ISOCodes( $json, $po );
+	 * </code>
 	 */
 	public function __construct( string $theJson, string $thePo )
 	{
@@ -254,7 +298,7 @@ class ISOCodes
 
 /*=======================================================================================
  *																						*
- *									PUBLIC INTERFACE	    							*
+ *							PUBLIC MEMBER ACCESSOR INTERFACE	    					*
  *																						*
  *======================================================================================*/
 	
@@ -297,24 +341,6 @@ class ISOCodes
 
 
 	/*===================================================================================
-	 *	Schema																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return schema.</h4><p />
-	 *
-	 * This method can be used to retrieve the schemas.
-	 *
-	 * @return array				List of standard schemas.
-	 */
-	public function Schema()
-	{
-		return $this->mSchema;														// ==>
-
-	} // Schema.
-
-
-	/*===================================================================================
 	 *	Types																			*
 	 *==================================================================================*/
 
@@ -332,46 +358,111 @@ class ISOCodes
 	} // Types.
 
 
+
+/*=======================================================================================
+ *																						*
+ *								PUBLIC OPERATIONS INTERFACE	    						*
+ *																						*
+ *======================================================================================*/
+
+
+
 	/*===================================================================================
-	 *	Dump																			*
+	 *	getIterator																		*
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Dump files.</h4><p />
+	 * <h4>getIterator files.</h4><p />
 	 *
-	 * This method can be used to dump the result files in the provided directory.
+	 * This method can be used to retrieve an iterator that can be used to scan the codes
+	 * and translations of the provided standard.
 	 *
-	 * @param string				$theDestination 	Destination directory path.
-	 * @throws \RuntimeException
+	 * If the provided standard is not supported, the method will raise an exception.
+	 *
+	 * If the parameter is omitted, the method will return an iterator to the standards
+	 * schemas.
+	 *
+	 * @param string				$theStandard	 	Requested standard.
+	 * @return \Iterator			Standards or schemas iterator.
 	 * @throws \InvalidArgumentException
+	 *
+	 * @example
+	 * <code>
+	 * // Set directory paths.
+	 * $po = "/some/path/to/iso-codes";
+	 * $json = "/some/path/to/iso-codes/data";	// In general that is where they are.
+	 *
+	 * // Instantiate class.
+	 * $iso = new ISOCodes( $json, $po );
+	 *
+	 * // Iterate schemas.
+	 * $schemas = $iso->getIterator();
+	 * foreach( $schemas as $standard => $schema )
+	 * 	...
+	 *
+	 * // Iterate countries.
+	 * $countries = $iso->getIterator( ISOCodes::k3166_1 );
+	 * foreach( $countries as $code => $data )
+	 * 	...
+	 * </code>
 	 */
-	public function Dump( string $theDestination )
+	public function getIterator( string $theStandard = NULL )
 	{
 		//
-		// Check destination directory.
+		// Handle schema iterator.
 		//
-		$this->mDest = new \SplFileInfo( $theDestination );
-		if( ! $this->mDest->isDir() )
-			throw new \InvalidArgumentException(
-				"Destination parameter is not a directory."
-			);                                                                  // !@! ==>
-		if( ! $this->mDest->isWritable() )
-			throw new \InvalidArgumentException(
-				"Destination parameter is not writable."
-			);                                                                  // !@! ==>
+		if( $theStandard === NULL )
+			return new \ArrayIterator( $this->mSchema );							// ==>
 
-		$x = $this->getTranslationTable( "3166-1", "it" );
-		print_r( $x );
-		exit;
 		//
-		// Iterate standards.
+		// Parse by standard.
 		//
-		foreach( $this->mStandards as $standard )
+		switch( $theStandard )
 		{
+			//
+			// Supported standards.
+			//
+			case self::k639_2:
+			case self::k639_3:
+			case self::k639_5:
+			case self::k3166_1:
+			case self::k3166_2:
+			case self::k3166_3:
+			case self::k4217:
+			case self::k15924:
+				$name
+					= "Milko\\utils\\" .
+					  "ISO_" .
+					  str_replace( '-', '_', $theStandard ) .
+					  "_Iterator";
+				return
+					new $name(
+						json_decode(
+							file_get_contents(
+								$this->mJson->getRealPath() .
+								DIRECTORY_SEPARATOR .
+								"iso_" .
+								$theStandard .
+								".json"
+							),
+							TRUE
+						)[ $theStandard ],
+						new \SplFileInfo(
+							$this->mPo->getRealPath() .
+							DIRECTORY_SEPARATOR .
+							"iso_" .
+							$theStandard
+						),
+						$this->mSchema[ $theStandard ]
+					);																// ==>
 
-		} // Iterating standards.
+		} // Parsing standard.
 
-	} // Dump.
+		throw new \InvalidArgumentException(
+			"Unsupported standard [ISO-$theStandard]."
+		);																		// !@! ==>
+
+	} // getIterator.
 
 
 
@@ -524,6 +615,8 @@ class ISOCodes
 
 					//
 					// Get schema code.
+					// We assume the "properties" element is not empty,
+					// we get the first and only element.
 					//
 					foreach( $schema[ "properties" ] as $code => $value ) break;
 
@@ -568,164 +661,6 @@ class ISOCodes
 		return $schemas;															// ==>
 
 	} // loadSchema.
-
-
-
-/*=======================================================================================
- *																						*
- *								PROTECTED PARSING INTERFACE								*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	getTranslationTable																*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Get translation table.</h4><p />
-	 *
-	 * This method will return the translation table for the provided standard.
-	 *
-	 * @param string				$theStandard	 	Standard code.
-	 * @param string				$theLanguage	 	Language code.
-	 * @return array				Translation table.
-	 * @throws \RuntimeException
-	 */
-	protected function getTranslationTable( string $theStandard, string $theLanguage )
-	{
-		//
-		// Determine file.
-		//
-		$filename = $this->mPo->getRealPath()
-					. DIRECTORY_SEPARATOR
-					. "iso_"
-					. $theStandard
-					. DIRECTORY_SEPARATOR
-					. $theLanguage
-					. ".po";
-
-		//
-		// Read file.
-		//
-		$file = file_get_contents( $filename );
-		if( $file !== FALSE )
-		{
-			//
-			// Match english strings in file.
-			//
-			$count = preg_match_all( '/msgid ("(.+)"\n)+/', $file, $match );
-			if( $count === FALSE )
-				throw new \RuntimeException(
-					"Error parsing file [$filename], " .
-					"unable to parse english strings."
-				);																// !@! ==>
-
-			//
-			// Normalise matches.
-			//
-			$match = $match[ 0 ];
-
-			//
-			// Normalise english strings.
-			//
-			$keys = Array();
-			while( ($line = array_shift( $match )) !== NULL )
-			{
-				//
-				// Get strings.
-				//
-				$count = preg_match_all( '/"(.*)"/', $line, $strings );
-				if( $count === FALSE )
-					throw new \RuntimeException(
-						"Error parsing file [$filename], " .
-						"unable to normalise english strings."
-					);															// !@! ==>
-
-				//
-				// Merge strings.
-				//
-				$strings = $strings[ 1 ];
-				if( count( $strings ) > 1 )
-				{
-					$tmp = '';
-					foreach( $strings as $item )
-						$tmp .= $item;
-					$keys[] = $tmp;
-				}
-				else
-					$keys[] = $strings[ 0 ];
-			}
-			print_r( $keys );
-
-			//
-			// Match translated strings in file.
-			//
-			$count = preg_match_all( '/msgstr ("(.+)"\n)+/', $file, $match );
-			if( $count === FALSE )
-				throw new \RuntimeException(
-					"Error parsing file [$filename], " .
-					"unable to match translated strings."
-				);																// !@! ==>
-
-			//
-			// Normalise matches.
-			//
-			$match = $match[ 0 ];
-
-			//
-			// Normalise translated strings.
-			//
-			$values = Array();
-			while( ($line = array_shift( $match )) !== NULL )
-			{
-				//
-				// Get strings.
-				//
-				$count = preg_match_all( '/"(.*)"/', $line, $strings );
-				if( $count === FALSE )
-					throw new \RuntimeException(
-						"Error parsing file [$filename], " .
-						"unable to get english strings."
-					);															// !@! ==>
-
-				//
-				// Merge strings.
-				//
-				$strings = $strings[ 1 ];
-				if( count( $strings ) > 1 )
-				{
-					$tmp = '';
-					foreach( $strings as $item )
-						$tmp .= $item;
-					$values[] = $tmp;
-				}
-				else
-					$values[] = $strings[ 0 ];
-			}
-			print_r( $values );
-			exit;
-
-			//
-			// Combine array.
-			//
-			$matches = array_combine( $keys, $values );
-
-			//
-			// Get rid of header.
-			//
-			array_shift( $matches );
-
-			return $matches;														// ==>
-
-		} // Read the file.
-
-		throw new \RuntimeException(
-			"Unable to read file [$filename]."
-		);																		// !@! ==>
-
-	} // getTranslationTable.
 
 
 
