@@ -13,8 +13,8 @@ use Milko\utils\ISOCodes;
 //
 // Set directories.
 //
-$j = "/Users/milkoskofic/Documents/Development/Git/iso-codes/data";
-$p = "/Users/milkoskofic/Documents/Development/Git/iso-codes";
+$j = "/Users/milkoskofic/Documents/Development/Data/iso-codes/Json";
+$p = "/Users/milkoskofic/Documents/Development/Data/iso-codes/PO";
 
 //
 // Instantiate class.

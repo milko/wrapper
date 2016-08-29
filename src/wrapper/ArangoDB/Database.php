@@ -214,17 +214,20 @@ class Database extends Client
 	protected function connectionCreate()
 	{
 		//
-		// Create connection.
+		// Get database name.
 		//
 		$name = $this->Path();
-		$options = $this->Server()->ConnectionOptions();
-		$options[ ArangoConnectionOptions::OPTION_DATABASE ] = '_system';
-		$connection = new ArangoConnection( $options );
+
+		//
+		// Clone server connection.
+		//
+		$connection = new ArangoConnection( $this->Server()->ConnectionOptions() );
 
 		//
 		// Create database.
 		//
-		if( ! in_array( $name, ArangoDatabase::listUserDatabases( $connection )[ 'result' ] ) )
+		if( ! in_array(
+			$name, ArangoDatabase::listUserDatabases( $connection )[ 'result' ] ) )
 			ArangoDatabase::create( $connection, $name );
 
 		//
