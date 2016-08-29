@@ -125,68 +125,6 @@ class Collection extends Client
 
 
 	/*===================================================================================
-	 *	SetOne																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Store a document.</h4><p />
-	 *
-	 * We use the replaceOne() method for existing objects, or the insertOne() for new ones.
-	 *
-	 * @param mixed					$theDocument		Document to store.
-	 * @return mixed				The document key.
-	 *
-	 * @uses isConnected()
-	 * @uses Connect()
-	 * @uses Connection()
-	 * @uses Container::convertToArray()
-	 * @uses \MongoDB\Collection::findOne()
-	 * @uses \MongoDB\Collection::insertOne()
-	 */
-	public function SetOne( $theDocument )
-	{
-		//
-		// Connect object.
-		//
-		if( ! $this->isConnected() )
-			$this->Connect();
-
-		//
-		// Flatten to array.
-		//
-		Container::convertToArray( $theDocument );
-
-		//
-		// Check key.
-		//
-		if( array_key_exists( '_id', $theDocument ) )
-		{
-			//
-			// Check if it exists.
-			//
-			if( $this->Connection()->count( [ '_id' => $theDocument[ '_id' ] ] ) )
-			{
-				//
-				// Replace.
-				//
-				$this->mConnection->replaceOne(
-					[ '_id' => $theDocument[ '_id' ] ],
-					$theDocument );
-
-				return $theDocument[ '_id' ];										// ==>
-
-			} // Found document.
-
-		} // Has key.
-
-		return
-			$this->Connection()->insertOne( $theDocument )
-				->getInsertedId();													// ==>
-
-	} // SetOne.
-
-
-	/*===================================================================================
 	 *	Records																			*
 	 *==================================================================================*/
 
@@ -213,6 +151,42 @@ class Collection extends Client
 		return $this->Connection()->count();										// ==>
 
 	} // Records.
+
+
+	/*===================================================================================
+	 *	AddOne																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Insert a document.</h4><p />
+	 *
+	 * We use the insertOne() method.
+	 *
+	 * @param mixed					$theDocument		Document to store.
+	 * @return mixed				The document key.
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses Container::convertToArray()
+	 * @uses \MongoDB\Collection::insertOne()
+	 */
+	public function AddOne( $theDocument )
+	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		//
+		// Flatten to array.
+		//
+		Container::convertToArray( $theDocument );
+
+		return
+			$this->Connection()->insertOne( $theDocument )
+				 ->getInsertedId();													// ==>
+
+	} // AddOne.
 
 
 

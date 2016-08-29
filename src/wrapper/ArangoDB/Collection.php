@@ -195,19 +195,23 @@ class Collection extends Client
 
 
 	/*===================================================================================
-	 *	SetOne																			*
+	 *	AddOne																			*
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Store a document.</h4><p />
+	 * <h4>Insert a document.</h4><p />
 	 *
-	 * We use the document handler replaceById() method for existing objects, or the
-	 * save() method for new ones.
+	 * We use the document handler save() method.
 	 *
 	 * @param mixed					$theDocument		Document to store.
 	 * @return mixed				The document key.
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses Container::convertToArray()
+	 * @uses ArangoDocumentHandler::save()
 	 */
-	public function SetOne( $theDocument )
+	public function AddOne( $theDocument )
 	{
 		//
 		// Connect object.
@@ -215,34 +219,15 @@ class Collection extends Client
 		$this->Connect();
 
 		//
-		// Init local storage.
+		// Flatten to array.
 		//
-		$name = $this->Connection()->getName();
 		Container::convertToArray( $theDocument );
 
-		//
-		// Check key.
-		//
-		if( array_key_exists( '_key', $theDocument ) )
-		{
-			//
-			// Check if it exists.
-			//
-			if( $this->mDocumentHandler->has( $name, $theDocument[ '_key' ] ) )
-			{
-				$this->mDocumentHandler
-					->replaceById( $name, $theDocument[ '_key' ], $theDocument );
-
-				return $theDocument[ '_key' ];										// ==>
-
-			} // Document exists.
-
-		} // Has key.
-
 		return
-			$this->mDocumentHandler->save( $this->Connection(), $theDocument );		// ==>
+			$this->mDocumentHandler
+				->save( $this->Connection(), $theDocument );						// ==>
 
-	} // SetOne.
+	} // AddOne.
 
 
 

@@ -87,21 +87,23 @@ interface Collection
 
 
 	/*===================================================================================
-	 *	SetOne																			*
+	 *	AddOne																			*
 	 *==================================================================================*/
 
 	/**
-	 * <h4>Store a document.</h4><p />
+	 * <h4>Insert a document.</h4><p />
 	 *
-	 * Store a single document and return document identifier.
+	 * Insert a single document and return document identifier.
 	 *
 	 * The provided document must be either an <tt>array</tt>, an <tt>ArrayObject</tt> or
 	 * a {@link Container}.
 	 *
+	 * If the inserted document already exists, the method should raise an exception.
+	 *
 	 * @param mixed					$theDocument		Document to store.
 	 * @return mixed				The document key.
 	 */
-	public function SetOne( $theDocument );
+	public function AddOne( $theDocument );
 
 
 

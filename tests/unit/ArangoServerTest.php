@@ -498,7 +498,7 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 		/**
 		 * Write stuff to the collection.
 		 */
-		$collection->SetOne( [ "name" => "test" ] );
+		$collection->AddOne( [ "name" => "test" ] );
 		$this->assertGreaterThan(
 			0,
 			$collection->Records(),
