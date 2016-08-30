@@ -33,7 +33,7 @@ use Milko\wrapper\ClientServer;
  * Client object that instantiated the current instance.
  *
  * The class features a public method, {@link Server()}, that can be used to retrieve the
- * current object's creator.
+ * current object's creator; the {@link Root()} method should return the root server object.
  *
  * To have examples of concrete implementations of this class please refer to the unit tests
  * or to concrete classes such as the {@link Milko\wrapper\MongoDB\Database} and
@@ -285,6 +285,32 @@ abstract class Client extends ClientServer
 	public function Server()
 	{
 		return $this->mServer;														// ==>
+
+	} // Server.
+
+
+	/*===================================================================================
+	 *	Root																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return client root server.</h4><p />
+	 *
+	 * This method can be used to retrieve the client root server.
+	 *
+	 * @return ClientServer|Client	Client server or Client instance.
+	 */
+	public function Root()
+	{
+		//
+		// Traverse hierarchy.
+		//
+		$root = $this;
+		while( ($root instanceof Client)
+			&& ($root->mServer !== NULL) )
+			$root = $root->mServer;
+
+		return $root;						        								// ==>
 
 	} // Server.
 

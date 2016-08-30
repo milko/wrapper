@@ -543,6 +543,43 @@ class ClientTest extends PHPUnit_Framework_TestCase
 	} // testConstruct.
 
 
+	/*===================================================================================
+	 *	testRoot    																	*
+	 *==================================================================================*/
+
+	/**
+	 * Test Root()
+	 *
+	 * @covers       Client::Root()
+	 */
+	public function testRoot()
+	{
+		/**
+		 * Instantiate root object.
+		 */
+		$root = new test_ClientServer(
+			'protocol://root'
+		);
+
+		/**
+		 * Instantiate clients.
+		 */
+		$client = $root->Client( "Grandpa", [ "name" => "Grandpa" ] );
+		$client = $client->Client( "Dad", [ "name" => "Dad" ] );
+		$client = $client->Client( "Son", [ "name" => "Son" ] );
+
+		/**
+		 * Check root.
+		 */
+		$this->assertSame(
+			$root,
+			$client->Root(),
+			'$root == $client->Root()'
+		);
+
+	} // testRoot.
+
+
 
 /*=======================================================================================
  *																						*
