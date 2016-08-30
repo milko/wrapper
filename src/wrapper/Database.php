@@ -21,8 +21,6 @@ namespace Milko\wrapper;
  *
  * <ul>
  * 	<li><b>{@link Drop()}</b>: Drop the database.
- * 	<li><b>{@link Key()}</b>: Return document key property name.
- * 	<li><b>{@link Rev()}</b>: Return document revision property name.
  * </ul>
  *
  *	@package	Core
@@ -62,49 +60,6 @@ interface Database
 	 * {@link ClientServer::nestedConnections()} method is <tt>TRUE</tt>.
 	 */
 	public function Drop();
-
-
-
-/*=======================================================================================
- *																						*
- *									STATIC METHODS	    								*
- *																						*
- *======================================================================================*/
-
-
-
-	/*===================================================================================
-	 *	Key 																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return document key.</h4><p />
-	 *
-	 * This method should return the property name of the document key.
-	 *
-	 * We assume all collections share the same key property, although each collection may
-	 * set a different data type in it.
-	 *
-	 * The method must be implemented in derived concrete classes.
-	 */
-	static function Key();
-
-
-	/*===================================================================================
-	 *	Rev 																			*
-	 *==================================================================================*/
-
-	/**
-	 * <h4>Return document revision.</h4><p />
-	 *
-	 * This method should return the property name of the document revision.
-	 *
-	 * We assume all collections share the same revision property, the actual value of the
-	 * property is undefined.
-	 *
-	 * The method must be implemented in derived concrete classes.
-	 */
-	static function Rev();
 
 
 
