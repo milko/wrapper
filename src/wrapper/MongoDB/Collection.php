@@ -17,6 +17,8 @@ namespace Milko\wrapper\MongoDB;
 use Milko\wrapper\Client;
 use Milko\wrapper\Container;
 
+use MongoDB\Model\BSONDocument;
+
 /**
  * <h4>MongoDB database class.</h4><p />
  *
@@ -187,6 +189,81 @@ class Collection extends Client
 				 ->getInsertedId();													// ==>
 
 	} // AddOne.
+
+
+
+/*=======================================================================================
+ *																						*
+ *									STATIC METHODS										*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	DocumentKey																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document key.</h4><p />
+	 *
+	 * In MongoDB the document key is <tt>_id</tt>.
+	 *
+	 * @return string				The document key property name.
+	 */
+	static function DocumentKey()
+	{
+		return '_id';																// ==>
+
+	} // DocumentKey.
+
+
+	/*===================================================================================
+	 *	DocumentRevision																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document revision.</h4><p />
+	 *
+	 * In MongoDB there is no default revision, we set this to the <tt>_rev</tt> token.
+	 *
+	 * @return string				The document revision property name.
+	 */
+	static function DocumentRevision()
+	{
+		return '_rev';																// ==>
+
+	} // DocumentRevision.
+
+
+	/*===================================================================================
+	 *	ToNativeDocument																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert to a native document.</h4><p />
+	 *
+	 * We implement this method to create a {@link BSONDocument} instance.
+	 *
+	 * @param mixed					$theDocument		Document to convert.
+	 * @return mixed				The native document.
+	 */
+	static function ToNativeDocument( $theDocument )
+	{
+		//
+		// Skip native documents.
+		//
+		if( $theDocument instanceof BSONDocument )
+			return $theDocument;													// ==>
+
+		//
+		// Flatten to array.
+		//
+		Container::convertToArray( $theDocument );
+
+		return new BSONDocument( $theDocument );									// ==>
+
+	} // ToNativeDocument.
 
 
 

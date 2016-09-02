@@ -30,6 +30,12 @@ namespace Milko\wrapper;
  *	 <ul>
  *	 	<li><b>{@link SetOne()}</b>: Store a single document.
  *	 </ul>
+ * 	<li>Static methods:
+ *	 <ul>
+ *	 	<li><b>{@link DocumentKey()}</b>: Return the document key property name.
+ *	 	<li><b>{@link DocumentRevision()}</b>: Return the document revision property name.
+ *	 	<li><b>{@link ToNativeDocument()}</b>: Convert provided data to native document.
+ *	 </ul>
  * </ul>
  *
  *	@package	Core
@@ -104,6 +110,65 @@ interface Collection
 	 * @return mixed				The document key.
 	 */
 	public function AddOne( $theDocument );
+
+
+
+/*=======================================================================================
+ *																						*
+ *									STATIC METHODS										*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	DocumentKey																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document key.</h4><p />
+	 *
+	 * This method should return the document key property name, this property is generally
+	 * defined at the database engine level and represents the unique identifier of the
+	 * document within its collection.
+	 *
+	 * @return string				The document key property name.
+	 */
+	static function DocumentKey();
+
+
+	/*===================================================================================
+	 *	DocumentRevision																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document revision.</h4><p />
+	 *
+	 * This method should return the document revision property name, this property is
+	 * generally defined at the database engine level and represents the value that defines
+	 * the document revision.
+	 *
+	 * @return string				The document revision property name.
+	 */
+	static function DocumentRevision();
+
+
+	/*===================================================================================
+	 *	ToNativeDocument																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert to a native document.</h4><p />
+	 *
+	 * Convert the provided object to a native document.
+	 *
+	 * The method expects an <tt>array</tt>, <tt>ArrayObject</tt> or
+	 * <tt>{@Link Container}</tt>.
+	 *
+	 * @param mixed					$theDocument		Document to convert.
+	 * @return mixed				The native document.
+	 */
+	static function ToNativeDocument( $theDocument );
 
 
 

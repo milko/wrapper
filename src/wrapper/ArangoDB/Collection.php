@@ -19,6 +19,7 @@ use Milko\wrapper\Container;
 use Milko\wrapper\ClientServer;
 
 use triagens\ArangoDb\Collection as ArangoCollection;
+use triagens\ArangoDb\Document as ArangoDocument;
 use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
 use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
 use triagens\ArangoDb\ServerException as ArangoServerException;
@@ -94,7 +95,7 @@ class Collection extends Client
 
 /*=======================================================================================
  *																						*
- *								PUBLIC COLLECTION INTERFACE								*
+ *									COLLECTION INTERFACE								*
  *																						*
  *======================================================================================*/
 
@@ -194,6 +195,15 @@ class Collection extends Client
 	} // Records.
 
 
+
+/*=======================================================================================
+ *																						*
+ *									DOCUMENT METHODS									*
+ *																						*
+ *======================================================================================*/
+
+
+
 	/*===================================================================================
 	 *	AddOne																			*
 	 *==================================================================================*/
@@ -228,6 +238,101 @@ class Collection extends Client
 				->save( $this->Connection(), $theDocument );						// ==>
 
 	} // AddOne.
+
+
+
+/*=======================================================================================
+ *																						*
+ *									STATIC METHODS										*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	DocumentKey																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document key.</h4><p />
+	 *
+	 * In ArangoDB the document key is <tt>_key</tt>.
+	 *
+	 * @return string				The document key property name.
+	 */
+	static function DocumentKey()
+	{
+		return '_key';																// ==>
+
+	} // DocumentKey.
+
+
+	/*===================================================================================
+	 *	DocumentRevision																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Return the document revision.</h4><p />
+	 *
+	 * In ArangoDB the document revision is <tt>_rev</tt>.
+	 *
+	 * @return string				The document revision property name.
+	 */
+	static function DocumentRevision()
+	{
+		return '_rev';																// ==>
+
+	} // DocumentRevision.
+
+
+	/*===================================================================================
+	 *	ToNativeDocument																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert to a native document.</h4><p />
+	 *
+	 * We implement this method to create a {@link triagens\ArangoDb\Document} instance, we
+	 * also ensure the internal key and revision properties of the native document are set.
+	 *
+	 * @param mixed					$theDocument		Document to convert.
+	 * @return mixed				The native document.
+	 */
+	static function ToNativeDocument( $theDocument )
+	{
+		//
+		// Skip native documents.
+		//
+		if( $theDocument instanceof ArangoDocument )
+			return $theDocument;													// ==>
+
+		//
+		// Flatten to array.
+		//
+		Container::convertToArray( $theDocument );
+
+		//
+		// Create native document.
+		//
+		$document = ArangoDocument::createFromArray( $theDocument );
+
+		//
+		// Set key.
+		//
+		if( ($document->getKey() === NULL)
+		 && array_key_exists( static::DocumentKey(), $theDocument ) )
+			$document->setInternalKey( $theDocument[ static::DocumentKey() ] );
+
+		//
+		// Set revision.
+		//
+		if( ($document->getRevision() === NULL)
+		 && array_key_exists( static::DocumentRevision(), $theDocument ) )
+			$document->setRevision( $theDocument[ static::DocumentRevision() ] );
+
+		return $document;															// ==>
+
+	} // ToNativeDocument.
 
 
 
