@@ -3,7 +3,7 @@
 /**
  * Collection.php
  *
- * This file contains the definition of the {@link Collection} class.
+ * This file contains the definition of the {@link Milko\wrapper\MongoDB\Collection} class.
  */
 
 namespace Milko\wrapper\MongoDB;
@@ -20,11 +20,11 @@ use Milko\wrapper\Container;
 use MongoDB\Model\BSONDocument;
 
 /**
- * <h4>MongoDB database class.</h4><p />
+ * <h4>MongoDB collection class.</h4><p />
  *
  * This <em>concrete</em> implementation of the {@link Client} class represents a
- * MongoDB database instance, it implements an object that manages a list of MongoDB
- * collections wrapped around the {@link Milko\PHPLib\MongoDB\Database} class.
+ * MongoDB collection instance which implements the {@link \Milko\wrapper\Collection}
+ * interface.
  *
  *	@package	Data
  *
@@ -340,8 +340,6 @@ class Collection extends Client
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
-	 * @param string				$theName			Client name.
-	 * @param array					$theOptions			Creation options.
 	 * @return Client				The {@link Client} instance.
 	 */
 	protected function clientCreate()

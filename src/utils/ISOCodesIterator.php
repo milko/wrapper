@@ -28,6 +28,11 @@ namespace Milko\utils;
  * The {@link key()} method should return the code that uniquely identifies the standard
  * element, it should represent the preferred code in the standard.
  *
+ * The class features other methods that return information regardiing the standard:
+ * {@link Title()} returns the standard title, {@link Description()} returns the standard
+ * description, {@link Required()} returns the list of required properties and
+ * {@link Properties()} returns the list of properties in the standard.
+ *
  *	@package	Utils
  *
  *	@author		Milko A. Škofič <skofic@gmail.com>
@@ -37,8 +42,8 @@ namespace Milko\utils;
  * @example
  * <code>
  * // Set directory paths.
- * $po = "/some/path/to/iso-codes";
- * $json = "/some/path/to/iso-codes/data";	// In general that is where they are.
+ * $po = "/some/path/to/iso-codes";		// In general these are at the root level.
+ * $json = "/some/path/to/iso-codes/data";	// In general these are in the data directory.
  *
  * // Instantiate ISO.
  * $iso = new ISOCodes( $json, $po );

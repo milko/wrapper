@@ -1,35 +1,33 @@
 <?php
 
 /**
- * Database.php
+ * Collection.php
  *
- * This file contains the definition of the {@link Database} class.
+ * This file contains the definition of the {@link Milko\wrapper\ArangoDB\Collection} class.
  */
 
 namespace Milko\wrapper\ArangoDB;
 
 /*=======================================================================================
  *																						*
- *									Database.php										*
+ *									Collection.php										*
  *																						*
  *======================================================================================*/
 
 use Milko\wrapper\Client;
 use Milko\wrapper\Container;
-use Milko\wrapper\ClientServer;
 
 use triagens\ArangoDb\Collection as ArangoCollection;
 use triagens\ArangoDb\Document as ArangoDocument;
 use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
 use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
-use triagens\ArangoDb\ServerException as ArangoServerException;
 
 /**
- * <h4>ArangoDB database class.</h4><p />
+ * <h4>ArangoDB collection class.</h4><p />
  *
  * This <em>concrete</em> implementation of the {@link Client} class represents a
- * ArangoDB database instance, it implements an object that manages a list of ArangoDB
- * collections wrapped around the {@link Milko\PHPLib\ArangoDB\Database} class.
+ * ArangoDB collection instance which implements the {@link \Milko\wrapper\Collection}
+ * interface.
  *
  *	@package	Data
  *
@@ -474,8 +472,6 @@ class Collection extends Client
 	 *
 	 * We implement this method to return a {@link Database} instance.
 	 *
-	 * @param string				$theName			Client name.
-	 * @param array					$theOptions			Creation options.
 	 * @return Client				The {@link Client} instance.
 	 */
 	protected function clientCreate()
