@@ -104,6 +104,9 @@ use Milko\wrapper\Client;
  *
  * // Access nested client.
  * $document = $server[ "Database" ][ "Collection" ][ "Document" ];
+ *
+ * // Create server, database and collection retrieving collection.
+ * $collection = ClientServer::NewConnection( "protocol://server/database/collection" );
  * </code>
  */
 abstract class ClientServer extends Server
@@ -574,6 +577,97 @@ abstract class ClientServer extends Server
 		return $client;																// ==>
 
 	} // NewClient.
+
+
+
+/*=======================================================================================
+ *																						*
+ *						STATIC CONNECTION CREATION INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	NewConnection																	*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Create a connection.</h4><p />
+	 *
+	 * This static method can be used to instantiate a server hierarchy and return the child
+	 * object reference.
+	 *
+	 * The connection URI used in the constructor uses the {@link Path()) property to
+	 * indicate the hierarchy to be created: for instance a <tt>database/collection</tt>
+	 * path will add a <tt>database</tt> client to the server and a <tt>collection</tt>
+	 * client to the database, but these client objects can only be accessed if their names
+	 * are known. This method will return the leaf object of the hierarchy while accessing
+	 * the parent objects can be done through the {@link Client::Server()} method.
+	 *
+	 * This method expects the same connection string that is passed to the constructor and
+	 * will return the leaf object which can be a derived instance of this class, or of the
+	 * {@link Client} class, depending whether the path was provided in the connection
+	 * string.
+	 *
+	 * If along the hierarchy any client is not found, the method will raise an exception;
+	 * this is because the called constructor is supposed to instantiate the hierarchy.
+	 *
+	 * @param string			$theConnection		Data source name.
+	 * @return ClientServer		The server or leaf client instance.
+	 * @throws \RuntimeException
+	 *
+	 * @example
+	 * <code>
+	 * // Get server.
+	 * $server = ClientServer::NewConnection( "protocol://user:pass@host?opt=val" );
+	 *
+	 * // Get database
+	 * $database = ClientServer::NewConnection( "protocol://user:pass@host/database" );
+	 *
+	 * // Get collection
+	 * $collection = ClientServer::NewConnection( "protocol://user:pass@host/database/collection" );
+	 * // Get database.
+	 * $database = $collection->Server();
+	 * </code>
+	 */
+	static function NewConnection( string $theConnection = NULL )
+	{
+		//
+		// Get class name.
+		//
+		$class = get_called_class();
+
+		//
+		// Extract path.
+		//
+		$path = explode( '/', parse_url( $theConnection, PHP_URL_PATH ) );
+		if( count( $path ) )
+			array_shift( $path );
+
+		//
+		// Instantiate server.
+		//
+		$client = new $class( $theConnection );
+
+		//
+		// Traverse to leaf.
+		//
+		foreach( $path as $element )
+		{
+			//
+			// Get client.
+			//
+			$client = $client->Client( $element );
+			if( $client === NULL )
+				throw new \RuntimeException(
+					"Unable to create client [$element]." );					// !@! ==>
+
+		} // Traversing hierarchy.
+
+		return $client;																// ==>
+
+	} // NewConnection.
 
 
 

@@ -46,6 +46,9 @@ use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
  * // Instantiate database.
  * $database = $server->Client( "DatabaseName", [] );
  * // Start working with database...
+ *
+ * // Instantiate server, database and collection.
+ * $collection = Server::NewConnection( 'tcp://localhost:8529/database/collection' );
  * </code>
  */
 class Server extends ClientServer

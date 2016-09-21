@@ -1,17 +1,16 @@
 <?php
 
 /**
- * ISO2MongoDB.php
+ * ISO2Database.php
  *
- * This file contains the script to write the ISO data to a MongoDB database, usage:
+ * This file contains the script to write the ISO data to a database, usage:
  *
  * <code>
- * php -f ISO2MongoDB.php <database name> <json directory> <po directory>
+ * php -f ISO2Database.php <connection URI> <json directory> <po directory>
  * </code>
  *
  * <ul>
- * 	<li><b>server uri</b>: Server connection URI.
- * 	<li><b>database name</b>: Name of database.
+ * 	<li><b>connection URI</b>: Connection URI.
  * 	<li><b>json directory</b>: Path to the directory containing the Json files.
  *  <li><b>po directory</b>: Path to the directory containing the PO files; the script
  *		expects that directory to contain a list of directories named <tt>iso_XXX</tt> where
@@ -25,12 +24,18 @@
  * 	<li><b>ISO_XXX</b>: Where XXX stands for the standard, will contain the ISO data.
  * </ul>
  *
- * <em>Note that the script will overwrite the above collections in the provided
- * database.</em>
+ * To write to a MongoDB database provide an URI in the form <tt>mongodb://...</tt>, any
+ * other protocol will write to an ArangoDB database.
+ *
+ * <em>Note that the script will erase the above collections in the provided database.</em>
  *
  * @example
  * <code>
- * php -f batch/ISO2MongoDB.php mongodb://localhost:27017 ISO data/JSON data/PO
+ * // Load the ISO ArangoDB database.
+ * php -f "batch/ISO2Database.php" "tcp://localhost:8529/ISO" "data/JSON" "data/PO"
+ *
+ * // Load the ISO MongoDB database.
+ * php -f "batch/ISO2Database.php" "mongodb://localhost:27017/ISO" "data/JSON" "data/PO"
  * </code>
  */
 
@@ -43,7 +48,6 @@ require_once(dirname(__DIR__) . "/includes.local.php");
  * Reference classes.
  */
 use Milko\utils\ISOCodes;
-use Milko\wrapper\MongoDB\Server;
 
 /*=======================================================================================
  *																						*
@@ -54,16 +58,15 @@ use Milko\wrapper\MongoDB\Server;
 //
 // Check arguments.
 //
-if( $argc < 5 )
-	exit( "Usage: php -f ISO2MongoDB.php <connection> <database name> <json directory> <po directory>\n" );
+if( $argc < 4 )
+	exit( "Usage: php -f ISO2Database.php <connection URI> <json directory> <po directory>\n" );
 
 //
 // Get arguments.
 //
 $c = $argv[ 1 ];
-$d = $argv[ 2 ];
-$j = $argv[ 3 ];
-$p = $argv[ 4 ];
+$j = $argv[ 2 ];
+$p = $argv[ 3 ];
 
 //
 // Instantiate class.
@@ -71,29 +74,40 @@ $p = $argv[ 4 ];
 $iso = new ISOCodes( $j, $p );
 
 //
-// Open server and database connections.
+// Open database connection.
 //
-$server = new Server( $c );
-$database = $server->Client( $d, [] );
+if( substr( $c, 0, 7 ) == "mongodb" )
+{
+	$database = \Milko\wrapper\MongoDB\Server::NewConnection( $c );
+	if( get_class( $database ) != "Milko\\wrapper\\MongoDB\\Database" )
+		exit( "Invalid connection string: expecting a database reference.\n" );
+}
+else
+{
+	$database = \Milko\wrapper\ArangoDB\Server::NewConnection( $c );
+	if( get_class( $database ) != "Milko\\wrapper\\ArangoDB\\Database" )
+		exit( "Invalid connection string: expecting a database reference.\n" );
+}
 
 //
-// Reference and drop schema.
+// Connect database.
+//
+$database->Connect();
+
+//
+// Reference and drop collections.
 //
 $col_schema = $database->Client( "schema", [] );
 $col_schema->Drop();
-
-//
-// Reference and drop standards.
-//
 $col_standards = [];
 foreach( $iso->Standards() as $standard )
 {
-	$col_standards[ $standard ] = $database->Client( $standard, [] );
+	$col_standards[ $standard ] = $database->Client( "ISO_$standard", [] );
 	$col_standards[ $standard ]->Drop();
 }
 
 //
-// Load schemas.
+// Load standards.
 //
 $iterator = $iso->getIterator();
 foreach( $iterator as $standard => $schema )
@@ -106,7 +120,7 @@ foreach( $iterator as $standard => $schema )
 	//
 	// Write schema.
 	//
-	$schema[ "_id" ] = $standard;
+	$schema[ $col_schema->DocumentKey() ] = $standard;
 	$schema[ "schema" ] = $schema[ '$schema' ];
 	unset( $schema[ '$schema' ] );
 	$col_schema->AddOne( $schema );
@@ -117,7 +131,7 @@ foreach( $iterator as $standard => $schema )
 	$iterator = $iso->getIterator( $standard );
 	foreach( $iterator as $key => $data )
 	{
-		$data[ '_id' ] = $key;
+		$data[ $col_standards[ $standard ]->DocumentKey() ] = $key;
 		$col_standards[ $standard ]->AddOne( $data );
 	}
 }

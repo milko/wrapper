@@ -168,21 +168,21 @@ class Database extends Client
 	public function Drop()
 	{
 		//
-		// Check if connected.
+		// Connect the database.
+		// This will create the collection if it is new.
 		//
-		if( $this->isConnected() )
-		{
-			//
-			// Drop database.
-			//
-			ArangoDatabase::delete( $this->Server()->Connection(), $this->Path() );
+		if( ! $this->isConnected() )
+			$this->Connect();
 
-			//
-			// Disconnect database.
-			//
-			$this->Disconnect();
+		//
+		// Drop database.
+		//
+		ArangoDatabase::delete( $this->Server()->Connection(), $this->Path() );
 
-		} // Is connected.
+		//
+		// Disconnect database.
+		//
+		$this->Disconnect();
 
 	} // Drop.
 

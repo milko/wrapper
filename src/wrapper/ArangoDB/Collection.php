@@ -34,6 +34,21 @@ use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
  *	@author		Milko A. Škofič <skofic@gmail.com>
  *	@version	1.00
  *	@since		18/06/2016
+ *
+ * @example
+ * <code>
+ * // Instantiate server.
+ * $server = new Server( 'tcp://localhost:8529?createCollection=1' );
+ *
+ * // Instantiate database "Database" and add it to server clients.
+ * $database = $server->Client( "Database", [] );
+ *
+ * // Instantiate collection "Collection" and add it to database clients.
+ * $collection = $database->Client( "Collection", [] );
+ *
+ * // Instantiate server, database and collection retrieving collection.
+ * $collection = Server::NewConnection( "tcp://localhost:8529/database/collection" );
+ * </code>
  */
 class Collection extends Client
 				 implements \Milko\wrapper\Collection
@@ -93,6 +108,55 @@ class Collection extends Client
 
 /*=======================================================================================
  *																						*
+ *						PUBLIC CLIENT INSTANTIATION INTERFACE							*
+ *																						*
+ *======================================================================================*/
+
+
+
+	/*===================================================================================
+	 *	NewClient																		*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Instantiate client.</h4><p />
+	 *
+	 * We overload this method to prevent collections from having clients: if you create a
+	 * collection client, this will become a client of the current collection's database.
+	 *
+	 * This feature can be used to create a set of collections when instantiating a server:
+	 * for instance <tt>$server = new Server( "tcp://localhost:8529/db/cl1/cl2/cl3" );</tt>
+	 * will create a database named <tt>db</tt> with three collections named <tt>cl1</tt>,
+	 * <tt>cl2</tt> and <tt>cl3</tt>. This also means that if you provide this connection
+	 * string to the {@link Server::NewConnection()} method, it will return the <tt>cl3</tt>
+	 * collection.
+	 *
+	 * <em>Note that the options parameter will be passed to the database
+	 * {@link Database::Client()} method.</tt>
+	 *
+	 * @param string				$theName			Client name.
+	 * @param array					$theOptions			Creation options.
+	 * @return Client				The {@link Client} instance.
+	 *
+	 * @example
+	 * <code>
+	 * // Instantiate collection.
+	 * $collection = $database->NewClient( "Collection" );
+	 *
+	 * // Add a collection to the database.
+	 * $collection2 = $collection->NewClient( "NEW" );
+	 * </code>
+	 */
+	public function NewClient( string $theName, array $theOptions = [] )
+	{
+		return $this->Server()->NewClient( $theName, $theOptions );					// ==>
+
+	} // NewClient.
+
+
+
+/*=======================================================================================
+ *																						*
  *									COLLECTION INTERFACE								*
  *																						*
  *======================================================================================*/
@@ -142,22 +206,22 @@ class Collection extends Client
 	public function Drop()
 	{
 		//
-		// Check if connected.
+		// Connect the collection.
+		// This will create the collection if it is new.
 		//
-		if( $this->isConnected() )
-		{
-			//
-			// Drop collection.
-			//
-			if( $this->Connection()->getId() !== NULL )
-				$this->mCollectionHandler->drop( $this->Path() );
+		if( ! $this->isConnected() )
+			$this->Connect();
 
-			//
-			// Disconnect collection.
-			//
-			$this->Disconnect();
+		//
+		// Drop collection.
+		//
+		if( $this->Connection()->getId() !== NULL )
+			$this->mCollectionHandler->drop( $this->Path() );
 
-		} // Is connected.
+		//
+		// Disconnect collection.
+		//
+		$this->Disconnect();
 
 	} // Drop.
 
@@ -227,9 +291,9 @@ class Collection extends Client
 		$this->Connect();
 
 		//
-		// Flatten to array.
+		// Normalise document.
 		//
-		Container::convertToArray( $theDocument );
+		$theDocument = static::ToNativeDocument( $theDocument );
 
 		return
 			$this->mDocumentHandler
@@ -496,11 +560,11 @@ class Collection extends Client
 
 
 
-/*=======================================================================================
- *																						*
- *								PROTECTED DATABASE INTERFACE							*
- *																						*
- *======================================================================================*/
+	/*=======================================================================================
+	 *																						*
+	 *								PROTECTED DATABASE INTERFACE							*
+	 *																						*
+	 *======================================================================================*/
 
 
 

@@ -303,6 +303,75 @@ class MongoServerTest extends PHPUnit_Framework_TestCase
 
 
 	/*===================================================================================
+	 *	testNewConnection																*
+	 *==================================================================================*/
+
+	/**
+	 * Test NewConnection()
+	 *
+	 * @covers       ClientServer::NewConnection()
+	 */
+	public function testNewConnection()
+	{
+		/**
+		 * Instantiate server.
+		 */
+		$object = \Milko\wrapper\MongoDB\Server::NewConnection(
+			'mongodb://localhost:27017'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\MongoDB\Server::class,
+			$object,
+			"testNewConnection('mongodb://localhost:27017') == \\Milko\\wrapper\\MongoDB\\Server::class"
+		);
+
+		/**
+		 * Instantiate database.
+		 */
+		$object = \Milko\wrapper\MongoDB\Server::NewConnection(
+			'mongodb://localhost:27017/UnitTests'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\MongoDB\Database::class,
+			$object,
+			"testNewConnection('mongodb://localhost:27017/UnitTests') == \\Milko\\wrapper\\MongoDB\\Database::class"
+		);
+
+		/**
+		 * Instantiate collection.
+		 */
+		$object = \Milko\wrapper\MongoDB\Server::NewConnection(
+			'mongodb://localhost:27017/UnitTests/Collection'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\MongoDB\Collection::class,
+			$object,
+			"testNewConnection('mongodb://localhost:27017/UnitTests/Collection') == \\Milko\\wrapper\\MongoDB\\Collection::class"
+		);
+
+		/**
+		 * Instantiate many collections.
+		 */
+		$object = \Milko\wrapper\MongoDB\Server::NewConnection(
+			'mongodb://localhost:27017/UnitTests/Collection1/Collection2'
+		);
+		// Connect database to create collections.
+		$object->Server()->Connect();
+		$this->assertInstanceOf(
+			\Milko\wrapper\MongoDB\Collection::class,
+			$object,
+			"testNewConnection('mongodb://localhost:27017/UnitTests/Collection1/Collection2') == \\Milko\\wrapper\\MongoDB\\Collection::class"
+		);
+		$this->assertSame(
+			$object->Path(),
+			"Collection2",
+			'$object->Path() == "Collection2"'
+		);
+
+	} // testNewConnection.
+
+
+	/*===================================================================================
 	 *	testConstruct																	*
 	 *==================================================================================*/
 

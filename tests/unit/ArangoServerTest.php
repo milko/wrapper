@@ -303,6 +303,75 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 
 
 	/*===================================================================================
+	 *	testNewConnection																*
+	 *==================================================================================*/
+
+	/**
+	 * Test NewConnection()
+	 *
+	 * @covers       ClientServer::NewConnection()
+	 */
+	public function testNewConnection()
+	{
+		/**
+		 * Instantiate server.
+		 */
+		$object = \Milko\wrapper\ArangoDB\Server::NewConnection(
+			'tcp://UnitTests:testuser@localhost:8529'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\ArangoDB\Server::class,
+			$object,
+			"testNewConnection('tcp://UnitTests:testuser@localhost:8529') == \\Milko\\wrapper\\ArangoDB\\Server::class"
+		);
+
+		/**
+		 * Instantiate database.
+		 */
+		$object = \Milko\wrapper\ArangoDB\Server::NewConnection(
+			'tcp://UnitTests:testuser@localhost:8529/UnitTests'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\ArangoDB\Database::class,
+			$object,
+			"testNewConnection('tcp://UnitTests:testuser@localhost:8529/UnitTests') == \\Milko\\wrapper\\ArangoDB\\Database::class"
+		);
+
+		/**
+		 * Instantiate collection.
+		 */
+		$object = \Milko\wrapper\ArangoDB\Server::NewConnection(
+			'tcp://UnitTests:testuser@localhost:8529/UnitTests/Collection'
+		);
+		$this->assertInstanceOf(
+			\Milko\wrapper\ArangoDB\Collection::class,
+			$object,
+			"testNewConnection('tcp://UnitTests:testuser@localhost:8529/UnitTests/Collection') == \\Milko\\wrapper\\ArangoDB\\Collection::class"
+		);
+
+		/**
+		 * Instantiate many collections.
+		 */
+		$object = \Milko\wrapper\ArangoDB\Server::NewConnection(
+			'tcp://UnitTests:testuser@localhost:8529/UnitTests/Collection1/Collection2'
+		);
+		// Connect database to create collections.
+		$object->Server()->Connect();
+		$this->assertInstanceOf(
+			\Milko\wrapper\ArangoDB\Collection::class,
+			$object,
+			"testNewConnection('tcp://UnitTests:testuser@localhost:8529/UnitTests/Collection1/Collection2') == \\Milko\\wrapper\\ArangoDB\\Collection::class"
+		);
+		$this->assertSame(
+			$object->Path(),
+			"Collection2",
+			'$object->Path() == "Collection2"'
+		);
+
+	} // testNewConnection.
+
+
+	/*===================================================================================
 	 *	testConstruct																	*
 	 *==================================================================================*/
 
@@ -491,7 +560,9 @@ class ArangoServerTest extends PHPUnit_Framework_TestCase
 
 		/**
 		 * Connect database.
-		 * Note that we need to do this with ArangoDB.
+		 * Note that we need to do this with ArangoDB,
+		 * since when we write to a collection
+		 * the latter doesn't know that the database is disconnected.
 		 */
 		$database->Connect();
 

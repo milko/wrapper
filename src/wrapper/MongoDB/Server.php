@@ -40,6 +40,7 @@ use MongoDB\Client;
  *
  * // Instantiate database.
  * $database = $server->Client( "DatabaseName", [] );
+ * // Start working with database...
  *
  * // Create database and collection with options.
  * $collection = new Collection( 'mongodb://localhost:27017/Database/Collection?connectTimeoutMS=300000' );
@@ -50,6 +51,9 @@ use MongoDB\Client;
  * $server = new Server( 'mongodb://localhost:27017' );
  * $database = $server->Client( "Database", [] );
  * $collection = $database->Client( $Collection, [] );
+ *
+ * // Instantiate server, database and collection.
+ * $collection = Server::NewConnection( 'mongodb://localhost:27017/database/collection' );
  * </code>
  */
 class Server extends ClientServer
