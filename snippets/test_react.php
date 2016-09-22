@@ -4,8 +4,11 @@ require_once(dirname(__DIR__) . "/vendor/autoload.php");
 
 $app = function ($request, $response) {
 	$response->writeHead(200, array('Content-Type' => 'text/plain'));
-//	$response->end("Hello World\n");
-	$response->end($request);
+	$result = "Method: " . $request->getMethod() . "\n";
+	$result .= ("Path: " . $request->getPath() . "\n" );
+	$result .= ("Query: " . json_encode($request->getQuery()) . "\n" );
+	$result .= ("Headers: " . json_encode($request->getHeaders()) . "\n" );
+	$response->end($result);
 };
 
 $loop = React\EventLoop\Factory::create();
