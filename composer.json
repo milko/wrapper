@@ -26,6 +26,8 @@
 
 		"mongodb/mongodb": ">=1.0-dev",
 		"triagens/arangodb": ">=2.8-stable",
-		"phpoffice/phpexcel": ">=1.8.1-stable"
+		"phpoffice/phpexcel": ">=1.8.1-stable",
+
+		"react/http": ">=0.4-stable"
 	}
 }
