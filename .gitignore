@@ -10,7 +10,6 @@ composer.lock
 # Project directories
 /docs
 /old
-/scrap
 
 # Project files
 analysis.txt
