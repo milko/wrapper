@@ -1,19 +1,17 @@
-# Term
+# Types
 
-> A `term` is a *concept* without a *context*.
+> `Types` are `terms` that represent *data types*, *schemas*, *structures*, *categories* and *ontologies*.
 
-Terms are the base building block of the data dictionary and ontology in this framework. Terms are used to represent  *categories*, *types*, *controlled vocabulary* elements, *descriptors* and most other objects. All terms reside in the same collection, except *descriptors*, and represent the ancestor of most classes of the ontology.
+A *term* becomes a *type* when its reference in an object's property is used to indicate a data or other type, or when it is used as a node in a directed graph.
 
-A term by itself defines a *concept*, when it is used as a *property* or connected to another term by a *predicate* in a directed graph it also expresses a *function*. You can think of this as *words* in a sentence: when the *position* and *order* changes, so does their *meaning*.
+#### Data types
 
-Terms feature by default two sets of properties: one set is responsible for providing identification of the term, while the other is responsible of providing basic information about the term.
+Data types are terms used to indicate the kind of data a property may hold, it is used in *descriptors* to provide a way of validating data. Besides being used as the value of a property, data types are organised in a directed graph representing a structure where *specialised data types* are derived from *primitive data types*, each level provides information on how to test for valid data.
 
-#### Identification
+![image](file://img/Example - Types.svg)
 
-All terms share the same set of properties used to identify the object:
-
-###### `ns` *Namespace*
-The term namespace is a *reference* to another term that acts as the current term's namespace, all terms belonging to the same namespace must have a unique local identifier `lid`.
+##### *Primitive data types*
+These data types represent the most generalised level of 
 
 This property is *optional* - base namespaces are an example of terms that do not have a namespace.
 
@@ -96,7 +94,3 @@ A term representing the red colour:
     ...
 }
 ```
-
-#### Usage
-
-The base form of a term is used to represent *categories*, or *elements of an ontology*, derived classes of terms are used to represent specialised objects, such as *descriptors* and *controlloed vocabulary elements.*
