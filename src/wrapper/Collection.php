@@ -112,12 +112,32 @@ interface Collection
 	public function AddOne( $theDocument );
 
 
+	/*===================================================================================
+	 *	GetOne																			*
+	 *==================================================================================*/
 
-/*=======================================================================================
- *																						*
- *									STATIC METHODS										*
- *																						*
- *======================================================================================*/
+	/**
+	 * <h4>Retrieve a document.</h4><p />
+	 *
+	 * Retrieve a document corresponding to the provided document identifier.
+	 *
+	 * The method will query the collection searching for a document matching the provided
+	 * primary key, if found, it will return it, or <tt>NULL</tt> if not found.
+	 *
+	 * The provided key <em>must be a scalar</em>.
+	 *
+	 * @param mixed					$theIdentifier		Document identifier.
+	 * @return mixed				The native document or <tt>NULL</tt>.
+	 */
+	public function GetOne( $theIdentifier );
+
+
+
+	/*=======================================================================================
+	 *																						*
+	 *									STATIC METHODS										*
+	 *																						*
+	 *======================================================================================*/
 
 
 
@@ -128,9 +148,9 @@ interface Collection
 	/**
 	 * <h4>Return the document key.</h4><p />
 	 *
-	 * This method should return the document key property name, this property is generally
-	 * defined at the database engine level and represents the unique identifier of the
-	 * document within its collection.
+	 * This method should return the document key property <em>name</em>, this property is
+	 * generally defined at the database engine level and represents the unique identifier
+	 * of the document within its collection.
 	 *
 	 * @return string				The document key property name.
 	 */

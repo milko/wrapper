@@ -21,6 +21,8 @@ use triagens\ArangoDb\Collection as ArangoCollection;
 use triagens\ArangoDb\Document as ArangoDocument;
 use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
 use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+use triagens\ArangoDb\DocumentHandler;
+use triagens\ArangoDb\ServerException as ArangoServerException;
 
 /**
  * <h4>ArangoDB collection class.</h4><p />
@@ -280,7 +282,7 @@ class Collection extends Client
 	 *
 	 * @uses Connect()
 	 * @uses Connection()
-	 * @uses Container::convertToArray()
+	 * @uses ToNativeDocument()
 	 * @uses ArangoDocumentHandler::save()
 	 */
 	public function AddOne( $theDocument )
@@ -302,6 +304,62 @@ class Collection extends Client
 	} // AddOne.
 
 
+	/*===================================================================================
+	 *	GetOne																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Retrieve a document.</h4><p />
+	 *
+	 * We use the document handler getById() method.
+	 *
+	 * @param mixed					$theKey     		Document identifier.
+	 * @return mixed				The native document or <tt>NULL</tt>.
+	 * @throws ArangoServerException
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses DocumentHandler::getById()
+	 */
+	public function GetOne( $theKey )
+	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		//
+		// Lookup document.
+		//
+		try
+		{
+			//
+			// Find document.
+			//
+			return
+				$this->mDocumentHandler
+					->getById( $this->Connection(), $theKey );                      // ==>
+
+		} // Document found.
+
+		//
+		// Handle missing document.
+		//
+		catch( ArangoServerException $error )
+		{
+			//
+			// Handle exceptions.
+			//
+			if( $error->getCode() != 404 )
+				throw $error;													// !@! ==>
+
+		} // Document not found.
+
+		return NULL;                                                                // ==>
+
+	} // GetOne.
+
+
 
 /*=======================================================================================
  *																						*
@@ -318,7 +376,7 @@ class Collection extends Client
 	/**
 	 * <h4>Return the document key.</h4><p />
 	 *
-	 * In ArangoDB the document key is <tt>_key</tt>.
+	 * In ArangoDB the document key property name is <tt>_key</tt>.
 	 *
 	 * @return string				The document key property name.
 	 */
@@ -336,7 +394,7 @@ class Collection extends Client
 	/**
 	 * <h4>Return the document revision.</h4><p />
 	 *
-	 * In ArangoDB the document revision is <tt>_rev</tt>.
+	 * In ArangoDB the document revision property name is <tt>_rev</tt>.
 	 *
 	 * @return string				The document revision property name.
 	 */

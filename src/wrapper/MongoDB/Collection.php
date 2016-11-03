@@ -255,6 +255,35 @@ class Collection extends Client
 	} // AddOne.
 
 
+	/*===================================================================================
+	 *	GetOne																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Retrieve a document.</h4><p />
+	 *
+	 * We use the findOne() method.
+	 *
+	 * @param mixed					$theIdentifier		Document identifier.
+	 * @return mixed				The native document or <tt>NULL</tt>.
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Collection::findOne()
+	 */
+	public function GetOne( $theIdentifier )
+	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		return
+			$this->Connection()->findOne( [ '_id' => $theIdentifier ] );			// ==>
+
+	} // GetOne.
+
+
 
 /*=======================================================================================
  *																						*
@@ -271,7 +300,7 @@ class Collection extends Client
 	/**
 	 * <h4>Return the document key.</h4><p />
 	 *
-	 * In MongoDB the document key is <tt>_id</tt>.
+	 * In MongoDB the document key property name is <tt>_id</tt>.
 	 *
 	 * @return string				The document key property name.
 	 */
@@ -289,7 +318,7 @@ class Collection extends Client
 	/**
 	 * <h4>Return the document revision.</h4><p />
 	 *
-	 * In MongoDB there is no default revision, we set this to the <tt>_rev</tt> token.
+	 * In MongoDB there is no default revision property, we set the name to <tt>_rev</tt>.
 	 *
 	 * @return string				The document revision property name.
 	 */
