@@ -277,6 +277,8 @@ class Collection extends Client
 	 *
 	 * We use the document handler save() method.
 	 *
+	 * The provided parameter will not be updated with the document key or revision.
+	 *
 	 * @param mixed					$theDocument		Document to store.
 	 * @return mixed				The document key.
 	 *
@@ -292,14 +294,11 @@ class Collection extends Client
 		//
 		$this->Connect();
 
-		//
-		// Normalise document.
-		//
-		$theDocument = static::ToNativeDocument( $theDocument );
-
 		return
 			$this->mDocumentHandler
-				->save( $this->Connection(), $theDocument );						// ==>
+				->save(
+					$this->Connection(),
+					static::ToNativeDocument( $theDocument ));						// ==>
 
 	} // AddOne.
 
@@ -412,11 +411,14 @@ class Collection extends Client
 	/**
 	 * <h4>Convert to a native document.</h4><p />
 	 *
-	 * We implement this method to create a {@link triagens\ArangoDb\Document} instance, we
-	 * also ensure the internal key and revision properties of the native document are set.
+	 * We implement this method to create an {@link ArangoDocument} instance, we also ensure
+	 * the internal key and revision properties of the native document are copied from the
+	 * provided object.
+	 *
+	 * See {@link \Milko\wrapper\Collection::ToNativeDocument()} for more explanations.
 	 *
 	 * @param mixed					$theDocument		Document to convert.
-	 * @return mixed				The native document.
+	 * @return ArangoDocument		The native document.
 	 */
 	static function ToNativeDocument( $theDocument )
 	{
@@ -456,28 +458,43 @@ class Collection extends Client
 
 
 	/*===================================================================================
-	 *	NativeDocumentToContainer														*
+	 *	ToContainer             														*
 	 *==================================================================================*/
 
 	/**
 	 * <h4>Convert a native document to a {@link Container}.</h4><p />
 	 *
 	 * We implement this method to return a {@link Container} instance from the provided
-	 * {@link ArangoDocument} instance.
+	 * {@link ArangoDocument} instance, we also ensure the internal key and revision
+	 * properties of the native document are copied to the resulting continer.
 	 *
-	 * The returned instance will feature the document revision.
-	 *
-	 * <em>The method will return a new container instance</em>.
+	 * See {@link \Milko\wrapper\Collection::ToContainer()} for more explanations.
 	 *
 	 * @param ArangoDocument		$theDocument		Document to convert.
 	 * @return Container			The {@link Container} instance.
+	 * @throws \BadMethodCallException
 	 */
-	static function NativeDocumentToContainer( ArangoDocument $theDocument )
+	static function ToContainer( $theDocument )
 	{
 		//
-		// Get document data.
+		// Skip containers and NULL.
 		//
-		$document = $theDocument->getAll();
+		if( ($theDocument === NULL)
+		 || ($theDocument instanceof Container) )
+			return $theDocument;													// ==>
+
+		//
+		// Assert parameter class.
+		//
+		if( ! ($theDocument instanceof ArangoDocument) )
+			throw new \BadMethodCallException(
+				"Expecting a native ArangoDB document."
+			);																	// !@! ==>
+
+		//
+		// Convert document data.
+		//
+		$document = new Container( $theDocument->getAll() );
 
 		//
 		// Set key.
@@ -491,9 +508,9 @@ class Collection extends Client
 		if( ($revision = $theDocument->getRevision()) !== NULL )
 			$document[ static::DocumentRevision() ] = $revision;
 
-		return new Container( $document );										    // ==>
+		return $document;						                				    // ==>
 
-	} // NativeDocumentToContainer.
+	} // ToContainer.
 
 
 

@@ -2534,7 +2534,8 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * array.</em>
 	 *
 	 * <em>Note that the conversion is performed on the provided reference, if you need the
-	 * original value you must provide a copy to this method.</em>
+	 * original value you must provide a copy to this method, or use the
+	 * {@link convertToArrayCopy()} method.</em>
 	 *
 	 * @param mixed				   &$theStructure		Structure to convert.
 	 *
@@ -2621,6 +2622,43 @@ class Container implements \ArrayAccess, \IteratorAggregate, \Countable
 		} // Provided a structure.
 
 	} // convertToArray.
+
+
+	/*===================================================================================
+	 *	convertToArrayCopy																*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert embedded ArrayObjects to array making a copy.</h4><p />
+	 *
+	 * This method is equivalent to the {@link convertToArray()} statis method, except that
+	 * it will return a copy of the provided parameter as an array; the aforementioned
+	 * method, instead, will convert the provided parameter to an array.
+	 *
+	 * The method will return a copy of the provided structure as an array.
+	 *
+	 * @param mixed				   &$theStructure		Structure to convert.
+	 * @return array                The structure converted to array.
+	 *
+	 * @uses convertToArray()
+	 */
+	static function convertToArrayCopy( &$theStructure )
+	{
+		//
+		// Make a copy of the parameter.
+		//
+		$copy = ( is_array( $theStructure ) )
+			  ? $theStructure
+			  : $theStructure->getArrayCopy();
+
+		//
+		// Convert to array.
+		//
+		static::convertToArray( $copy );
+
+		return $copy;                                                               // ==>
+
+	} // convertToArrayCopy.
 
 
 	/*===================================================================================

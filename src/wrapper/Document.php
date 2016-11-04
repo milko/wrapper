@@ -201,6 +201,8 @@ class Document extends Container
 			// Find by key.
 			//
 			$document = $theCollection->GetOne( $theProperties );
+			if( $document !== NULL )
+				$document = $theCollection->ToContainer( $document );
 
 			//
 			// Instantiate document.

@@ -104,6 +104,9 @@ interface Collection
 	 * The provided document must be either an <tt>array</tt>, an <tt>ArrayObject</tt> or
 	 * a {@link Container}.
 	 *
+	 * The provided parameter will be left unchanged, the document key an other internal
+	 * properties should not be copied to the parameter.
+	 *
 	 * If the inserted document already exists, the method should raise an exception.
 	 *
 	 * @param mixed					$theDocument		Document to store.
@@ -122,7 +125,8 @@ interface Collection
 	 * Retrieve a document corresponding to the provided document identifier.
 	 *
 	 * The method will query the collection searching for a document matching the provided
-	 * primary key, if found, it will return it, or <tt>NULL</tt> if not found.
+	 * primary key, if found, it will return the native document, or <tt>NULL</tt> if not
+	 * found.
 	 *
 	 * The provided key <em>must be a scalar</em>.
 	 *
@@ -133,11 +137,11 @@ interface Collection
 
 
 
-	/*=======================================================================================
-	 *																						*
-	 *									STATIC METHODS										*
-	 *																						*
-	 *======================================================================================*/
+/*=======================================================================================
+ *																						*
+ *									STATIC METHODS										*
+ *																						*
+ *======================================================================================*/
 
 
 
@@ -180,15 +184,52 @@ interface Collection
 	/**
 	 * <h4>Convert to a native document.</h4><p />
 	 *
-	 * Convert the provided object to a native document.
+	 * Convert the provided object to a native document instance.
 	 *
 	 * The method expects an <tt>array</tt>, <tt>ArrayObject</tt> or
-	 * <tt>{@Link Container}</tt>.
+	 * <tt>{@Link Container}</tt> and will return a native document instance with the
+	 * contents of the provided object.
+	 *
+	 * Concrete classes may need to add internal or private properties to the native
+	 * document, so when converting back to container you may have to handle these values.
+	 *
+	 * The method should only create a new instance if the provided document is not
+	 * already a native document, so if you need a copy, you should make it beforehand.
 	 *
 	 * @param mixed					$theDocument		Document to convert.
 	 * @return mixed				The native document.
 	 */
 	static function ToNativeDocument( $theDocument );
+
+
+	/*===================================================================================
+	 *	ToContainer                														*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert to a {@link Container}.</h4><p />
+	 *
+	 * Convert the provided native object into a {@link Container} instance.
+	 *
+	 * The method expects a database native document and will return a {@link Container}
+	 * instance with the contents of the provided document.
+	 *
+	 * Concrete classes may need to add internal or private properties to the container, so
+	 * when converting back to native documents you may have to handle these values.
+	 *
+	 * The method should only create a new instance if the provided document is not
+	 * already a container, so if you need a copy, you should make it beforehand.
+	 *
+	 * The method expects a native document, so, when implementing it you <em>must</em>
+	 * throw an exception if the provided parameter is not of the correct type; the
+	 * exception is if you provide <tt>NULL</tt>: in that case you should return
+	 * <tt>NULL</tt>.
+	 *
+	 * @param mixed         		$theDocument		Document to convert.
+	 * @return Container			The {@link Container} instance.
+	 * @throws \BadMethodCallException
+	 */
+	static function ToContainer( $theDocument );
 
 
 

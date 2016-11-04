@@ -159,6 +159,31 @@ class ArangoCollectionTest extends PHPUnit_Framework_TestCase
 			"name" => "Milko",
 			"surname" => "Skofic" ];
 
+		//
+		// Test to native document.
+		//
+		$result = Collection::ToNativeDocument( [ "A" => "B" ] );
+		$this->assertInstanceOf(
+			"triagens\\ArangoDb\\Document",
+			$result,
+			'Collection::ToNativeDocument( [ "A" => "B" ] ) instanceof "triagens\\ArangoDb\\Document"'
+		);
+
+		//
+		// Test to container.
+		//
+		$result = Collection::ToContainer( $result );
+		$this->assertInstanceOf(
+			"\\Milko\\wrapper\\Container",
+			$result,
+			'Collection::ToContainer( $result ) instanceof "\\Milko\\wrapper\\Container"'
+		);
+		$result = Collection::ToContainer( NULL );
+		$this->assertNull(
+			$result,
+			'Collection::ToContainer( NULL )'
+		);
+
 		/*
 		 * Drop collection
 		 */
@@ -212,11 +237,16 @@ class ArangoCollectionTest extends PHPUnit_Framework_TestCase
 			$result,
 			'$result !== NULL'
 		);
+		$this->assertInstanceOf(
+			"triagens\\ArangoDb\\Document",
+			$result,
+			'$result instanceof "triagens\\ArangoDb\\Document"'
+		);
 
 		/*
 		 * Convert result to array.
 		 */
-		$result = Collection::NativeDocumentToContainer( $result );
+		$result = Collection::ToContainer( $result );
 
 		/*
 		 * Other tests.

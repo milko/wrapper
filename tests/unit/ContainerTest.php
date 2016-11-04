@@ -1951,6 +1951,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 	 * Test convertToArray() method
 	 *
 	 * @covers       test_Container::convertToArray()
+	 * @covers       test_Container::convertToArrayCopy()
 	 */
 	public function testConvertToArray()
 	{
@@ -2003,6 +2004,27 @@ class ContainerTest extends PHPUnit_Framework_TestCase
 		//
 		Container::convertToArray( $this->mObject );
 		$this->assertEquals( $expected, $this->mObject, "Container::convertToArray()" );
+
+		//
+		// Check if objects get converted.
+		//
+		$test = new ArrayObject( $expected );
+		Container::convertToArray( $test );
+		$this->assertTrue(
+			is_array( $test ),
+			'convertToArray( ArrayObject ) ==> Array'
+		);
+		$test = new ArrayObject( $expected );
+		$result = Container::convertToArrayCopy( $test );
+		$this->assertTrue(
+			is_array( $result ),
+			'convertToArrayCopy( ArrayObject ) ==> Array'
+		);
+		$this->assertInstanceOf(
+			"ArrayObject",
+			$test,
+			'convertToArrayCopy( ArrayObject ) does not change parameter'
+		);
 
 	} // testConvertToArray.
 

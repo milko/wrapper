@@ -228,6 +228,8 @@ class Collection extends Client
 	 *
 	 * We use the insertOne() method.
 	 *
+	 * The provided parameter will not be updated with the document key.
+	 *
 	 * @param mixed					$theDocument		Document to store.
 	 * @return mixed				The document key.
 	 *
@@ -249,7 +251,8 @@ class Collection extends Client
 		Container::convertToArray( $theDocument );
 
 		return
-			$this->Connection()->insertOne( $theDocument )
+			$this->Connection()
+				->insertOne( $theDocument )
 				 ->getInsertedId();													// ==>
 
 	} // AddOne.
@@ -336,7 +339,9 @@ class Collection extends Client
 	/**
 	 * <h4>Convert to a native document.</h4><p />
 	 *
-	 * We implement this method to create a {@link BSONDocument} instance.
+	 * We implement this method to create an {@link BSONDocument} instance.
+	 *
+	 * See {@link \Milko\wrapper\Collection::ToNativeDocument()} for more explanations.
 	 *
 	 * @param mixed					$theDocument		Document to convert.
 	 * @return mixed				The native document.
@@ -360,25 +365,40 @@ class Collection extends Client
 
 
 	/*===================================================================================
-	 *	NativeDocumentToContainer														*
+	 *	ToContainer             														*
 	 *==================================================================================*/
 
 	/**
 	 * <h4>Convert a native document to a {@link Container}.</h4><p />
 	 *
 	 * We implement this method to return a {@link Container} instance from the provided
-	 * {@link BSONDocument} instance.
+	 * {@link BSONDocument}.
 	 *
-	 * <em>The method will return a new container instance</em>.
+	 * See {@link \Milko\wrapper\Collection::ToContainer()} for more explanations.
 	 *
 	 * @param BSONDocument			$theDocument		Document to convert.
 	 * @return Container			The {@link Container} instance.
 	 */
-	static function NativeDocumentToContainer( BSONDocument $theDocument )
+	static function ToContainer( $theDocument )
 	{
+		//
+		// Skip containers and NULL.
+		//
+		if( ($theDocument === NULL)
+		 || ($theDocument instanceof Container) )
+			return $theDocument;													// ==>
+
+		//
+		// Assert parameter class.
+		//
+		if( ! ($theDocument instanceof BSONDocument) )
+			throw new \BadMethodCallException(
+				"Expecting a native ArangoDB document."
+			);																	// !@! ==>
+
 		return new Container( $theDocument );                                       // ==>
 
-	} // NativeDocumentToContainer.
+	} // ToContainer.
 
 
 

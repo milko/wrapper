@@ -156,7 +156,6 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 		 */
 		$document = [
 			Collection::DocumentKey() => "KEY",
-			Collection::DocumentRevision() => "REVISION",
 			"name" => "Milko",
 			"surname" => "Skofic" ];
 
@@ -213,15 +212,15 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 			$result,
 			'$result !== NULL'
 		);
+		$this->assertInstanceOf(
+			"\\MongoDB\\Model\\BSONDocument",
+			$result,
+			'$result instanceof "\MongoDB\Model\BSONDocument"'
+		);
 		$this->assertSame(
 			$result[ Collection::DocumentKey() ],
 			$document[ Collection::DocumentKey() ],
 			'$result[ Collection::DocumentKey() ] === $document[ Collection::DocumentKey() ]'
-		);
-		$this->assertSame(
-			$result[ Collection::DocumentRevision() ],
-			$document[ Collection::DocumentRevision() ],
-			'$result[ Collection::DocumentRevision() ] === $document[ Collection::DocumentRevision() ]'
 		);
 		$this->assertSame(
 			$result[ "name" ],
