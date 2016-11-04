@@ -455,6 +455,47 @@ class Collection extends Client
 	} // ToNativeDocument.
 
 
+	/*===================================================================================
+	 *	NativeDocumentToContainer														*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert a native document to a {@link Container}.</h4><p />
+	 *
+	 * We implement this method to return a {@link Container} instance from the provided
+	 * {@link ArangoDocument} instance.
+	 *
+	 * The returned instance will feature the document revision.
+	 *
+	 * <em>The method will return a new container instance</em>.
+	 *
+	 * @param ArangoDocument		$theDocument		Document to convert.
+	 * @return Container			The {@link Container} instance.
+	 */
+	static function NativeDocumentToContainer( ArangoDocument $theDocument )
+	{
+		//
+		// Get document data.
+		//
+		$document = $theDocument->getAll();
+
+		//
+		// Set key.
+		//
+		if( ($key = $theDocument->getKey()) !== NULL )
+			$document[ static::DocumentKey() ] = $key;
+
+		//
+		// Set revision.
+		//
+		if( ($revision = $theDocument->getRevision()) !== NULL )
+			$document[ static::DocumentRevision() ] = $revision;
+
+		return new Container( $document );										    // ==>
+
+	} // NativeDocumentToContainer.
+
+
 
 /*=======================================================================================
  *																						*

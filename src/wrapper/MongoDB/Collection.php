@@ -359,6 +359,28 @@ class Collection extends Client
 	} // ToNativeDocument.
 
 
+	/*===================================================================================
+	 *	NativeDocumentToContainer														*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Convert a native document to a {@link Container}.</h4><p />
+	 *
+	 * We implement this method to return a {@link Container} instance from the provided
+	 * {@link BSONDocument} instance.
+	 *
+	 * <em>The method will return a new container instance</em>.
+	 *
+	 * @param BSONDocument			$theDocument		Document to convert.
+	 * @return Container			The {@link Container} instance.
+	 */
+	static function NativeDocumentToContainer( BSONDocument $theDocument )
+	{
+		return new Container( $theDocument );                                       // ==>
+
+	} // NativeDocumentToContainer.
+
+
 
 /*=======================================================================================
  *																						*

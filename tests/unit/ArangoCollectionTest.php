@@ -1,9 +1,9 @@
 <?php
 
 /**
- * MongoCollectionTest.php
+ * ArangoCollectionTest.php
  *
- * This file contains the unit tests of the {@link Milko\wrapper\MongoDB\Collection} class.
+ * This file contains the unit tests of the {@link Milko\wrapper\ArangoDB\Collection} class.
  *
  *	@package	Test
  *
@@ -20,14 +20,14 @@ require_once(dirname( dirname(__DIR__) ) . "/includes.local.php");
 /**
  * Include test classes.
  */
-require_once(dirname(__DIR__) . "/TestMongoServerClass.php");
-require_once(dirname(__DIR__) . "/TestMongoDatabaseClass.php");
-require_once(dirname(__DIR__) . "/TestMongoCollectionClass.php");
+require_once(dirname(__DIR__) . "/TestArangoServerClass.php");
+require_once(dirname(__DIR__) . "/TestArangoDatabaseClass.php");
+require_once(dirname(__DIR__) . "/TestArangoCollectionClass.php");
 
-use Milko\wrapper\MongoDB\Collection;
+use Milko\wrapper\ArangoDB\Collection;
 
 /**
- * Mongo Collection unit tests
+ * Arango Collection unit tests
  *
  * We overload the parent class by implementing the abstract protected interface.
  *
@@ -36,16 +36,16 @@ use Milko\wrapper\MongoDB\Collection;
  *	@package	Test
  *	@author		Milko Škofič <skofic@gmail.com>
  *	@version	1.00
- *	@since		27/10/2016
+ *	@since		04/11/2016
  */
-class MongoCollectionTest extends PHPUnit_Framework_TestCase
+class ArangoCollectionTest extends PHPUnit_Framework_TestCase
 {
 	/**
 	 * Server.
 	 *
 	 * This attribute stores the server instance.
 	 *
-	 * @var \Milko\wrapper\MongoDB\Server
+	 * @var \Milko\wrapper\ArangoDB\Server
 	 */
 	public $mServer = NULL;
 
@@ -54,7 +54,7 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 	 *
 	 * This attribute stores the database instance.
 	 *
-	 * @var \Milko\wrapper\MongoDB\Database
+	 * @var \Milko\wrapper\ArangoDB\Database
 	 */
 	public $mDatabase = NULL;
 
@@ -156,7 +156,6 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 		 */
 		$document = [
 			Collection::DocumentKey() => "KEY",
-			Collection::DocumentRevision() => "REVISION",
 			"name" => "Milko",
 			"surname" => "Skofic" ];
 
@@ -213,15 +212,23 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 			$result,
 			'$result !== NULL'
 		);
+
+		/*
+		 * Convert result to array.
+		 */
+		$result = Collection::NativeDocumentToContainer( $result );
+
+		/*
+		 * Other tests.
+		 */
+		$this->assertNotNull(
+			$result[ Collection::DocumentRevision() ],
+			'$result[ Collection::DocumentRevision() ] !== NULL'
+		);
 		$this->assertSame(
 			$result[ Collection::DocumentKey() ],
 			$document[ Collection::DocumentKey() ],
 			'$result[ Collection::DocumentKey() ] === $document[ Collection::DocumentKey() ]'
-		);
-		$this->assertSame(
-			$result[ Collection::DocumentRevision() ],
-			$document[ Collection::DocumentRevision() ],
-			'$result[ Collection::DocumentRevision() ] === $document[ Collection::DocumentRevision() ]'
 		);
 		$this->assertSame(
 			$result[ "name" ],
@@ -272,8 +279,8 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 		//
 		// Instantiate server.
 		//
-		$this->mServer = new test_MongoServer(
-			'mongodb://localhost:27017'
+		$this->mServer = new test_ArangoServer(
+			'tcp://UnitTests:testuser@localhost:8529?createCollection=1'
 		);
 
 		//
@@ -291,7 +298,7 @@ class MongoCollectionTest extends PHPUnit_Framework_TestCase
 
 
 
-} // class MongoCollectionTest.
+} // class ArangoCollectionTest.
 
 
 ?>
