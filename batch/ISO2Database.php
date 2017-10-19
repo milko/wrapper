@@ -11,10 +11,13 @@
  *
  * <ul>
  * 	<li><b>connection URI</b>: Connection URI.
- * 	<li><b>json directory</b>: Path to the directory containing the Json files.
+ * 	<li><b>json directory</b>: Path to the directory containing the Json files. In the
+ * 		debian {@link https://pkg-isocodes.alioth.debian.org} repository it is the data
+ * 		directory.
  *  <li><b>po directory</b>: Path to the directory containing the PO files; the script
  *		expects that directory to contain a list of directories named <tt>iso_XXX</tt> where
- * 		XXX stands for the standard.
+ *      XXX stands for the standard. In the debian
+ * 		{@link https://pkg-isocodes.alioth.debian.org} repository it is the root folder.
  * </ul>
  *
  * The database will contain the following collections:
