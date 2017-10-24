@@ -60,6 +60,8 @@ define( "kSubdivision", "ISO:3166:type");
 define( "kCountry", "ISO:3166-1");
 define( "kWithdrawal", "ISO:withdrawal" );
 define( "kBiblio", "ISO:639:biblio" );
+define( "kScope", "ISO:639:scope" );
+define( "kType", "ISO:639:type" );
 define( "kDeployStandard", ":state:implementation:standard" );
 define( "kKey", "_key" );
 define( "kFrom", "_from" );
@@ -139,11 +141,14 @@ $languages->Connect();
 //
 // Handle standards.
 //
+$locales = array_merge( $locales, ISO_4217( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_15924( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_3166_1( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_3166_2( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_3166_3( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_639_2( $database, $languages, $directory ) );
+$locales = array_merge( $locales, ISO_639_3( $database, $languages, $directory ) );
+$locales = array_merge( $locales, ISO_639_5( $database, $languages, $directory ) );
 
 print_r( array_unique( $locales ) );
 
@@ -157,6 +162,140 @@ echo( "\nDone!\n" );
  *																						*
  *======================================================================================*/
 
+
+
+/*===================================================================================
+ *	ISO 4217																		*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle ISO 4217.</h4><p />
+ *
+ * This method will generate the ISO 4217 terms and schema.
+ *
+ * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
+ * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
+ * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @returs array						List of locales.
+ */
+function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
+                   \Milko\Wrapper\Client		$theLanguages,
+                   SplFileInfo					$theDirectory)
+{
+	//
+	// Init local storage.
+	//
+	$locales = [];
+	$standard = ISOCodes::k4217;
+	$namespace = "ISO:$standard";
+	$enumeration = "TERMS/$namespace";
+	$collection = $theDatabase->Client( "ISO_$standard", [] );
+	$collection->Connect();
+	$db_key = $collection->DocumentKey();
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Create terms.
+	//
+	$edges = [];
+	$buffer = [];
+	foreach( $collection->Connection()->find( [] ) as $input )
+	{
+		//
+		// Init loop storage.
+		//
+		$edge = [];
+		$record = [];
+
+		//
+		// Load record.
+		//
+		$key = $input[ $db_key ];
+		$record[ kKey ] = "$namespace:$key";
+		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kLid ] = $key;
+		$record[ kGid ] = $record[ kKey ];
+		$record[ kSynonym ] = [ $key ];
+		if( array_key_exists( "numeric", $input) )
+			$record[ kSynonym ][] = $input[ "numeric" ];
+		$record[ kSynonym ] = array_unique( $record[ kSynonym ] );
+		$record[ kDeploy ] = kDeployStandard;
+
+		//
+		// Load labels.
+		//
+		$record[ kLabel ] = [];
+		foreach( $input[ "name" ] as $lang => $name )
+		{
+			//
+			// Check language by length.
+			//
+			switch (strlen( $lang ) )
+			{
+				case 2:
+					$match = $theLanguages->Connection()->find(["alpha_2" => $lang])->toArray();
+					if ( ! count( $match ) )
+						throw new Exception("Unable to resolve [$lang] language.");
+					if( count( $match ) > 1 )
+						throw new Exception("Ambiguous language [$lang] in record [$key].");
+					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					break;
+
+				case 3:
+					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
+					if ( ! $match )
+						throw new Exception("Unable to resolve [$lang] language.");
+					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					break;
+
+				default:
+					$lang = kLocale . $lang;
+					$locales[] = $lang;
+					$record[ kLabel ][ $lang ] = $name;
+					break;
+			}
+		}
+
+		//
+		// Append to buffer.
+		//
+		$buffer[] = $record;
+
+		//
+		// Append to edges.
+		//
+		$from = "TERMS/" . $record[ kKey ];
+		$to = $record[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edges[] = $edge;
+
+	} // Iterate all records.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_ISO_$standard.json";
+	$data = json_encode( $buffer, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_ISO_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	return array_unique( $locales );												// ==>
+
+} // ISO_4217.
 
 
 /*===================================================================================
@@ -174,8 +313,8 @@ echo( "\nDone!\n" );
  * @returs array						List of locales.
  */
 function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
-					\Milko\Wrapper\Client		$theLanguages,
-					SplFileInfo					$theDirectory)
+                    \Milko\Wrapper\Client		$theLanguages,
+                    SplFileInfo					$theDirectory)
 {
 	//
 	// Init local storage.
@@ -433,9 +572,15 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "common_name", $input ) )
 		{
-			$record[ kDescription ] = [];
+			$field = ( array_key_exists( kDefinition, $record ) ) ? kDescription : kDefinition;
+			$record[ $field ] = [];
 			foreach( $input[ "common_name" ] as $lang => $name )
 			{
+				//
+				// Normalise name.
+				//
+				if( $field == kDescription )
+					$name = htmlspecialchars( $name );
 				//
 				// Check language by length.
 				//
@@ -447,20 +592,20 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 							throw new Exception("Unable to resolve [$lang] language.");
 						if( count( $match ) > 1 )
 							throw new Exception("Ambiguous language [$lang] in record [$key].");
-						$record[ kDescription ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						$record[ $field ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 						break;
 
 					case 3:
 						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 						if ( ! $match )
 							throw new Exception("Unable to resolve [$lang] language.");
-						$record[ kDescription ][ kLangNS . $match[ $db_key ] ] = $name;
+						$record[ $field ][ kLangNS . $match[ $db_key ] ] = $name;
 						break;
 
 					default:
 						$lang = kLocale . $lang;
 						$locales[] = $lang;
-						$record[ kDescription ][ $lang ] = $name;
+						$record[ $field ][ $lang ] = $name;
 						break;
 				}
 			}
@@ -905,14 +1050,195 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
  * @returs array						List of locales.
  */
 function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
-					\Milko\Wrapper\Client		$theLanguages,
-					SplFileInfo					$theDirectory)
+                    \Milko\Wrapper\Client		$theLanguages,
+                    SplFileInfo					$theDirectory)
 {
 	//
 	// Init local storage.
 	//
 	$locales = [];
 	$standard = ISOCodes::k639_2;
+	$namespace = "ISO:$standard";
+	$enumeration = "TERMS/$namespace";
+	$collection = $theDatabase->Client( "ISO_$standard", [] );
+	$collection->Connect();
+	$db_key = $collection->DocumentKey();
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Create terms.
+	//
+	$edges = [];
+	$buffer = [];
+	foreach( $collection->Connection()->find( [] ) as $input )
+	{
+		//
+		// Skip if already in ISO 639-3.
+		//
+		$key = $input[ $db_key ];
+		$match = $theLanguages->Connection()->findOne( [ $db_key => $key ] );
+		if( ! $match )
+		{
+			//
+			// Init loop storage.
+			//
+			$edge = [];
+			$record = [];
+
+			//
+			// Load record.
+			//
+			$record[ kKey ] = "$namespace:$key";
+			$record[ kNid ] = "TERMS/$namespace";
+			$record[ kLid ] = $key;
+			$record[ kGid ] = $record[ kKey ];
+			$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
+			if( array_key_exists( "alpha_2", $input) )
+				$record[ kSynonym ][] = $input[ "alpha_2" ];
+			$record[ kSynonym ] = array_unique( $record[ kSynonym ] );
+			$record[ kDeploy ] = kDeployStandard;
+			if( array_key_exists("bibliographic", $input ) )
+				$record[ kBiblio ] = $input[ "bibliographic" ];
+
+			//
+			// Load labels.
+			//
+			$record[ kLabel ] = [];
+			foreach( $input[ "name" ] as $lang => $name )
+			{
+				//
+				// Check language by length.
+				//
+				switch (strlen( $lang ) )
+				{
+					case 2:
+						$match = $theLanguages->Connection()->find(["alpha_2" => $lang])->toArray();
+						if ( ! count( $match ) )
+							throw new Exception("Unable to resolve [$lang] language.");
+						if( count( $match ) > 1 )
+							throw new Exception("Ambiguous language [$lang] in record [$key].");
+						$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						break;
+
+					case 3:
+						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
+						if ( ! $match )
+							throw new Exception("Unable to resolve [$lang] language.");
+						$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+						break;
+
+					default:
+						$lang = kLocale . $lang;
+						$locales[] = $lang;
+						$record[ kLabel ][ $lang ] = $name;
+						break;
+				}
+			}
+
+			//
+			// Load common names.
+			//
+			if( array_key_exists( "common_name", $input ) )
+			{
+				$record[ kDefinition ] = [];
+				foreach( $input[ "common_name" ] as $lang => $name )
+				{
+					//
+					// Check language by length.
+					//
+					switch (strlen( $lang ) )
+					{
+						case 2:
+							$match = $theLanguages->Connection()->find(["alpha_2" => $lang])->toArray();
+							if ( ! count( $match ) )
+								throw new Exception("Unable to resolve [$lang] language.");
+							if( count( $match ) > 1 )
+								throw new Exception("Ambiguous language [$lang] in record [$key].");
+							$record[ kDefinition ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+							break;
+
+						case 3:
+							$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
+							if ( ! $match )
+								throw new Exception("Unable to resolve [$lang] language.");
+							$record[ kDefinition ][ kLangNS . $match[ $db_key ] ] = $name;
+							break;
+
+						default:
+							$lang = kLocale . $lang;
+							$locales[] = $lang;
+							$record[ kDefinition ][ $lang ] = $name;
+							break;
+					}
+				}
+			}
+
+			//
+			// Append to buffer.
+			//
+			$buffer[] = $record;
+
+			//
+			// Append to edges.
+			//
+			$from = "TERMS/" . $record[ kKey ];
+			$to = $record[ kNid ];
+			$predicate = ":predicate:enum-of";
+			$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edges[] = $edge;
+		}
+
+	} // Iterate all records.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_ISO_$standard.json";
+	$data = json_encode( $buffer, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_ISO_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	return array_unique( $locales );												// ==>
+
+} // ISO_639_2.
+
+
+/*===================================================================================
+ *	ISO 639-3																		*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle ISO 639-3.</h4><p />
+ *
+ * This method will generate the ISO 15924 terms and schema.
+ *
+ * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
+ * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
+ * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @returs array						List of locales.
+ */
+function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
+                    \Milko\Wrapper\Client		$theLanguages,
+                    SplFileInfo					$theDirectory)
+{
+	//
+	// Init local storage.
+	//
+	$locales = [];
+	$standard = ISOCodes::k639_3;
 	$namespace = "ISO:$standard";
 	$enumeration = "TERMS/$namespace";
 	$collection = $theDatabase->Client( "ISO_$standard", [] );
@@ -952,6 +1278,10 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kDeploy ] = kDeployStandard;
 		if( array_key_exists("bibliographic", $input ) )
 			$record[ kBiblio ] = $input[ "bibliographic" ];
+		if( array_key_exists("scope", $input ) )
+			$record[ kScope ] = kScope . ":" . $input[ "scope" ];
+		if( array_key_exists("type", $input ) )
+			$record[ kType ] = kType . ":" . $input[ "type" ];
 
 		//
 		// Load labels.
@@ -1020,7 +1350,51 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 					default:
 						$lang = kLocale . $lang;
 						$locales[] = $lang;
-						$record[ kLabel ][ $lang ] = $name;
+						$record[ kDefinition ][ $lang ] = $name;
+						break;
+				}
+			}
+		}
+
+		//
+		// Load inverted name.
+		//
+		if( array_key_exists( "inverted_name", $input ) )
+		{
+			$field = ( array_key_exists( kDefinition, $record ) ) ? kDescription : kDefinition;
+			$record[ $field ] = [];
+			foreach( $input[ "inverted_name" ] as $lang => $name )
+			{
+				//
+				// Normalise name.
+				//
+				if( $field == kDescription )
+					$name = htmlspecialchars( $name );
+				//
+				// Check language by length.
+				//
+				switch (strlen( $lang ) )
+				{
+					case 2:
+						$match = $theLanguages->Connection()->find(["alpha_2" => $lang])->toArray();
+						if ( ! count( $match ) )
+							throw new Exception("Unable to resolve [$lang] language.");
+						if( count( $match ) > 1 )
+							throw new Exception("Ambiguous language [$lang] in record [$key].");
+						$record[ $field ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						break;
+
+					case 3:
+						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
+						if ( ! $match )
+							throw new Exception("Unable to resolve [$lang] language.");
+						$record[ $field ][ kLangNS . $match[ $db_key ] ] = $name;
+						break;
+
+					default:
+						$lang = kLocale . $lang;
+						$locales[] = $lang;
+						$record[ $field ][ $lang ] = $name;
 						break;
 				}
 			}
@@ -1061,7 +1435,139 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 
 	return array_unique( $locales );												// ==>
 
-} // ISO_639_2.
+} // ISO_639_3.
+
+
+/*===================================================================================
+ *	ISO 639-5																		*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle ISO 639-5.</h4><p />
+ *
+ * This method will generate the ISO 15924 terms and schema.
+ *
+ * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
+ * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
+ * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @returs array						List of locales.
+ */
+function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
+                    \Milko\Wrapper\Client		$theLanguages,
+                    SplFileInfo					$theDirectory)
+{
+	//
+	// Init local storage.
+	//
+	$locales = [];
+	$standard = ISOCodes::k639_5;
+	$namespace = "ISO:$standard";
+	$enumeration = "TERMS/$namespace";
+	$collection = $theDatabase->Client( "ISO_$standard", [] );
+	$collection->Connect();
+	$db_key = $collection->DocumentKey();
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Create terms.
+	//
+	$edges = [];
+	$buffer = [];
+	foreach( $collection->Connection()->find( [] ) as $input )
+	{
+		//
+		// Init loop storage.
+		//
+		$edge = [];
+		$record = [];
+
+		//
+		// Load record.
+		//
+		$key = $input[ $db_key ];
+		$record[ kKey ] = "$namespace:$key";
+		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kLid ] = $key;
+		$record[ kGid ] = $record[ kKey ];
+		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
+		$record[ kDeploy ] = kDeployStandard;
+
+		//
+		// Load labels.
+		//
+		$record[ kLabel ] = [];
+		foreach( $input[ "name" ] as $lang => $name )
+		{
+			//
+			// Check language by length.
+			//
+			switch (strlen( $lang ) )
+			{
+				case 2:
+					$match = $theLanguages->Connection()->find(["alpha_2" => $lang])->toArray();
+					if ( ! count( $match ) )
+						throw new Exception("Unable to resolve [$lang] language.");
+					if( count( $match ) > 1 )
+						throw new Exception("Ambiguous language [$lang] in record [$key].");
+					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					break;
+
+				case 3:
+					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
+					if ( ! $match )
+						throw new Exception("Unable to resolve [$lang] language.");
+					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					break;
+
+				default:
+					$lang = kLocale . $lang;
+					$locales[] = $lang;
+					$record[ kLabel ][ $lang ] = $name;
+					break;
+			}
+		}
+
+		//
+		// Append to buffer.
+		//
+		$buffer[] = $record;
+
+		//
+		// Append to edges.
+		//
+		$from = "TERMS/" . $record[ kKey ];
+		$to = $record[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edges[] = $edge;
+
+	} // Iterate all records.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_ISO_$standard.json";
+	$data = json_encode( $buffer, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_ISO_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	return array_unique( $locales );												// ==>
+
+} // ISO_639_5.
+
 
 
 ?>
