@@ -23,3 +23,4 @@ extensions/
 !extensions/**/ext/kernel/*.c
 !extensions/**/ext/kernel/extended/*.h
 !extensions/**/ext/kernel/extended/*.c
+/write

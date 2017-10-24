@@ -32,12 +32,16 @@ $iso = new ISOCodes( $j, $p );
 //
 //echo( "Standards: " );
 //print_r( $iso->Standards() );
+
 //echo( "Types: " );
 //print_r( $iso->Types() );
-echo( "Languages: " );
-print_r( $iso->Languages() );
+
+//echo( "Languages: " );
+//print_r( $iso->Languages() );
+
 //echo( "Locales: " );
 //print_r( $iso->Locales() );
+
 //exit;
 
 //
