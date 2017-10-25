@@ -77,6 +77,8 @@ define( "kDefinition", "definition" );
 define( "kDescription", "description" );
 define( "kNote", "note" );
 define( "kExample", "example" );
+define( "kDomain", "domain" );
+define( "kCategory", "category" );
 define( "kBranches", "branches" );
 
 //
