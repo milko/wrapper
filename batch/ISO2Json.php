@@ -55,6 +55,8 @@ use Milko\utils\ISOCodes;
 //
 define( "kLangNS", "ISO:639-3:" );
 define( "kLanguage", "ISO:639-3:eng" );
+define( "kLocaleNS", "ISO:639:local" );
+define( "kLocaleSTD", "639-locale" );
 define( "kLocale", "ISO:639:local:" );
 define( "kSubdivision", "ISO:3166:type");
 define( "kCountry", "ISO:3166-1");
@@ -152,7 +154,16 @@ $locales = array_merge( $locales, ISO_639_2( $database, $languages, $directory )
 $locales = array_merge( $locales, ISO_639_3( $database, $languages, $directory ) );
 $locales = array_merge( $locales, ISO_639_5( $database, $languages, $directory ) );
 
-print_r( array_unique( $locales ) );
+//
+// Connect language locales collection.
+//
+$languages = $database->Client( "ISO_639-local", [] );
+$languages->Connect();
+
+//
+// Handle locales.
+//
+ISO_639_Locales( $database, $languages, $directory, array_unique( $locales ) );
 
 echo( "\nDone!\n" );
 
@@ -731,7 +742,7 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 				$string = strtolower( $string );
 			$name[] = $string; }
 		$types[] = implode(" ", $name );
-		$record[ kSubdivision ] = implode(" ", $name );
+		$record[ kCategory ] = implode(" ", $name );
 
 		//
 		// Load labels.
@@ -866,13 +877,13 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 	//
 	foreach( $buffer as $i => $record )
 	{
-		if( array_key_exists( kSubdivision, $record ) )
+		if( array_key_exists( kCategory, $record ) )
 		{
-			$tmp = $record[ kSubdivision ];
+			$tmp = $record[ kCategory ];
 			$index = array_search($tmp, $types );
 			if( $index === false )
 				throw new Exception("Unable to match subdivision [$tmp].");
-			$record[ kSubdivision ] = kSubdivision . ":" . sprintf( "%02d", $index + 1 );
+			$record[ kCategory ] = kSubdivision . ":" . sprintf( "%02d", $index + 1 );
 			$buffer[ $i ] = $record;
 		}
 	}
@@ -1225,7 +1236,7 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 /**
  * <h4>Handle ISO 639-3.</h4><p />
  *
- * This method will generate the ISO 15924 terms and schema.
+ * This method will generate the ISO 639-3 terms and schema.
  *
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
@@ -1447,7 +1458,7 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 /**
  * <h4>Handle ISO 639-5.</h4><p />
  *
- * This method will generate the ISO 15924 terms and schema.
+ * This method will generate the ISO 639-5 terms and schema.
  *
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
@@ -1455,8 +1466,8 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
  * @returs array						List of locales.
  */
 function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
-                    \Milko\Wrapper\Client		$theLanguages,
-                    SplFileInfo					$theDirectory)
+					\Milko\Wrapper\Client		$theLanguages,
+					SplFileInfo					$theDirectory)
 {
 	//
 	// Init local storage.
@@ -1569,6 +1580,106 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 	return array_unique( $locales );												// ==>
 
 } // ISO_639_5.
+
+
+/*===================================================================================
+ *	ISO 639 Locales																	*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle ISO 639 Locales.</h4><p />
+ *
+ * This method will generate the ISO 639 locales terms and schema.
+ *
+ * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
+ * @param \Milko\Wrapper\Client			$theLanguages	 	Output languages collection.
+ * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @param array							$theLocales		 	List of locale codes.
+ */
+function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
+						  \Milko\Wrapper\Client			$theLanguages,
+						  SplFileInfo					$theDirectory,
+														$theLocales)
+{
+	//
+	// Init local storage.
+	//
+	$standard = kLocaleSTD;
+	$namespace = kLocaleNS;
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Create terms.
+	//
+	$edges = [];
+	$buffer = [];
+	foreach( $theLocales as $input )
+	{
+		//
+		// Init loop storage.
+		//
+		$edge = [];
+		$record = [];
+
+		//
+		// Parse code.
+		//
+		$tmp = explode( ":", $input );
+		$code = $tmp[ 3 ];
+
+		//
+		// Load record.
+		//
+		$record[ kKey ] = $input;
+		$record[ kNid ] = kLocaleNS;
+		$record[ kLid ] = $code;
+		$record[ kGid ] = $input;
+		$record[ kSynonym ] = [ $code ];
+		$record[ kDeploy ] = kDeployStandard;
+
+		//
+		// Load labels.
+		//
+		$record[ kLabel ] = [ kLanguage => "" ];
+
+		//
+		// Append to buffer.
+		//
+		$buffer[] = $record;
+
+		//
+		// Append to edges.
+		//
+		$from = "TERMS/" . $record[ kKey ];
+		$to = $record[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edges[] = $edge;
+
+	} // Iterate all records.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_ISO_$standard.json";
+	$data = json_encode( $buffer, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_ISO_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+} // ISO_639_Locales.
 
 
 
