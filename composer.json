@@ -19,7 +19,7 @@
 		"psr-4": { "Milko\\": "src/" }
 	},
 	"require": {
-		"etsy/phan": "dev-master",
+		"phan/phan": "dev-master",
 		"apigen/apigen": ">=4.1-dev",
 		"devster/ubench": ">=1.2-stable",
 		"phpunit/phpunit": ">=5.6-dev",

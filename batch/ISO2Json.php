@@ -65,6 +65,7 @@ define( "kBiblio", "ISO:639:biblio" );
 define( "kScope", "ISO:639:scope" );
 define( "kType", "ISO:639:type" );
 define( "kDeployStandard", ":state:implementation:standard" );
+define( "kId", "_id" );
 define( "kKey", "_key" );
 define( "kFrom", "_from" );
 define( "kTo", "_to" );
@@ -228,8 +229,9 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
-		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
 		$record[ kSynonym ] = [ $key ];
@@ -284,10 +286,13 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -362,8 +367,9 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
-		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
 		$record[ kSynonym ] = [ $key ];
@@ -418,10 +424,13 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -495,6 +504,7 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
@@ -635,10 +645,13 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -686,6 +699,7 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 	$locales = [];
 	$standard = ISOCodes::k3166_2;
 	$namespace = "ISO:$standard";
+	$enumeration = "TERMS/$namespace";
 	$collection = $theDatabase->Client( "ISO_$standard", [] );
 	$collection->Connect();
 	$countries = $theDatabase->Client( "ISO_" . ISOCodes::k3166_1, [] );
@@ -708,7 +722,6 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		// Init loop storage.
 		//
-		$edge = [];
 		$record = [];
 
 		//
@@ -722,6 +735,7 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
@@ -786,16 +800,29 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$record[ "__parent__" ] = $country . "-" . $input[ "parent" ];
 
 		//
+		// Init loop storage.
+		//
+		$edge = [];
+
+		//
 		// Append to edges.
 		//
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $enumeration ];
 		$edges[] = $edge;
+
+		//
+		// Init loop storage.
+		//
+		$edge = [];
 
 		//
 		// Append to parent.
@@ -805,10 +832,13 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$from = "TERMS/" . $record[ kKey ];
 			$to = "TERMS/$namespace:" . $record[ "__parent__" ];
 			$predicate = ":predicate:enum-of";
-			$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $enumeration ];
 			$edges[] = $edge;
 			unset( $record[ "__parent__" ] );
 		}
@@ -824,10 +854,13 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$from = "TERMS/" . $record[ kKey ];
 			$to = "TERMS/" . kCountry . ":" . $match[ $db_key ];
 			$predicate = ":predicate:enum-of";
-			$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $enumeration ];
 			$edges[] = $edge;
 		}
 
@@ -854,22 +887,54 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 	//
 	// Create subdivision type terms.
 	//
-	$tmp = [];
+	$tmp1 = [];
+	$tmp2 = [];
 	foreach( $types as $i => $n )
 	{
+		//
+		// Build term.
+		//
 		$record = [];
 		$index = sprintf( "%02d", $i + 1 );
-		$record[ kKey ] = kSubdivision . ":$index";
+		$key = kSubdivision . ":$index";
+		$record[ kId ] = "TERMS/$key";
+		$record[ kKey ] = $key;
 		$record[ kNid ] = "TERMS/" . kSubdivision;
 		$record[ kLid ] = $index;
 		$record[ kGid ] = $record[ kKey ];
 		$record[ kDeploy ] = kDeployStandard;
 		$record[ kLabel ] = [ kLanguage => $n ];
-		$record[ kBranches ] = [ $record[ kNid ] ];
-		$tmp[] = $record;
+		$tmp1[] = $record;
+
+		//
+		// Build edge.
+		//
+		$from = $record[ kId ];
+		$to = $record[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$hash = md5( "$from\t$to\t$predicate" );
+		$record = [];
+		$record[ kId ] = "SCHEMAS/$hash";
+		$record[ kKey ] = $hash;
+		$record[ kFrom ] = $from;
+		$record[ kTo ] = $to;
+		$record[ kPredicate ] = $predicate;
+		$record[ kBranches ] = [ $to ];
+		$tmp2[] = $record;
 	}
+
+	//
+	// Write terms.
+	//
 	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_ISO_3166_types.json";
-	$data = json_encode( $tmp, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	$data = json_encode( $tmp1, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write edges.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_ISO_3166_types.json";
+	$data = json_encode( $tmp2, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
 	file_put_contents( $file, $data );
 
 	//
@@ -950,6 +1015,7 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
@@ -1021,10 +1087,13 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1105,8 +1174,9 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			//
 			// Load record.
 			//
+			$record[ kId ] = "TERMS/$namespace:$key";
 			$record[ kKey ] = "$namespace:$key";
-			$record[ kNid ] = "TERMS/$namespace";
+			$record[ kNid ] = $enumeration;
 			$record[ kLid ] = $key;
 			$record[ kGid ] = $record[ kKey ];
 			$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
@@ -1201,10 +1271,13 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$from = "TERMS/" . $record[ kKey ];
 			$to = $record[ kNid ];
 			$predicate = ":predicate:enum-of";
-			$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $to ];
 			$edges[] = $edge;
 		}
 
@@ -1280,8 +1353,9 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
-		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
 		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
@@ -1424,10 +1498,13 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1502,8 +1579,9 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load record.
 		//
 		$key = $input[ $db_key ];
+		$record[ kId ] = "TERMS/$namespace:$key";
 		$record[ kKey ] = "$namespace:$key";
-		$record[ kNid ] = "TERMS/$namespace";
+		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
 		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
@@ -1555,10 +1633,13 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1634,6 +1715,7 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		// Load record.
 		//
+		$record[ kId ] = "TERMS/$input";
 		$record[ kKey ] = $input;
 		$record[ kNid ] = kLocaleNS;
 		$record[ kLid ] = $code;
@@ -1657,10 +1739,13 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		$from = "TERMS/" . $record[ kKey ];
 		$to = $record[ kNid ];
 		$predicate = ":predicate:enum-of";
-		$edge[ kKey ] = md5( "$from\t$to\t$predicate" );
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
