@@ -202,6 +202,7 @@ function DataSources( SplFileInfo	$theDirectory,
 			$cur[ kKey ] = $key;
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
+			$cur[ kGid ] = $key;
 
 			//
 			// Load label.
@@ -404,6 +405,7 @@ function Topics( SplFileInfo	$theDirectory,
 			$cur[ kKey ] = $key;
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
+			$cur[ kGid ] = $key;
 
 			//
 			// Load label.
@@ -601,6 +603,7 @@ function Indicators( SplFileInfo	$theDirectory,
 			$cur[ kKey ] = $key;
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
+			$cur[ kGid ] = $key;
 
 			//
 			// Load label.
