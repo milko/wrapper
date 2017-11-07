@@ -45,6 +45,7 @@ define( "kPredicate", "predicate" );
 define( "kNid", "nid" );
 define( "kLid", "lid" );
 define( "kGid", "gid" );
+define( "kSymbol", "symbol" );
 define( "kSynonym", "synonym" );
 define( "kDeploy", "deploy" );
 define( "kLabel", "label" );
@@ -62,11 +63,18 @@ define( "kStdIndicator", "indicator" );
 define( "kStdIncome", "income" );
 define( "kStdLending", "lending" );
 define( "kStdCountry", "country" );
+define( "kStdRegion", "region" );
+define( "kStdAdminRegion", "admin" );
 define( "kStdLink", "http://api.worldbank.org/" );
 define( "kLangNS", "ISO:639-3:" );
 define( "kDesSrc", "WB:source" );
 define( "kDesOrg", "WB:org" );
 define( "kDesTop", "WB:topic" );
+define( "kDesCountry", "WB:country" );
+define( "kDesRegion", "WB:region" );
+define( "kDesAdminRegion", "WB:region:admin" );
+define( "kDesShape", "shape" );
+define( "kDesCapital", "WB:capital" );
 
 //
 // World Bank languages.
@@ -118,6 +126,9 @@ elseif( ! $directory->isWritable() )
 DataSources( $directory, $standards, $languages );
 Topics( $directory, $standards, $languages );
 Indicators( $directory, $standards, $languages );
+Income( $directory, $standards, $languages );
+Lending( $directory, $standards, $languages );
+Country( $directory, $standards, $languages );
 
 echo( "\nDone!\n" );
 
@@ -179,7 +190,7 @@ function DataSources( SplFileInfo	$theDirectory,
 		//
 		// Make request.
 		//
-		$request = kStdLink . "/$link?page=$page&per_page=$lines&format=json";
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
 		$input = json_decode( file_get_contents( $request ), true );
 
 		//
@@ -203,6 +214,12 @@ function DataSources( SplFileInfo	$theDirectory,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+
+			//
+			// Load symbols.
+			//
+			$cur[ kSymbol ] = $code;
+			$cur[ kSynonym ] = [ $code ];
 
 			//
 			// Load label.
@@ -382,7 +399,7 @@ function Topics( SplFileInfo	$theDirectory,
 		//
 		// Make request.
 		//
-		$request = kStdLink . "/$link?page=$page&per_page=$lines&format=json";
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
 		$input = json_decode( file_get_contents( $request ), true );
 
 		//
@@ -406,6 +423,12 @@ function Topics( SplFileInfo	$theDirectory,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+
+			//
+			// Load symbols.
+			//
+			$cur[ kSymbol ] = $code;
+			$cur[ kSynonym ] = [ $code ];
 
 			//
 			// Load label.
@@ -545,8 +568,8 @@ function Topics( SplFileInfo	$theDirectory,
  * @param array					$theLanguages	 	List of languages.
  */
 function Indicators( SplFileInfo	$theDirectory,
-									$theStandards,
-									$theLanguages)
+					 $theStandards,
+					 $theLanguages)
 {
 	//
 	// Init local storage.
@@ -580,7 +603,7 @@ function Indicators( SplFileInfo	$theDirectory,
 		//
 		// Make request.
 		//
-		$request = kStdLink . "/$link?page=$page&per_page=$lines&format=json";
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
 		$input = json_decode( file_get_contents( $request ), true );
 
 		//
@@ -604,6 +627,12 @@ function Indicators( SplFileInfo	$theDirectory,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+
+			//
+			// Load symbols.
+			//
+			$cur[ kSymbol ] = $code;
+			$cur[ kSynonym ] = [ $code ];
 
 			//
 			// Load label.
@@ -662,7 +691,7 @@ function Indicators( SplFileInfo	$theDirectory,
 		//
 		// Set language.
 		//
-		echo( "\n                $lng2");
+		echo( "\n                $lng2 ");
 		$language = kLangNS . $lng3;
 
 		//
@@ -764,6 +793,995 @@ function Indicators( SplFileInfo	$theDirectory,
 	file_put_contents( $file, $data );
 
 } // Indicators.
+
+
+/*===================================================================================
+ *	Income																			*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle World Bank income levels.</h4><p />
+ *
+ * This method will generate the WB:income terms and schema.
+ *
+ * @param SplFileInfo			$theDirectory	 	Output directory.
+ * @param array					$theStandards	 	List of standards.
+ * @param array					$theLanguages	 	List of languages.
+ */
+function Income( SplFileInfo	$theDirectory,
+				 $theStandards,
+				 $theLanguages)
+{
+	//
+	// Init local storage.
+	//
+	$standard = kStdIncome;
+	$link = $theStandards[ kStdIncome ];
+	$term_file = "TERMS_WB_" . kStdIncome;
+	$edge_file = "SCHEMAS_WB_" . kStdIncome;
+	$namespace = "WB:" . kStdIncome;
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Init loop local storage.
+	//
+	$page = 1;
+	$lines = 10;
+	$terms = [];
+	$edges = [];
+
+	//
+	// Load base records.
+	//
+	echo( "Base records    en ");
+	$language = kLangNS . "eng";
+	do
+	{
+		//
+		// Make request.
+		//
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
+		$input = json_decode( file_get_contents( $request ), true );
+
+		//
+		// Iterate records.
+		//
+		foreach( $input[ 1 ] as $record )
+		{
+			//
+			// Create term.
+			//
+			$code = (string) $record[ "id" ];
+			$terms[ $code ] = [];
+			$cur = & $terms[ $code ];
+
+			//
+			// Load term.
+			//
+			$key = "$namespace:$code";
+			$cur[ kId ] = "TERMS/$key";
+			$cur[ kKey ] = $key;
+			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kLid ] = $code;
+			$cur[ kGid ] = $key;
+
+			//
+			// Load symbols.
+			//
+			$cur[ kSymbol ] = $code;
+			$cur[ kSynonym ] = [ $code ];
+
+			//
+			// Load label.
+			//
+			$cur[ kLabel ] = [ $language => $record[ "value" ] ];
+
+		} // Iterating records.
+
+		//
+		// Next page.
+		//
+		$page++;
+		echo(".");
+
+	} while( count( $input[ 1 ] ) );
+
+	//
+	// Add other languages.
+	//
+	echo( "\nOther languages:");
+	foreach( $theLanguages as $lng2 => $lng3 )
+	{
+		//
+		// Set language.
+		//
+		echo( "\n                $lng2 ");
+		$language = kLangNS . $lng3;
+
+		//
+		// Iterate records.
+		//
+		$page = 1;
+		do
+		{
+			//
+			// Make request.
+			//
+			$request = kStdLink . "$lng2/$link?page=$page&per_page=$lines&format=json";
+			$input = json_decode( file_get_contents( $request ), true );
+
+			//
+			// Iterate records.
+			//
+			foreach( $input[ 1 ] as $record )
+			{
+				//
+				// Select record.
+				//
+				$code = (string) $record[ "id" ];
+				$current = & $terms[ $code ];
+
+				//
+				// Load label.
+				//
+				if( $record[ "value" ] != "" )
+					$current[ kLabel ][ $language ] = $record[ "value" ];
+
+			} // Iterating records.
+
+			//
+			// Next page.
+			//
+			$page++;
+			echo(".");
+
+		} while( count( $input[ 1 ] ) );
+
+	} // Iterating languages.
+
+	//
+	// Build edges.
+	//
+	foreach( $terms as $term )
+	{
+		//
+		// Init edge.
+		//
+		$edge = [];
+
+		//
+		// Build edge.
+		//
+		$from = $term[ kId ];
+		$to = $term[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
+
+		//
+		// Add edge.
+		//
+		$edges[] = $edge;
+
+	} // Iterating terms.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+} // Income.
+
+
+/*===================================================================================
+ *	Lending																			*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle World Bank lending types.</h4><p />
+ *
+ * This method will generate the WB:lending terms and schema.
+ *
+ * @param SplFileInfo			$theDirectory	 	Output directory.
+ * @param array					$theStandards	 	List of standards.
+ * @param array					$theLanguages	 	List of languages.
+ */
+function Lending( SplFileInfo	$theDirectory,
+				  $theStandards,
+				  $theLanguages)
+{
+	//
+	// Init local storage.
+	//
+	$standard = kStdLending;
+	$link = $theStandards[ kStdLending ];
+	$term_file = "TERMS_WB_" . kStdLending;
+	$edge_file = "SCHEMAS_WB_" . kStdLending;
+	$namespace = "WB:" . kStdLending;
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Init loop local storage.
+	//
+	$page = 1;
+	$lines = 10;
+	$terms = [];
+	$edges = [];
+
+	//
+	// Load base records.
+	//
+	echo( "Base records    en ");
+	$language = kLangNS . "eng";
+	do
+	{
+		//
+		// Make request.
+		//
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
+		$input = json_decode( file_get_contents( $request ), true );
+
+		//
+		// Iterate records.
+		//
+		foreach( $input[ 1 ] as $record )
+		{
+			//
+			// Create term.
+			//
+			$code = (string) $record[ "id" ];
+			$terms[ $code ] = [];
+			$cur = & $terms[ $code ];
+
+			//
+			// Load term.
+			//
+			$key = "$namespace:$code";
+			$cur[ kId ] = "TERMS/$key";
+			$cur[ kKey ] = $key;
+			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kLid ] = $code;
+			$cur[ kGid ] = $key;
+
+			//
+			// Load symbols.
+			//
+			$cur[ kSymbol ] = $code;
+			$cur[ kSynonym ] = [ $code ];
+
+			//
+			// Load label.
+			//
+			$cur[ kLabel ] = [ $language => $record[ "value" ] ];
+
+		} // Iterating records.
+
+		//
+		// Next page.
+		//
+		$page++;
+		echo(".");
+
+	} while( count( $input[ 1 ] ) );
+
+	//
+	// Add other languages.
+	//
+	echo( "\nOther languages:");
+	foreach( $theLanguages as $lng2 => $lng3 )
+	{
+		//
+		// Set language.
+		//
+		echo( "\n                $lng2 ");
+		$language = kLangNS . $lng3;
+
+		//
+		// Iterate records.
+		//
+		$page = 1;
+		do
+		{
+			//
+			// Make request.
+			//
+			$request = kStdLink . "$lng2/$link?page=$page&per_page=$lines&format=json";
+			$input = json_decode( file_get_contents( $request ), true );
+
+			//
+			// Iterate records.
+			//
+			foreach( $input[ 1 ] as $record )
+			{
+				//
+				// Select record.
+				//
+				$code = (string) $record[ "id" ];
+				$current = & $terms[ $code ];
+
+				//
+				// Load label.
+				//
+				if( $record[ "value" ] != "" )
+					$current[ kLabel ][ $language ] = $record[ "value" ];
+
+			} // Iterating records.
+
+			//
+			// Next page.
+			//
+			$page++;
+			echo(".");
+
+		} while( count( $input[ 1 ] ) );
+
+	} // Iterating languages.
+
+	//
+	// Build edges.
+	//
+	foreach( $terms as $term )
+	{
+		//
+		// Init edge.
+		//
+		$edge = [];
+
+		//
+		// Build edge.
+		//
+		$from = $term[ kId ];
+		$to = $term[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
+
+		//
+		// Add edge.
+		//
+		$edges[] = $edge;
+
+	} // Iterating terms.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+} // Lending.
+
+
+/*===================================================================================
+ *	Country																			*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle World Bank countries.</h4><p />
+ *
+ * This method will generate the WB_COUNTRY collection.
+ *
+ * @param SplFileInfo			$theDirectory	 	Output directory.
+ * @param array					$theStandards	 	List of standards.
+ * @param array					$theLanguages	 	List of languages.
+ */
+function Country( SplFileInfo	$theDirectory,
+				  $theStandards,
+				  $theLanguages)
+{
+	//
+	// Init local storage.
+	//
+	$standard = kStdCountry;
+	$link = $theStandards[ kStdCountry ];
+	$collection = "WB_COUNTRY";
+
+	//
+	// Inform.
+	//
+	echo( "$standard\n" );
+
+	//
+	// Init loop local storage.
+	//
+	$page = 1;
+	$lines = 50;
+	$records = [];
+
+	//
+	// Load base records.
+	//
+	echo( "Base records    en ");
+	$language = kLangNS . "eng";
+	do
+	{
+		//
+		// Make request.
+		//
+		$request = kStdLink . "en/$link?page=$page&per_page=$lines&format=json";
+		$input = json_decode( file_get_contents( $request ), true );
+
+		//
+		// Iterate records.
+		//
+		foreach( $input[ 1 ] as $record )
+		{
+			//
+			// Create term.
+			//
+			$code = (string) $record[ "id" ];
+			$records[ $code ] = [];
+			$cur = & $records[ $code ];
+
+			//
+			// Load term.
+			//
+			$cur[ "id" ] = $record[ "id" ];
+			$cur[ "iso2Code" ] = $record[ "iso2Code" ];
+
+			//
+			// Init label.
+			//
+			$cur[ kLabel ] = [ $language => $record[ "name" ] ];
+
+			//
+			// Handle region.
+			//
+			if( $record[ "region" ][ "id" ] != "" )
+				$cur[ "region" ] = [
+					"id" => $record[ "region" ][ "id" ],
+					kLabel => [ $language => $record[ "region" ][ "value" ] ]
+				];
+
+			//
+			// Handle admin region.
+			//
+			if( $record[ "adminregion" ][ "id" ] != "" )
+				$cur[ "adminregion" ] = [
+					"id" => $record[ "adminregion" ][ "id" ],
+					kLabel => [ $language => $record[ "adminregion" ][ "value" ] ]
+				];
+
+			//
+			// Handle income & lending.
+			//
+			$namespace = "WB:" . kStdIncome;
+			$cur[ $namespace ] = "$namespace:" . $record[ "incomeLevel" ][ "id" ];
+			$namespace = "WB:" . kStdLending;
+			$cur[ $namespace ] = "$namespace:" . $record[ "lendingType" ][ "id" ];
+
+			//
+			// Handle capital.
+			//
+			if( array_key_exists( "capitalCity", $record )
+			 && ($record[ "capitalCity" ] != "" ) )
+			{
+				$cur[ "capitalCity" ]
+					= [ kLabel =>  [ $language => $record[ "capitalCity" ] ] ];
+				if( array_key_exists( "longitude", $record )
+				 && array_key_exists( "latitude", $record )
+				 && ($record[ "longitude" ] != "")
+				 && ($record[ "latitude" ] != "") )
+					$cur[ "capitalCity" ][ kDesShape ] = [
+						"type" => "Point",
+						"coordinates" => [
+							$record[ "longitude" ],
+							$record[ "latitude" ]
+						]
+					];
+			}
+
+		} // Iterating records.
+
+		//
+		// Next page.
+		//
+		$page++;
+		echo(".");
+
+	} while( count( $input[ 1 ] ) );
+
+	//
+	// Add other languages.
+	//
+	echo( "\nOther languages:");
+	foreach( $theLanguages as $lng2 => $lng3 )
+	{
+		//
+		// Set language.
+		//
+		echo( "\n                $lng2 ");
+		$language = kLangNS . $lng3;
+
+		//
+		// Iterate records.
+		//
+		$page = 1;
+		do
+		{
+			//
+			// Make request.
+			//
+			$request = kStdLink . "$lng2/$link?page=$page&per_page=$lines&format=json";
+			$input = json_decode( file_get_contents( $request ), true );
+
+			//
+			// Iterate records.
+			//
+			foreach( $input[ 1 ] as $record )
+			{
+				//
+				// Select record.
+				//
+				$code = (string) $record[ "id" ];
+				$cur = & $records[ $code ];
+
+				//
+				// Load label.
+				//
+				if( array_key_exists( "name", $record )
+				 && ($record[ "name" ] != "") )
+					$cur[ kLabel ][ $language ] = $record[ "name" ];
+
+				//
+				// Load region.
+				//
+				if( ($record[ "region" ][ "id" ] != "")
+					&& ($record[ "region" ][ "value" ] != "") )
+					$cur[ "region" ][ kLabel ][ $language ]
+						= $record[ "region" ][ "value" ];
+
+				//
+				// Load admin region.
+				//
+				if( ($record[ "adminregion" ][ "id" ] != "")
+					&& ($record[ "adminregion" ][ "value" ] != "") )
+					$cur[ "adminregion" ][ kLabel ][ $language ]
+						= $record[ "adminregion" ][ "value" ];
+
+				//
+				// Load capital city.
+				//
+				if( array_key_exists( "capitalCity", $record )
+				 && ($record[ "capitalCity" ] != "" ) )
+					$cur[ "capitalCity" ][ kLabel ][ $language ]
+						= $record[ "capitalCity" ];
+
+			} // Iterating records.
+
+			//
+			// Next page.
+			//
+			$page++;
+			echo(".");
+
+		} while( count( $input[ 1 ] ) );
+
+	} // Iterating languages.
+
+	//
+	// Collect regions.
+	//
+	$terms = [];
+	$standard = kStdRegion;
+	$namespace = kDesRegion;
+	foreach( $records as $record )
+	{
+		if( array_key_exists( "region", $record ) )
+		{
+			$code = $record[ "region" ][ "id" ];
+			if( $code != "" )
+			{
+				if( ! array_key_exists( $code, $terms ) )
+				{
+					$terms[ $code ] = [];
+					$cur = & $terms[ $code ];
+
+					$key = "$namespace:$code";
+					$cur[ kId ] = "TERMS/$key";
+					$cur[ kKey ] = $key;
+					$cur[ kNid ] = "TERMS/$namespace";
+					$cur[ kLid ] = $code;
+					$cur[ kGid ] = $key;
+					$cur[ kSymbol ] = $code;
+					$cur[ kSynonym ] = [ $code ];
+					$cur[ kLabel ] = $record[ "region" ][ kLabel ];
+				}
+			}
+		}
+	}
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Build edges.
+	//
+	$edges = [];
+	foreach( $terms as $term )
+	{
+		//
+		// Init edge.
+		//
+		$edge = [];
+
+		//
+		// Build edge.
+		//
+		$from = $term[ kId ];
+		$to = $term[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
+
+		//
+		// Add edge.
+		//
+		$edges[] = $edge;
+
+	} // Iterating terms.
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Collect administrative regions.
+	//
+	$terms = [];
+	$standard = kStdAdminRegion;
+	$namespace = kDesAdminRegion;
+	foreach( $records as $record )
+	{
+		if( array_key_exists( "adminregion", $record ) )
+		{
+			$code = $record[ "adminregion" ][ "id" ];
+			if( $code != "" )
+			{
+				if( ! array_key_exists( $code, $terms ) )
+				{
+					$terms[ $code ] = [];
+					$cur = & $terms[ $code ];
+
+					$key = "$namespace:$code";
+					$cur[ kId ] = "TERMS/$key";
+					$cur[ kKey ] = $key;
+					$cur[ kNid ] = "TERMS/$namespace";
+					$cur[ kLid ] = $code;
+					$cur[ kGid ] = $key;
+					$cur[ kSymbol ] = $code;
+					$cur[ kSynonym ] = [ $code ];
+					$cur[ kLabel ] = $record[ "region" ][ kLabel ];
+				}
+			}
+		}
+	}
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Build edges.
+	//
+	$edges = [];
+	foreach( $terms as $term )
+	{
+		//
+		// Init edge.
+		//
+		$edge = [];
+
+		//
+		// Build edge.
+		//
+		$from = $term[ kId ];
+		$to = $term[ kNid ];
+		$predicate = ":predicate:enum-of";
+		$hash = md5( "$from\t$to\t$predicate" );
+		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kKey ] = $hash;
+		$edge[ kFrom ] = $from;
+		$edge[ kTo ] = $to;
+		$edge[ kPredicate ] = $predicate;
+		$edge[ kBranches ] = [ $to ];
+
+		//
+		// Add edge.
+		//
+		$edges[] = $edge;
+
+	} // Iterating terms.
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Collect countries.
+	//
+	$terms = [];
+	$standard = kStdCountry;
+	$namespace = kDesCountry;
+	foreach( $records as $record )
+	{
+		$cur = [];
+		$code = $record[ "id" ];
+
+		$key = "$namespace:$code";
+		$cur[ kId ] = "TERMS/$key";
+		$cur[ kKey ] = $key;
+		$cur[ kNid ] = "TERMS/$namespace";
+		$cur[ kLid ] = $code;
+		$cur[ kGid ] = $key;
+		$cur[ kSymbol ] = $code;
+		$cur[ kSynonym ] = [ $code ];
+		if( array_key_exists( "iso2Code", $record ) )
+			$cur[ kSynonym ][] = $record[ "iso2Code" ];
+		$cur[ kLabel ] = $record[ kLabel ];
+		if( array_key_exists( "capitalCity", $record ) )
+			$cur[ kDesCapital ] = $record[ "capitalCity" ];
+
+		$terms[] = $cur;
+	}
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
+	// Build edges.
+	//
+	$edges = [];
+	$ns_country = $namespace;
+	$regions = $admins = $incomes = $lendings = [];
+	foreach( $records as $record )
+	{
+		//
+		// Init local storage.
+		//
+		$cats = false;
+		$code = $record[ "id" ];
+
+		//
+		// Build region edge.
+		//
+		if( array_key_exists( "region", $record ) )
+		{
+			if( ! in_array( $record[ "region" ][ "id" ], $regions ) )
+			{
+				$edge = [];
+				$from = kDesRegion . ":" . $record[ "region" ][ "id" ];
+				$to = $ns_country;
+				$predicate = ":predicate:category-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $ns_country ];
+				$edges[] = $edge;
+				$cats = true;
+				$regions[] = $record[ "region" ][ "id" ];
+			}
+
+			$edge = [];
+			$from = "$ns_country:$code";
+			$to = kDesRegion . ":" . $record[ "region" ][ "id" ];
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $ns_country ];
+			$edges[] = $edge;
+			$cats = true;
+		}
+
+		//
+		// Build admin region edge.
+		//
+		if( array_key_exists( "adminregion", $record ) )
+		{
+			if( ! in_array( $record[ "adminregion" ][ "id" ], $admins ) )
+			{
+				$edge = [];
+				$from = kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
+				$to = $ns_country;
+				$predicate = ":predicate:category-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $ns_country ];
+				$edges[] = $edge;
+				$cats = true;
+				$admins[] = $record[ "adminregion" ][ "id" ];
+			}
+
+			$edge = [];
+			$from = "$ns_country:$code";
+			$to = kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $ns_country ];
+			$edges[] = $edge;
+			$cats = true;
+		}
+
+		//
+		// Build income edge.
+		//
+		$tmp = "WB:" . kStdIncome;
+		if( array_key_exists( $tmp, $record ) )
+		{
+			if( ! in_array( $record[ $tmp ], $incomes ) )
+			{
+				$edge = [];
+				$from = $record[ $tmp ];
+				$to = $ns_country;
+				$predicate = ":predicate:category-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $ns_country ];
+				$edges[] = $edge;
+				$cats = true;
+				$incomes[] = $record[ $tmp ];
+			}
+
+			$edge = [];
+			$from = "$ns_country:$code";
+			$to = $record[ $tmp ];
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $ns_country ];
+			$edges[] = $edge;
+			$cats = true;
+		}
+
+		//
+		// Build lending edge.
+		//
+		$tmp = "WB:" . kStdLending;
+		if( array_key_exists( $tmp, $record ) )
+		{
+			if( ! in_array( $record[ $tmp ], $lendings ) )
+			{
+				$edge = [];
+				$from = $record[ $tmp ];
+				$to = $ns_country;
+				$predicate = ":predicate:category-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $ns_country ];
+				$edges[] = $edge;
+				$cats = true;
+				$lendings[] = $record[ $tmp ];
+			}
+
+			$edge = [];
+			$from = "$ns_country:$code";
+			$to = $record[ $tmp ];
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $ns_country ];
+			$edges[] = $edge;
+			$cats = true;
+		}
+
+		//
+		// Build country edge.
+		//
+		if( ! $cats )
+		{
+			$edge = [];
+			$from = "$ns_country:$code";
+			$to = $ns_country;
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $to ];
+			$edges[] = $edge;
+		}
+
+	} // Iterating terms.
+
+	//
+	// Write EDGES JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
+	$data = json_encode( $edges, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+} // Country.
 
 
 
