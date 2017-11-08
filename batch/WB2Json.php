@@ -568,8 +568,8 @@ function Topics( SplFileInfo	$theDirectory,
  * @param array					$theLanguages	 	List of languages.
  */
 function Indicators( SplFileInfo	$theDirectory,
-					 $theStandards,
-					 $theLanguages)
+					 				$theStandards,
+					 				$theLanguages)
 {
 	//
 	// Init local storage.
@@ -583,21 +583,20 @@ function Indicators( SplFileInfo	$theDirectory,
 	//
 	// Inform.
 	//
-	echo( "$standard\n" );
+	echo( "$standard " );
 
 	//
 	// Init loop local storage.
 	//
 	$page = 1;
 	$lines = 800;
-	$terms = [];
-	$edges = [];
 
 	//
 	// Load base records.
 	//
-	echo( "Base records    en ");
+	echo( "en ");
 	$language = kLangNS . "eng";
+	$terms = [];
 	do
 	{
 		//
@@ -685,13 +684,12 @@ function Indicators( SplFileInfo	$theDirectory,
 	//
 	// Add other languages.
 	//
-	echo( "\nOther languages:");
 	foreach( $theLanguages as $lng2 => $lng3 )
 	{
 		//
 		// Set language.
 		//
-		echo( "\n                $lng2 ");
+		echo( "\n          $lng2 ");
 		$language = kLangNS . $lng3;
 
 		//
@@ -747,34 +745,116 @@ function Indicators( SplFileInfo	$theDirectory,
 
 	} // Iterating languages.
 
+	echo( "\n" );
+
 	//
 	// Build edges.
 	//
+	$edges = [];
+	$sources = $topics = [];
 	foreach( $terms as $term )
 	{
 		//
 		// Init edge.
 		//
-		$edge = [];
+		$cat = false;
+
+		//
+		// Build source edge.
+		//
+		if( array_key_exists( kDesSrc, $term ) )
+		{
+			$tmp = $term[ kDesSrc ];
+
+			$edge = [];
+			$from = $term[ kId ];
+			$to = "TERMS/$tmp";
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $term[ kNid ] ];
+			$edges[] = $edge;
+			$cat = true;
+
+			if( ! in_array( $tmp, $sources ) )
+			{
+				$edge = [];
+				$from = "TERMS/$tmp";
+				$to = $term[ kNid ];
+				$predicate = ":predicate:category-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $term[ kNid ] ];
+				$edges[] = $edge;
+				$sources[] = $tmp;
+			}
+		}
+
+		//
+		// Build topics edge.
+		//
+		if( array_key_exists( kDesTop, $term ) )
+		{
+			foreach( $term[ kDesTop ] as $topic )
+			{
+				$edge = [];
+				$from = $term[ kId ];
+				$to = "TERMS/$topic";
+				$predicate = ":predicate:enum-of";
+				$hash = md5( "$from\t$to\t$predicate" );
+				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kKey ] = $hash;
+				$edge[ kFrom ] = $from;
+				$edge[ kTo ] = $to;
+				$edge[ kPredicate ] = $predicate;
+				$edge[ kBranches ] = [ $term[ kNid ] ];
+				$edges[] = $edge;
+				$cat = true;
+
+				if( ! in_array( $topic, $topics ) )
+				{
+					$edge = [];
+					$from = "TERMS/$topic";
+					$to = $term[ kNid ];
+					$predicate = ":predicate:category-of";
+					$hash = md5( "$from\t$to\t$predicate" );
+					$edge[ kId ] = "SCHEMAS/$hash";
+					$edge[ kKey ] = $hash;
+					$edge[ kFrom ] = $from;
+					$edge[ kTo ] = $to;
+					$edge[ kPredicate ] = $predicate;
+					$edge[ kBranches ] = [ $term[ kNid ] ];
+					$edges[] = $edge;
+					$topics[] = $topic;
+				}
+			}
+		}
 
 		//
 		// Build edge.
 		//
-		$from = $term[ kId ];
-		$to = $term[ kNid ];
-		$predicate = ":predicate:enum-of";
-		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
-		$edge[ kKey ] = $hash;
-		$edge[ kFrom ] = $from;
-		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
-
-		//
-		// Add edge.
-		//
-		$edges[] = $edge;
+		if( ! $cat )
+		{
+			$from = $term[ kId ];
+			$to = $term[ kNid ];
+			$predicate = ":predicate:enum-of";
+			$hash = md5( "$from\t$to\t$predicate" );
+			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kKey ] = $hash;
+			$edge[ kFrom ] = $from;
+			$edge[ kTo ] = $to;
+			$edge[ kPredicate ] = $predicate;
+			$edge[ kBranches ] = [ $to ];
+			$edges[] = $edge;
+		}
 
 	} // Iterating terms.
 
@@ -824,7 +904,7 @@ function Income( SplFileInfo	$theDirectory,
 	//
 	// Inform.
 	//
-	echo( "$standard\n" );
+	echo( "$standard    " );
 
 	//
 	// Init loop local storage.
@@ -837,7 +917,7 @@ function Income( SplFileInfo	$theDirectory,
 	//
 	// Load base records.
 	//
-	echo( "Base records    en ");
+	echo( "en ");
 	$language = kLangNS . "eng";
 	do
 	{
@@ -893,13 +973,12 @@ function Income( SplFileInfo	$theDirectory,
 	//
 	// Add other languages.
 	//
-	echo( "\nOther languages:");
 	foreach( $theLanguages as $lng2 => $lng3 )
 	{
 		//
 		// Set language.
 		//
-		echo( "\n                $lng2 ");
+		echo( "\n          $lng2 ");
 		$language = kLangNS . $lng3;
 
 		//
@@ -942,6 +1021,8 @@ function Income( SplFileInfo	$theDirectory,
 		} while( count( $input[ 1 ] ) );
 
 	} // Iterating languages.
+
+	echo( "\n" );
 
 	//
 	// Build edges.
@@ -1020,7 +1101,7 @@ function Lending( SplFileInfo	$theDirectory,
 	//
 	// Inform.
 	//
-	echo( "$standard\n" );
+	echo( "$standard   " );
 
 	//
 	// Init loop local storage.
@@ -1033,7 +1114,7 @@ function Lending( SplFileInfo	$theDirectory,
 	//
 	// Load base records.
 	//
-	echo( "Base records    en ");
+	echo( "en ");
 	$language = kLangNS . "eng";
 	do
 	{
@@ -1089,13 +1170,12 @@ function Lending( SplFileInfo	$theDirectory,
 	//
 	// Add other languages.
 	//
-	echo( "\nOther languages:");
 	foreach( $theLanguages as $lng2 => $lng3 )
 	{
 		//
 		// Set language.
 		//
-		echo( "\n                $lng2 ");
+		echo( "\n          $lng2 ");
 		$language = kLangNS . $lng3;
 
 		//
@@ -1138,6 +1218,8 @@ function Lending( SplFileInfo	$theDirectory,
 		} while( count( $input[ 1 ] ) );
 
 	} // Iterating languages.
+
+	echo( "\n" );
 
 	//
 	// Build edges.
@@ -1214,7 +1296,7 @@ function Country( SplFileInfo	$theDirectory,
 	//
 	// Inform.
 	//
-	echo( "$standard\n" );
+	echo( "$standard   " );
 
 	//
 	// Init loop local storage.
@@ -1226,7 +1308,7 @@ function Country( SplFileInfo	$theDirectory,
 	//
 	// Load base records.
 	//
-	echo( "Base records    en ");
+	echo( "en ");
 	$language = kLangNS . "eng";
 	do
 	{
@@ -1319,13 +1401,12 @@ function Country( SplFileInfo	$theDirectory,
 	//
 	// Add other languages.
 	//
-	echo( "\nOther languages:");
 	foreach( $theLanguages as $lng2 => $lng3 )
 	{
 		//
 		// Set language.
 		//
-		echo( "\n                $lng2 ");
+		echo( "\n          $lng2 ");
 		$language = kLangNS . $lng3;
 
 		//
@@ -1427,13 +1508,6 @@ function Country( SplFileInfo	$theDirectory,
 	}
 
 	//
-	// Write TERMS JSON file.
-	//
-	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
-	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
-	file_put_contents( $file, $data );
-
-	//
 	// Build edges.
 	//
 	$edges = [];
@@ -1464,6 +1538,13 @@ function Country( SplFileInfo	$theDirectory,
 		$edges[] = $edge;
 
 	} // Iterating terms.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
 
 	//
 	// Write EDGES JSON file.
@@ -1505,13 +1586,6 @@ function Country( SplFileInfo	$theDirectory,
 	}
 
 	//
-	// Write TERMS JSON file.
-	//
-	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
-	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
-	file_put_contents( $file, $data );
-
-	//
 	// Build edges.
 	//
 	$edges = [];
@@ -1544,6 +1618,13 @@ function Country( SplFileInfo	$theDirectory,
 	} // Iterating terms.
 
 	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+	//
 	// Write EDGES JSON file.
 	//
 	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "SCHEMAS_WB_$standard.json";
@@ -1571,19 +1652,16 @@ function Country( SplFileInfo	$theDirectory,
 		$cur[ kSynonym ] = [ $code ];
 		if( array_key_exists( "iso2Code", $record ) )
 			$cur[ kSynonym ][] = $record[ "iso2Code" ];
+		if( array_key_exists( "WB:" . kStdIncome, $record ) )
+			$cur[ "WB:" . kStdIncome ] = $record[ "WB:" . kStdIncome ];
+		if( array_key_exists( "WB:" . kStdLending, $record ) )
+			$cur[ "WB:" . kStdLending ] = $record[ "WB:" . kStdLending ];
 		$cur[ kLabel ] = $record[ kLabel ];
 		if( array_key_exists( "capitalCity", $record ) )
 			$cur[ kDesCapital ] = $record[ "capitalCity" ];
 
 		$terms[] = $cur;
 	}
-
-	//
-	// Write TERMS JSON file.
-	//
-	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
-	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
-	file_put_contents( $file, $data );
 
 	//
 	// Build edges.
@@ -1607,8 +1685,8 @@ function Country( SplFileInfo	$theDirectory,
 			if( ! in_array( $record[ "region" ][ "id" ], $regions ) )
 			{
 				$edge = [];
-				$from = kDesRegion . ":" . $record[ "region" ][ "id" ];
-				$to = $ns_country;
+				$from = "TERMS/" . kDesRegion . ":" . $record[ "region" ][ "id" ];
+				$to = "TERMS/" . $ns_country;
 				$predicate = ":predicate:category-of";
 				$hash = md5( "$from\t$to\t$predicate" );
 				$edge[ kId ] = "SCHEMAS/$hash";
@@ -1616,15 +1694,15 @@ function Country( SplFileInfo	$theDirectory,
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ kPredicate ] = $predicate;
-				$edge[ kBranches ] = [ $ns_country ];
+				$edge[ kBranches ] = [ $to ];
 				$edges[] = $edge;
 				$cats = true;
 				$regions[] = $record[ "region" ][ "id" ];
 			}
 
 			$edge = [];
-			$from = "$ns_country:$code";
-			$to = kDesRegion . ":" . $record[ "region" ][ "id" ];
+			$from = "TERMS/" . "$ns_country:$code";
+			$to = "TERMS/" . kDesRegion . ":" . $record[ "region" ][ "id" ];
 			$predicate = ":predicate:enum-of";
 			$hash = md5( "$from\t$to\t$predicate" );
 			$edge[ kId ] = "SCHEMAS/$hash";
@@ -1632,7 +1710,7 @@ function Country( SplFileInfo	$theDirectory,
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $ns_country ];
+			$edge[ kBranches ] = [ "TERMS/" . $ns_country ];
 			$edges[] = $edge;
 			$cats = true;
 		}
@@ -1645,8 +1723,8 @@ function Country( SplFileInfo	$theDirectory,
 			if( ! in_array( $record[ "adminregion" ][ "id" ], $admins ) )
 			{
 				$edge = [];
-				$from = kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
-				$to = $ns_country;
+				$from = "TERMS/" . kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
+				$to = "TERMS/" . $ns_country;
 				$predicate = ":predicate:category-of";
 				$hash = md5( "$from\t$to\t$predicate" );
 				$edge[ kId ] = "SCHEMAS/$hash";
@@ -1654,15 +1732,15 @@ function Country( SplFileInfo	$theDirectory,
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ kPredicate ] = $predicate;
-				$edge[ kBranches ] = [ $ns_country ];
+				$edge[ kBranches ] = [ $to ];
 				$edges[] = $edge;
 				$cats = true;
 				$admins[] = $record[ "adminregion" ][ "id" ];
 			}
 
 			$edge = [];
-			$from = "$ns_country:$code";
-			$to = kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
+			$from = "TERMS/" . "$ns_country:$code";
+			$to = "TERMS/" . kDesAdminRegion . ":" . $record[ "adminregion" ][ "id" ];
 			$predicate = ":predicate:enum-of";
 			$hash = md5( "$from\t$to\t$predicate" );
 			$edge[ kId ] = "SCHEMAS/$hash";
@@ -1670,7 +1748,7 @@ function Country( SplFileInfo	$theDirectory,
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $ns_country ];
+			$edge[ kBranches ] = [ "TERMS/" . $ns_country ];
 			$edges[] = $edge;
 			$cats = true;
 		}
@@ -1684,8 +1762,8 @@ function Country( SplFileInfo	$theDirectory,
 			if( ! in_array( $record[ $tmp ], $incomes ) )
 			{
 				$edge = [];
-				$from = $record[ $tmp ];
-				$to = $ns_country;
+				$from = "TERMS/" . $record[ $tmp ];
+				$to = "TERMS/" . $ns_country;
 				$predicate = ":predicate:category-of";
 				$hash = md5( "$from\t$to\t$predicate" );
 				$edge[ kId ] = "SCHEMAS/$hash";
@@ -1693,15 +1771,15 @@ function Country( SplFileInfo	$theDirectory,
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ kPredicate ] = $predicate;
-				$edge[ kBranches ] = [ $ns_country ];
+				$edge[ kBranches ] = [ $to ];
 				$edges[] = $edge;
 				$cats = true;
 				$incomes[] = $record[ $tmp ];
 			}
 
 			$edge = [];
-			$from = "$ns_country:$code";
-			$to = $record[ $tmp ];
+			$from = "TERMS/" . "$ns_country:$code";
+			$to = "TERMS/" . $record[ $tmp ];
 			$predicate = ":predicate:enum-of";
 			$hash = md5( "$from\t$to\t$predicate" );
 			$edge[ kId ] = "SCHEMAS/$hash";
@@ -1709,7 +1787,7 @@ function Country( SplFileInfo	$theDirectory,
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $ns_country ];
+			$edge[ kBranches ] = [ "TERMS/" . $ns_country ];
 			$edges[] = $edge;
 			$cats = true;
 		}
@@ -1723,8 +1801,8 @@ function Country( SplFileInfo	$theDirectory,
 			if( ! in_array( $record[ $tmp ], $lendings ) )
 			{
 				$edge = [];
-				$from = $record[ $tmp ];
-				$to = $ns_country;
+				$from = "TERMS/" . $record[ $tmp ];
+				$to = "TERMS/" . $ns_country;
 				$predicate = ":predicate:category-of";
 				$hash = md5( "$from\t$to\t$predicate" );
 				$edge[ kId ] = "SCHEMAS/$hash";
@@ -1732,15 +1810,15 @@ function Country( SplFileInfo	$theDirectory,
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ kPredicate ] = $predicate;
-				$edge[ kBranches ] = [ $ns_country ];
+				$edge[ kBranches ] = [ $to ];
 				$edges[] = $edge;
 				$cats = true;
 				$lendings[] = $record[ $tmp ];
 			}
 
 			$edge = [];
-			$from = "$ns_country:$code";
-			$to = $record[ $tmp ];
+			$from = "TERMS/" . "$ns_country:$code";
+			$to = "TERMS/" . $record[ $tmp ];
 			$predicate = ":predicate:enum-of";
 			$hash = md5( "$from\t$to\t$predicate" );
 			$edge[ kId ] = "SCHEMAS/$hash";
@@ -1748,7 +1826,7 @@ function Country( SplFileInfo	$theDirectory,
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
 			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $ns_country ];
+			$edge[ kBranches ] = [ "TERMS/" . $ns_country ];
 			$edges[] = $edge;
 			$cats = true;
 		}
@@ -1759,8 +1837,8 @@ function Country( SplFileInfo	$theDirectory,
 		if( ! $cats )
 		{
 			$edge = [];
-			$from = "$ns_country:$code";
-			$to = $ns_country;
+			$from = "TERMS/" . "$ns_country:$code";
+			$to = "TERMS/" . $ns_country;
 			$predicate = ":predicate:enum-of";
 			$hash = md5( "$from\t$to\t$predicate" );
 			$edge[ kId ] = "SCHEMAS/$hash";
@@ -1773,6 +1851,13 @@ function Country( SplFileInfo	$theDirectory,
 		}
 
 	} // Iterating terms.
+
+	//
+	// Write TERMS JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "TERMS_WB_$standard.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
 
 	//
 	// Write EDGES JSON file.
