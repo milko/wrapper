@@ -73,6 +73,7 @@ define( "kPredicate", "predicate" );
 define( "kNid", "nid" );
 define( "kLid", "lid" );
 define( "kGid", "gid" );
+define( "kSymbol", "symbol" );
 define( "kSynonym", "synonym" );
 define( "kDeploy", "deploy" );
 define( "kLabel", "label" );
@@ -234,6 +235,7 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $key ];
 		if( array_key_exists( "numeric", $input) )
 			$record[ kSynonym ][] = $input[ "numeric" ];
@@ -372,6 +374,7 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $key ];
 		if( array_key_exists( "numeric", $input) )
 			$record[ kSynonym ][] = $input[ "numeric" ];
@@ -509,6 +512,7 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
 		if( array_key_exists( "alpha_2", $input) )
 			$record[ kSynonym ][] = $input[ "alpha_2" ];
@@ -740,6 +744,7 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $key ];
 		$record[ kDeploy ] = kDeployStandard;
 
@@ -1020,6 +1025,7 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $input[ "alpha_2" ], $input[ "alpha_3" ], $input[ "alpha_4" ] ];
 		if( array_key_exists( "numeric", $input) )
 			$record[ kSynonym ][] = $input[ "numeric" ];
@@ -1179,6 +1185,7 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$record[ kNid ] = $enumeration;
 			$record[ kLid ] = $key;
 			$record[ kGid ] = $record[ kKey ];
+			$record[ kSymbol ] = $key;
 			$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
 			if( array_key_exists( "alpha_2", $input) )
 				$record[ kSynonym ][] = $input[ "alpha_2" ];
@@ -1358,6 +1365,7 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
 		if( array_key_exists( "alpha_2", $input) )
 			$record[ kSynonym ][] = $input[ "alpha_2" ];
@@ -1584,6 +1592,7 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
+		$record[ kSymbol ] = $key;
 		$record[ kSynonym ] = [ $input[ "alpha_3" ] ];
 		$record[ kDeploy ] = kDeployStandard;
 
@@ -1711,6 +1720,10 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		$tmp = explode( ":", $input );
 		$code = $tmp[ 3 ];
+		$tmp = explode( '_', $code );
+		$code_alt = ( count( $tmp ) == 2 )
+				  ? ($tmp[0] . "-" . $tmp[1])
+				  : NULL;
 
 		//
 		// Load record.
@@ -1720,7 +1733,10 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = kLocaleNS;
 		$record[ kLid ] = $code;
 		$record[ kGid ] = $input;
+		$record[ kSymbol ] = $code;
 		$record[ kSynonym ] = [ $code ];
+		if( $code_alt !== NULL )
+			$record[ kSynonym ][] = $code_alt;
 		$record[ kDeploy ] = kDeployStandard;
 
 		//

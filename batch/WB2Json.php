@@ -164,8 +164,6 @@ function DataSources( SplFileInfo	$theDirectory,
 	//
 	$standard = kStdDataSource;
 	$link = $theStandards[ kStdDataSource ];
-	$term_file = "TERMS_WB_" . kStdDataSource;
-	$edge_file = "SCHEMAS_WB_" . kStdDataSource;
 	$namespace = "WB:" . kStdDataSource;
 
 	//
@@ -373,8 +371,6 @@ function Topics( SplFileInfo	$theDirectory,
 	//
 	$standard = kStdTopic;
 	$link = $theStandards[ kStdTopic ];
-	$term_file = "TERMS_WB_" . kStdTopic;
-	$edge_file = "SCHEMAS_WB_" . kStdTopic;
 	$namespace = "WB:" . kStdTopic;
 
 	//
@@ -576,8 +572,6 @@ function Indicators( SplFileInfo	$theDirectory,
 	//
 	$standard = kStdIndicator;
 	$link = $theStandards[ kStdIndicator ];
-	$term_file = "TERMS_WB_" . kStdIndicator;
-	$edge_file = "SCHEMAS_WB_" . kStdIndicator;
 	$namespace = "WB:" . kStdIndicator;
 
 	//
@@ -897,8 +891,6 @@ function Income( SplFileInfo	$theDirectory,
 	//
 	$standard = kStdIncome;
 	$link = $theStandards[ kStdIncome ];
-	$term_file = "TERMS_WB_" . kStdIncome;
-	$edge_file = "SCHEMAS_WB_" . kStdIncome;
 	$namespace = "WB:" . kStdIncome;
 
 	//
@@ -1094,8 +1086,6 @@ function Lending( SplFileInfo	$theDirectory,
 	//
 	$standard = kStdLending;
 	$link = $theStandards[ kStdLending ];
-	$term_file = "TERMS_WB_" . kStdLending;
-	$edge_file = "SCHEMAS_WB_" . kStdLending;
 	$namespace = "WB:" . kStdLending;
 
 	//
