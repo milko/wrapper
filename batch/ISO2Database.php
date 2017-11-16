@@ -93,6 +93,31 @@ else
 }
 
 //
+// Save code fields.
+//
+$codes = [
+	ISOCodes::k639_2 => [ "alpha_2", "alpha_3" ],
+	ISOCodes::k639_3 => [ "alpha_2", "alpha_3" ],
+	ISOCodes::k639_5 => [ "alpha_3" ],
+	ISOCodes::k3166_1 => [ "alpha_2", "alpha_3", "numeric" ],
+	ISOCodes::k3166_2 => [ "code" ],
+	ISOCodes::k3166_3 => [ "alpha_2", "alpha_3", "alpha_4", "numeric" ],
+	ISOCodes::k4217 => [ "alpha_3", "numeric" ],
+	ISOCodes::k15924 => [ "alpha_4", "numeric" ]
+];
+
+//
+// Save collection indexes.
+//
+$keys = [];
+foreach( $codes as $key => $val )
+{
+	foreach( $val as $field )
+		$keys[ $key ][] = [ 'key' => [ $field => 1 ], "name" => "idx_" . $field ];
+	$keys[ $key ][] = [ 'key' => [ 'synonym' => 1 ], "name" => "idx_synonym" ];
+}
+
+//
 // Connect database.
 //
 $database->Connect();
@@ -107,6 +132,7 @@ foreach( $iso->Standards() as $standard )
 {
 	$col_standards[ $standard ] = $database->Client( "ISO_$standard", [] );
 	$col_standards[ $standard ]->Drop();
+	$col_standards[ $standard ]->Connection()->createIndexes( $keys[ $standard ] );
 }
 
 //
@@ -134,7 +160,26 @@ foreach( $iterator as $standard => $schema )
 	$iterator = $iso->getIterator( $standard );
 	foreach( $iterator as $key => $data )
 	{
+		//
+		// Build record.
+		//
 		$data[ $col_standards[ $standard ]->DocumentKey() ] = $key;
+
+		//
+		// Add synonyms.
+		//
+		$synonyms = [];
+		foreach( $codes[ $standard ] as $code )
+		{
+			if( array_key_exists( $code, $data ) )
+				$synonyms[] = $data[ $code ];
+		}
+		if( count( $synonyms ) )
+			$data[ "synonym" ] = array_unique( $synonyms );
+
+		//
+		// Write record.
+		//
 		$col_standards[ $standard ]->AddOne( $data );
 	}
 }

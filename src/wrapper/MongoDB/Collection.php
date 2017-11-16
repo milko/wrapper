@@ -17,6 +17,7 @@ namespace Milko\wrapper\MongoDB;
 use Milko\wrapper\Client;
 use Milko\wrapper\Container;
 
+use MongoDB\Driver\Cursor;
 use MongoDB\Model\BSONDocument;
 
 /**
@@ -285,6 +286,35 @@ class Collection extends Client
 			$this->Connection()->findOne( [ '_id' => $theIdentifier ] );			// ==>
 
 	} // GetOne.
+
+
+	/*===================================================================================
+	 *	Find																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Retrieve documents matching provided query.</h4><p />
+	 *
+	 * We use the find() method.
+	 *
+	 * @param array					$theQuery			Search query.
+	 * @return Cursor				The MongoDB cursor.
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Collection::find()
+	 */
+	public function Find( $theQuery = [] )
+	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		return
+			$this->Connection()->find( $theQuery );								// ==>
+
+	} // Find.
 
 
 
