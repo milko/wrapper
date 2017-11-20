@@ -1712,7 +1712,7 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		$record[ kId ] = "TERMS/$input";
 		$record[ kKey ] = $input;
-		$record[ kNid ] = kLocaleNS;
+		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $code;
 		$record[ kGid ] = $input;
 		$record[ kSymbol ] = $code;
@@ -1724,7 +1724,57 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [ kLanguage => "" ];
+		switch( $code )
+		{
+			case "zh_CN":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Chinese language in Peoples Republic of China" ];
+				break;
+
+			case "zh_HK":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Chinese language in Hong Kong" ];
+				break;
+
+			case "zh_TW":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Chinese language in Taiwan R.O.C." ];
+				break;
+
+			case "pt_BR":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Portuguese language in Brasil" ];
+				break;
+
+			case "sr@latin":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Latin transliteration of Serbian" ];
+				break;
+
+			case "tt@iqtelif":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Tatar language in Tatarstan" ];
+				$record[ kDefinition ]
+					= [ kLanguage =>
+							"Tatar Language Locale using IQTElif alphabet; for Tatarstan, Russian Federation." ];
+				break;
+
+			case "bn_IN":
+				$record[ kLabel ]
+					= [ kLanguage =>
+							"Bangla language in India" ];
+				break;
+
+			default:
+				$record[ kLabel ] = [ kLanguage => "" ];
+				break;
+		}
 
 		//
 		// Append to buffer.
