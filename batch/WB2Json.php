@@ -1352,10 +1352,14 @@ function Country( SplFileInfo	$theDirectory,
 			//
 			// Handle income & lending.
 			//
-			$namespace = "WB:" . kStdIncome;
-			$cur[ $namespace ] = "$namespace:" . $record[ "incomeLevel" ][ "id" ];
-			$namespace = "WB:" . kStdLending;
-			$cur[ $namespace ] = "$namespace:" . $record[ "lendingType" ][ "id" ];
+			if( $record[ "incomeLevel" ][ "id" ] != "" ) {
+				$namespace = "WB:" . kStdIncome;
+				$cur[ $namespace ] = "$namespace:" . $record[ "incomeLevel" ][ "id" ];
+			}
+			if( $record[ "lendingType" ][ "id" ] != "" ) {
+				$namespace = "WB:" . kStdLending;
+				$cur[ $namespace ] = "$namespace:" . $record[ "lendingType" ][ "id" ];
+			}
 
 			//
 			// Handle capital.
