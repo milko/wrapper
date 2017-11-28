@@ -15,6 +15,9 @@
  * 	<li><b>json directory</b>: Path to the output directory for JSON files.
  * </ul>
  *
+ * Note: The connected database is expected to have a collection names "DESCRIPTORS" which
+ * contains the current descriptors with the "constant" field.
+ *
  * The list of generated files will be the following:
  *
  * <ul>
@@ -139,6 +142,11 @@ else
 $database->Connect();
 
 //
+// Load descriptors.
+//
+$descriptors = DESCRIPTORS( $database );
+
+//
 // Connect languages collection.
 //
 $languages = $database->Client( "ISO_" . ISOCodes::k639_3, [] );
@@ -147,14 +155,14 @@ $languages->Connect();
 //
 // Handle standards.
 //
-$locales = array_merge( $locales, ISO_4217( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_15924( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_3166_1( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_3166_2( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_3166_3( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_639_2( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_639_3( $database, $languages, $directory ) );
-$locales = array_merge( $locales, ISO_639_5( $database, $languages, $directory ) );
+$locales = array_merge( $locales, ISO_4217( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_15924( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_3166_1( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_3166_2( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_3166_3( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_639_2( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_639_3( $database, $languages, $directory, $descriptors ) );
+$locales = array_merge( $locales, ISO_639_5( $database, $languages, $directory, $descriptors ) );
 
 //
 // Connect language locales collection.
@@ -165,9 +173,64 @@ $languages->Connect();
 //
 // Handle locales.
 //
-ISO_639_Locales( $database, $languages, $directory, array_unique( $locales ) );
+ISO_639_Locales( $database, $languages, $directory, array_unique( $locales ), $descriptors );
 
 echo( "\nDone!\n" );
+
+
+
+/*=======================================================================================
+ *																						*
+ *									GLOBAL HANDLERS	  				  					*
+ *																						*
+ *======================================================================================*/
+
+
+
+/*===================================================================================
+ *	DESCRIPTORS																		*
+ *==================================================================================*/
+
+/**
+ * <h4>Load descriptors.</h4><p />
+ *
+ * This method will return the list of descriptors, an array with constant as key and
+ * _key as value.
+ *
+ * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
+ *
+ * @return array						List of descriptors.
+ */
+function DESCRIPTORS( \Milko\Wrapper\ClientServer	$theDatabase)
+{
+	//
+	// Init local storage.
+	//
+	$descriptors = [];
+	$collection = $theDatabase->Client( "DESCRIPTORS", [] );
+	$collection->Connect();
+
+	//
+	// Inform.
+	//
+	echo( "DESCRIPTorS\n" );
+
+	//
+	// Iterate descriptors.
+	//
+	foreach( $collection->Connection()->find( [] ) as $input )
+	{
+		//
+		// Handle only those with const.
+		//
+		if( array_key_exists( "const", $input ) )
+			$descriptors[ $input[ "const" ] ] = $input[ "_key" ];
+
+	} // Iterate all records.
+
+	return $descriptors;															// ==>
+
+} // DESCRIPTORS.
 
 
 
@@ -191,11 +254,14 @@ echo( "\nDone!\n" );
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
-                   \Milko\Wrapper\Client		$theLanguages,
-                   SplFileInfo					$theDirectory)
+				   \Milko\Wrapper\Client		$theLanguages,
+				   SplFileInfo					$theDirectory,
+												$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -235,16 +301,16 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
 		if( array_key_exists( "ISO:4217:fraction", $input ) )
-			$record[ "ISO:4217:fraction" ] = $input[ "ISO:4217:fraction" ];
-		$record[ kDeploy ] = kDeployStandard;
+			$record[ $theDescriptors[ "kISO_4217_fraction" ] ] = $input[ "ISO:4217:fraction" ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -258,20 +324,20 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -292,8 +358,8 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -329,11 +395,14 @@ function ISO_4217( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
  * @returs array						List of locales.
  */
 function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
                     \Milko\Wrapper\Client		$theLanguages,
-                    SplFileInfo					$theDirectory)
+                    SplFileInfo					$theDirectory,
+												$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -373,14 +442,14 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -394,20 +463,20 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -428,8 +497,8 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches"  ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -465,11 +534,14 @@ function ISO_15924( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
  * @returs array						List of locales.
  */
 function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 					 \Milko\Wrapper\Client			$theLanguages,
-					 SplFileInfo					$theDirectory)
+					 SplFileInfo					$theDirectory,
+					 								$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -508,14 +580,14 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -529,20 +601,20 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -552,7 +624,7 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "official_name", $input ) )
 		{
-			$record[ kDefinition ] = [];
+			$record[ $theDescriptors[ "kDefinition" ] ] = [];
 			foreach( $input[ "official_name" ] as $lang => $name )
 			{
 				//
@@ -566,20 +638,20 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 							throw new Exception("Unable to resolve [$lang] language.");
 						if( count( $match ) > 1 )
 							throw new Exception("Ambiguous language [$lang] in record [$key].");
-						$record[ kDefinition ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 						break;
 
 					case 3:
 						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 						if ( ! $match )
 							throw new Exception("Unable to resolve [$lang] language.");
-						$record[ kDefinition ][ kLangNS . $match[ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 						break;
 
 					default:
 						$lang = kLocale . $lang;
 						$locales[] = $lang;
-						$record[ kDefinition ][ $lang ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ $lang ] = $name;
 						break;
 				}
 			}
@@ -590,7 +662,9 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "common_name", $input ) )
 		{
-			$field = ( array_key_exists( kDefinition, $record ) ) ? kDescription : kDefinition;
+			$field = ( array_key_exists( $theDescriptors[ "kDefinition" ], $record ) )
+				   ? $theDescriptors[ "kDescription" ]
+				   : $theDescriptors[ "kDefinition" ];
 			$record[ $field ] = [];
 			foreach( $input[ "common_name" ] as $lang => $name )
 			{
@@ -645,8 +719,8 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -682,11 +756,14 @@ function ISO_3166_1( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 					 \Milko\Wrapper\Client			$theLanguages,
-					 SplFileInfo					$theDirectory)
+					 SplFileInfo					$theDirectory,
+													$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -735,9 +812,9 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Handle subdivision type.
@@ -752,12 +829,12 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 				$string = strtolower( $string );
 			$name[] = $string; }
 		$types[] = implode(" ", $name );
-		$record[ kCategory ] = implode(" ", $name );
+		$record[ $theDescriptors[ "kSTD_geo_admin" ] ] = implode(" ", $name );
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -771,20 +848,20 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -811,8 +888,8 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $enumeration ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $enumeration ];
 		$edges[] = $edge;
 
 		//
@@ -833,8 +910,8 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
-			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $enumeration ];
+			$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+			$edge[ $theDescriptors[ "kBranches" ] ] = [ $enumeration ];
 			$edges[] = $edge;
 			unset( $record[ "__parent__" ] );
 		}
@@ -855,8 +932,8 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
-			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $enumeration ];
+			$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+			$edge[ $theDescriptors[ "kBranches" ] ] = [ $enumeration ];
 			$edges[] = $edge;
 		}
 
@@ -898,8 +975,8 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/" . kSubdivision;
 		$record[ kLid ] = $index;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kDeploy ] = kDeployStandard;
-		$record[ kLabel ] = [ kLanguage => $n ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
+		$record[ $theDescriptors[ "kLabel" ] ] = [ kLanguage => $n ];
 		$tmp1[] = $record;
 
 		//
@@ -914,8 +991,8 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kKey ] = $hash;
 		$record[ kFrom ] = $from;
 		$record[ kTo ] = $to;
-		$record[ kPredicate ] = $predicate;
-		$record[ kBranches ] = [ $to ];
+		$record[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$record[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$tmp2[] = $record;
 	}
 
@@ -938,13 +1015,13 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
 	//
 	foreach( $buffer as $i => $record )
 	{
-		if( array_key_exists( kCategory, $record ) )
+		if( array_key_exists( $theDescriptors[ "kCategory" ], $record ) )
 		{
-			$tmp = $record[ kCategory ];
+			$tmp = $record[ $theDescriptors[ "kCategory" ] ];
 			$index = array_search($tmp, $types );
 			if( $index === false )
 				throw new Exception("Unable to match subdivision [$tmp].");
-			$record[ kCategory ] = kSubdivision . ":" . sprintf( "%02d", $index + 1 );
+			$record[ $theDescriptors[ "kCategory" ] ] = kSubdivision . ":" . sprintf( "%02d", $index + 1 );
 			$buffer[ $i ] = $record;
 		}
 	}
@@ -973,11 +1050,14 @@ function ISO_3166_2( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 					 \Milko\Wrapper\Client			$theLanguages,
-					 SplFileInfo					$theDirectory)
+					 SplFileInfo					$theDirectory,
+													$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -1016,9 +1096,9 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Handle withdrawal date.
@@ -1026,13 +1106,13 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		if( array_key_exists( "withdrawal_date", $input ) )
 		{
 			$tmp = explode("-", $input[ "withdrawal_date" ] );
-			$record[ kWithdrawal ] = implode("", $tmp );
+			$record[ $theDescriptors[ "kTDate" ] ] = implode("", $tmp );
 		}
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -1046,20 +1126,20 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -1068,7 +1148,7 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		// Load comment.
 		//
 		if( array_key_exists( "comment", $input ) )
-			$record[ kNote ][ kLanguage ] = htmlspecialchars( $input[ "comment" ] );
+			$record[ $theDescriptors[ "kNote" ] ][ kLanguage ] = htmlspecialchars( $input[ "comment" ] );
 
 		//
 		// Append to buffer.
@@ -1086,8 +1166,8 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1123,11 +1203,14 @@ function ISO_3166_3( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
                     \Milko\Wrapper\Client		$theLanguages,
-                    SplFileInfo					$theDirectory)
+                    SplFileInfo					$theDirectory,
+												$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -1173,16 +1256,16 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$record[ kNid ] = $enumeration;
 			$record[ kLid ] = $key;
 			$record[ kGid ] = $record[ kKey ];
-			$record[ kSymbol ] = $key;
-			$record[ kSynonym ] = $input[ kSynonym ];
-			$record[ kDeploy ] = kDeployStandard;
+			$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+			$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+			$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 			if( array_key_exists("bibliographic", $input ) )
-				$record[ kBiblio ] = $input[ "bibliographic" ];
+				$record[ $theDescriptors[ "kISO_639_biblio" ] ] = $input[ "bibliographic" ];
 
 			//
 			// Load labels.
 			//
-			$record[ kLabel ] = [];
+			$record[ $theDescriptors[ "kLabel" ] ] = [];
 			foreach( $input[ "name" ] as $lang => $name )
 			{
 				//
@@ -1196,20 +1279,20 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 							throw new Exception("Unable to resolve [$lang] language.");
 						if( count( $match ) > 1 )
 							throw new Exception("Ambiguous language [$lang] in record [$key].");
-						$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 						break;
 
 					case 3:
 						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 						if ( ! $match )
 							throw new Exception("Unable to resolve [$lang] language.");
-						$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 						break;
 
 					default:
 						$lang = kLocale . $lang;
 						$locales[] = $lang;
-						$record[ kLabel ][ $lang ] = $name;
+						$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 						break;
 				}
 			}
@@ -1233,20 +1316,20 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 								throw new Exception("Unable to resolve [$lang] language.");
 							if( count( $match ) > 1 )
 								throw new Exception("Ambiguous language [$lang] in record [$key].");
-							$record[ kDefinition ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+							$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 							break;
 
 						case 3:
 							$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 							if ( ! $match )
 								throw new Exception("Unable to resolve [$lang] language.");
-							$record[ kDefinition ][ kLangNS . $match[ $db_key ] ] = $name;
+							$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 							break;
 
 						default:
 							$lang = kLocale . $lang;
 							$locales[] = $lang;
-							$record[ kDefinition ][ $lang ] = $name;
+							$record[ $theDescriptors[ "kDefinition" ] ][ $lang ] = $name;
 							break;
 					}
 				}
@@ -1268,8 +1351,8 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
 			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
-			$edge[ kPredicate ] = $predicate;
-			$edge[ kBranches ] = [ $to ];
+			$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+			$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 			$edges[] = $edge;
 		}
 
@@ -1306,11 +1389,14 @@ function ISO_639_2( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
                     \Milko\Wrapper\Client		$theLanguages,
-                    SplFileInfo					$theDirectory)
+                    SplFileInfo					$theDirectory,
+												$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -1350,20 +1436,20 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 		if( array_key_exists("bibliographic", $input ) )
-			$record[ kBiblio ] = $input[ "bibliographic" ];
+			$record[ $theDescriptors[ "kISO_639_biblio" ] ] = $input[ "bibliographic" ];
 		if( array_key_exists("scope", $input ) )
-			$record[ kScope ] = kScope . ":" . $input[ "scope" ];
+			$record[ $theDescriptors[ "kISO_639_scope" ] ] = kScope . ":" . $input[ "scope" ];
 		if( array_key_exists("type", $input ) )
-			$record[ kType ] = kType . ":" . $input[ "type" ];
+			$record[ $theDescriptors[ "kISO_639_type" ] ] = kType . ":" . $input[ "type" ];
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -1377,20 +1463,20 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -1400,7 +1486,7 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "common_name", $input ) )
 		{
-			$record[ kDefinition ] = [];
+			$record[ $theDescriptors[ "kDefinition" ] ] = [];
 			foreach( $input[ "common_name" ] as $lang => $name )
 			{
 				//
@@ -1414,20 +1500,20 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 							throw new Exception("Unable to resolve [$lang] language.");
 						if( count( $match ) > 1 )
 							throw new Exception("Ambiguous language [$lang] in record [$key].");
-						$record[ kDefinition ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 						break;
 
 					case 3:
 						$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 						if ( ! $match )
 							throw new Exception("Unable to resolve [$lang] language.");
-						$record[ kDefinition ][ kLangNS . $match[ $db_key ] ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 						break;
 
 					default:
 						$lang = kLocale . $lang;
 						$locales[] = $lang;
-						$record[ kDefinition ][ $lang ] = $name;
+						$record[ $theDescriptors[ "kDefinition" ] ][ $lang ] = $name;
 						break;
 				}
 			}
@@ -1438,14 +1524,16 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "inverted_name", $input ) )
 		{
-			$field = ( array_key_exists( kDefinition, $record ) ) ? kDescription : kDefinition;
+			$field = ( array_key_exists( $theDescriptors[ "kDefinition" ], $record ) )
+				   ? $theDescriptors[ "kDescription" ]
+				   : $theDescriptors[ "kDefinition" ];
 			$record[ $field ] = [];
 			foreach( $input[ "inverted_name" ] as $lang => $name )
 			{
 				//
 				// Normalise name.
 				//
-				if( $field == kDescription )
+				if( $field == $theDescriptors[ "kDescription" ] )
 					$name = htmlspecialchars( $name );
 				//
 				// Check language by length.
@@ -1493,8 +1581,8 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1530,11 +1618,14 @@ function ISO_639_3( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\ClientServer	$theDatabase	 	Database.
  * @param \Milko\Wrapper\Client			$theLanguages	 	Languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
- * @returs array						List of locales.
+ * @param array							$theDescriptors	 	Descriptors list.
+ *
+ * @return array						List of locales.
  */
 function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 					\Milko\Wrapper\Client		$theLanguages,
-					SplFileInfo					$theDirectory)
+					SplFileInfo					$theDirectory,
+												$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -1574,14 +1665,14 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = $enumeration;
 		$record[ kLid ] = $key;
 		$record[ kGid ] = $record[ kKey ];
-		$record[ kSymbol ] = $key;
-		$record[ kSynonym ] = $input[ kSynonym ];
-		$record[ kDeploy ] = kDeployStandard;
+		$record[ $theDescriptors[ "kSymbol" ] ] = $key;
+		$record[ $theDescriptors[ "kSynonym" ] ] = $input[ kSynonym ];
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Load labels.
 		//
-		$record[ kLabel ] = [];
+		$record[ $theDescriptors[ "kLabel" ] ] = [];
 		foreach( $input[ "name" ] as $lang => $name )
 		{
 			//
@@ -1595,20 +1686,20 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 						throw new Exception("Unable to resolve [$lang] language.");
 					if( count( $match ) > 1 )
 						throw new Exception("Ambiguous language [$lang] in record [$key].");
-					$record[ kLabel ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ 0 ][ $db_key ] ] = $name;
 					break;
 
 				case 3:
 					$match = $theLanguages->Connection()->findOne( [ $db_key => $lang ] );
 					if ( ! $match )
 						throw new Exception("Unable to resolve [$lang] language.");
-					$record[ kLabel ][ kLangNS . $match[ $db_key ] ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ kLangNS . $match[ $db_key ] ] = $name;
 					break;
 
 				default:
 					$lang = kLocale . $lang;
 					$locales[] = $lang;
-					$record[ kLabel ][ $lang ] = $name;
+					$record[ $theDescriptors[ "kLabel" ] ][ $lang ] = $name;
 					break;
 			}
 		}
@@ -1629,8 +1720,8 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
@@ -1667,11 +1758,13 @@ function ISO_639_5( \Milko\Wrapper\ClientServer	$theDatabase,
  * @param \Milko\Wrapper\Client			$theLanguages	 	Output languages collection.
  * @param SplFileInfo					$theDirectory	 	Output directory.
  * @param array							$theLocales		 	List of locale codes.
+ * @param array							$theDescriptors	 	Descriptors list.
  */
 function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 						  \Milko\Wrapper\Client			$theLanguages,
 						  SplFileInfo					$theDirectory,
-														$theLocales)
+														$theLocales,
+														$theDescriptors)
 {
 	//
 	// Init local storage.
@@ -1715,11 +1808,11 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		$record[ kNid ] = "TERMS/$namespace";
 		$record[ kLid ] = $code;
 		$record[ kGid ] = $input;
-		$record[ kSymbol ] = $code;
-		$record[ kSynonym ] = [ $code ];
+		$record[ $theDescriptors[ "kSymbol" ] ] = $code;
+		$record[ $theDescriptors[ "kSynonym" ] ] = [ $code ];
 		if( $code_alt !== NULL )
-			$record[ kSynonym ][] = $code_alt;
-		$record[ kDeploy ] = kDeployStandard;
+			$record[ $theDescriptors[ "kSynonym" ] ][] = $code_alt;
+		$record[ $theDescriptors[ "kDeploy" ] ] = kDeployStandard;
 
 		//
 		// Load labels.
@@ -1727,52 +1820,52 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		switch( $code )
 		{
 			case "zh_CN":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Chinese language in Peoples Republic of China" ];
 				break;
 
 			case "zh_HK":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Chinese language in Hong Kong" ];
 				break;
 
 			case "zh_TW":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Chinese language in Taiwan R.O.C." ];
 				break;
 
 			case "pt_BR":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Portuguese language in Brasil" ];
 				break;
 
 			case "sr@latin":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Latin transliteration of Serbian" ];
 				break;
 
 			case "tt@iqtelif":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Tatar language in Tatarstan" ];
-				$record[ kDefinition ]
+				$record[ $theDescriptors[ "kDefinition" ] ]
 					= [ kLanguage =>
 							"Tatar Language Locale using IQTElif alphabet; for Tatarstan, Russian Federation." ];
 				break;
 
 			case "bn_IN":
-				$record[ kLabel ]
+				$record[ $theDescriptors[ "kLabel" ] ]
 					= [ kLanguage =>
 							"Bangla language in India" ];
 				break;
 
 			default:
-				$record[ kLabel ] = [ kLanguage => "" ];
+				$record[ $theDescriptors[ "kLabel" ] ] = [ kLanguage => "" ];
 				break;
 		}
 
@@ -1792,8 +1885,8 @@ function ISO_639_Locales( \Milko\Wrapper\ClientServer	$theDatabase,
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
-		$edge[ kPredicate ] = $predicate;
-		$edge[ kBranches ] = [ $to ];
+		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ $to ];
 		$edges[] = $edge;
 
 	} // Iterate all records.
