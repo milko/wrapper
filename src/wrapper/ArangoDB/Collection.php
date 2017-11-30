@@ -17,12 +17,19 @@ namespace Milko\wrapper\ArangoDB;
 use Milko\wrapper\Client;
 use Milko\wrapper\Container;
 
-use triagens\ArangoDb\Collection as ArangoCollection;
-use triagens\ArangoDb\Document as ArangoDocument;
-use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
-use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
-use triagens\ArangoDb\DocumentHandler;
-use triagens\ArangoDb\ServerException as ArangoServerException;
+//use triagens\ArangoDb\Collection as ArangoCollection;
+//use triagens\ArangoDb\Document as ArangoDocument;
+//use triagens\ArangoDb\DocumentHandler as ArangoDocumentHandler;
+//use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+//use triagens\ArangoDb\DocumentHandler;
+//use triagens\ArangoDb\ServerException as ArangoServerException;
+
+use ArangoDBClient\Collection as ArangoCollection;
+use ArangoDBClient\Document as ArangoDocument;
+use ArangoDBClient\DocumentHandler as ArangoDocumentHandler;
+use ArangoDBClient\CollectionHandler as ArangoCollectionHandler;
+use ArangoDBClient\DocumentHandler;
+use ArangoDBClient\ServerException as ArangoServerException;
 
 /**
  * <h4>ArangoDB collection class.</h4><p />

@@ -213,7 +213,7 @@ function DESCRIPTORS( \Milko\Wrapper\ClientServer	$theDatabase)
 	//
 	// Inform.
 	//
-	echo( "DESCRIPTorS\n" );
+	echo( "DESCRIPTORS\n" );
 
 	//
 	// Iterate descriptors.

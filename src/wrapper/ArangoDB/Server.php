@@ -17,17 +17,22 @@ namespace Milko\wrapper\ArangoDB;
 use Milko\wrapper\Client;
 use Milko\wrapper\ClientServer;
 
-use triagens\ArangoDb\Database as ArangoDatabase;
-use triagens\ArangoDb\Connection as ArangoConnection;
-use triagens\ArangoDb\UpdatePolicy as ArangoUpdatePolicy;
-use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
+//use triagens\ArangoDb\Database as ArangoDatabase;
+//use triagens\ArangoDb\Connection as ArangoConnection;
+//use triagens\ArangoDb\UpdatePolicy as ArangoUpdatePolicy;
+//use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
+
+use ArangoDBClient\Database as ArangoDatabase;
+use ArangoDBClient\Connection as ArangoConnection;
+use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
+use ArangoDBClient\ConnectionOptions as ArangoConnectionOptions;
 
 /**
  * <h4>ArangoDB client class.</h4><p />
  *
  * This <em>concrete</em> implementation of the {@link ClientServer} class represents an
  * ArangoDB database server, it implements an object that manages a list of ArangoDB
- * databases wrapped around the {@link triagens\ArangoDb\Connection} class.
+ * databases wrapped around the {@link ArangoDBClient\Connection} class.
  *
  *	@package	Data
  *

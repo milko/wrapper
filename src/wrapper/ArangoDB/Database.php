@@ -16,10 +16,15 @@ namespace Milko\wrapper\ArangoDB;
 
 use Milko\wrapper\Client;
 
-use triagens\ArangoDb\Database as ArangoDatabase;
-use triagens\ArangoDb\Connection as ArangoConnection;
-use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
-use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
+//use triagens\ArangoDb\Database as ArangoDatabase;
+//use triagens\ArangoDb\Connection as ArangoConnection;
+//use triagens\ArangoDb\CollectionHandler as ArangoCollectionHandler;
+//use triagens\ArangoDb\ConnectionOptions as ArangoConnectionOptions;
+
+use ArangoDBClient\Database as ArangoDatabase;
+use ArangoDBClient\Connection as ArangoConnection;
+use ArangoDBClient\CollectionHandler as ArangoCollectionHandler;
+use ArangoDBClient\ConnectionOptions as ArangoConnectionOptions;
 
 /**
  * <h4>ArangoDB database class.</h4><p />
