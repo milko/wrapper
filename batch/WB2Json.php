@@ -173,6 +173,7 @@ Indicators($directory, $standards, $languages, $const_term, $const_desc );
 Income($directory, $standards, $languages, $const_term, $const_desc );
 Lending($directory, $standards, $languages, $const_term, $const_desc );
 Country($directory, $standards, $languages, $const_term, $const_desc );
+Catalogue($directory, $standards, $languages, $const_term, $const_desc );
 
 echo( "\nDone!\n" );
 
@@ -2085,6 +2086,91 @@ function Country( SplFileInfo	$theDirectory,
 	file_put_contents( $file, $data );
 
 } // Country.
+
+
+/*===================================================================================
+ *	Catalogue																		*
+ *==================================================================================*/
+
+/**
+ * <h4>Handle World Bank catalogue.</h4><p />
+ *
+ * This method will generate the WB:catalog terms and schema.
+ *
+ * @param SplFileInfo			$theDirectory	 	Output directory.
+ * @param array					$theStandards	 	List of standards.
+ * @param array					$theLanguages	 	List of languages.
+ * @param array					$theTerms		 	List of terms.
+ * @param array					$theDescriptors	 	List of descriptors.
+ */
+function Catalogue( SplFileInfo	$theDirectory,
+                  $theStandards,
+                  $theLanguages,
+                  $theTerms,
+                  $theDescriptors )
+{
+	//
+	//
+	// Inform.
+	//
+	echo( "Catalogue   " );
+
+	//
+	// Init loop local storage.
+	//
+	$page = 1;
+	$lines = 10;
+	$terms = [];
+
+	//
+	// Load records.
+	//
+	do
+	{
+		//
+		// Make request.
+		//
+		$request = "http://api.worldbank.org/v2/datacatalog?page=$page&per_page=$lines&format=json";
+		$input = json_decode( file_get_contents( $request ), true );
+		if( is_array($input) )
+		{
+			//
+			// Iterate records.
+			//
+			if( array_key_exists("datacatalog", $input) )
+			{
+				foreach( $input[ "datacatalog" ] as $fields )
+				{
+					$terms[ $fields[ "id" ] ] = [];
+					$cur = & $terms[ $fields[ "id" ] ];
+
+					foreach( $fields[ "metatype" ] as $field )
+						$cur[ $field[ "id" ] ] = $field[ "value" ];
+				}
+			}
+
+			//
+			// Next page.
+			//
+			$page++;
+			echo(".");
+		}
+
+	} while(
+		is_array( $input ) &&
+		array_key_exists("page", $input) &&
+		array_key_exists("pages", $input) &&
+		($input[ "page" ] <= $input["pages" ])
+	);
+
+	//
+	// Write JSON file.
+	//
+	$file = $theDirectory->getRealPath() . DIRECTORY_SEPARATOR . "WB_catalog.json";
+	$data = json_encode( array_values( $terms ), JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE );
+	file_put_contents( $file, $data );
+
+} // Catalogue.
 
 
 
