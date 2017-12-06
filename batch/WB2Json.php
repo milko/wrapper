@@ -384,6 +384,13 @@ function DataSources( SplFileInfo	$theDirectory,
 			$cur[ kGid ] = $key;
 
 			//
+			// Load constant.
+			//
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
+
+			//
 			// Load symbols.
 			//
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
@@ -622,6 +629,13 @@ function Topics( SplFileInfo	$theDirectory,
 			$cur[ kGid ] = $key;
 
 			//
+			// Load constant.
+			//
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
+
+			//
 			// Load symbols.
 			//
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
@@ -831,9 +845,15 @@ function Indicators( SplFileInfo	$theDirectory,
 			$cur[ kGid ] = $key;
 
 			//
+			// Load constant.
+			//
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
+
+			//
 			// Load symbols.
 			//
-			$cur[ $theDescriptors[ "kConst" ] ] = str_replace(".", "_", $code );
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
 			$cur[ $theDescriptors[ "kSynonym" ] ] = [ $code ];
 
@@ -1163,6 +1183,13 @@ function Income( SplFileInfo	$theDirectory,
 			$cur[ kGid ] = $key;
 
 			//
+			// Load constant.
+			//
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
+
+			//
 			// Load symbols.
 			//
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
@@ -1361,6 +1388,13 @@ function Lending( SplFileInfo	$theDirectory,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+
+			//
+			// Load constant.
+			//
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
 
 			//
 			// Load symbols.
@@ -1705,6 +1739,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
 			$cur[ $theDescriptors[ "kSynonym" ] ] = [ $code ];
 			$cur[ $theDescriptors[ "kLabel" ] ] = [
@@ -1729,6 +1766,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
 			$cur[ $theDescriptors[ "kSynonym" ] ] = [ $code ];
 			$cur[ $theDescriptors[ "kLabel" ] ] = $records[ $code ][ kLabel ];
@@ -1811,6 +1851,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$cur[ kNid ] = "TERMS/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
+			$cur[ $theDescriptors[ "kConst" ] ]
+				= 'k' . str_replace(":", "_",
+							  str_replace("-", "_", $cur[ kGid ] ) );
 			$cur[ $theDescriptors[ "kSymbol" ] ] = $code;
 			$cur[ $theDescriptors[ "kSynonym" ] ] = [ $code ];
 			if( array_key_exists( "iso2Code", $record ) )
