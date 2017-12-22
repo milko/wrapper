@@ -58,7 +58,7 @@ $iso = new ISOCodes( $j, $p );
 //
 // Dump data.
 //
-//$iterator = $iso->getIterator( ISOCodes::k3166_1 );
+$iterator = $iso->getIterator( ISOCodes::k3166_1 );
 //echo( "Title: " );
 //var_dump( $iterator->Title() );
 //echo( "\nDescription: " );
@@ -73,12 +73,12 @@ $iso = new ISOCodes( $j, $p );
 //print_r( $iterator->Properties() );
 //echo( "\nCount: " . $iterator->count() . "\n" );
 //echo( "\nCodes: " );
-//foreach( $iterator as $key => $value )
-//{
-//	echo( "\nKey: $key\n" );
-//	echo( "Data: " );
-//	print_r( $value );
-//}
+foreach( $iterator as $key => $value )
+{
+	echo( "\nKey: $key\n" );
+	echo( "Data: " );
+	print_r( $value );
+}
 
 ?>
 

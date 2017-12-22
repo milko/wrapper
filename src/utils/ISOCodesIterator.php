@@ -108,8 +108,16 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 	 * 	<li><i>index</i>: The language code.
 	 * 	<li><i>value</i>: The translation table as an array:
 	 * 	 <ul>
-	 * 		<li><i>index</i>: The english string.
-	 * 		<li><i>value</i>: The translated string.
+	 * 		<li><i>index</i>: The code.
+	 * 		<li><i>value</i>: The property translations as an array:
+	 * 		 <ul>
+	 * 			<li><i>index</i>: The property name.
+	 * 			<li><i>value</i>: The property translation as an array:
+	 * 			 <ul>
+	 * 				<li><tt>engl</tt>: The english string.
+	 * 				<li><tt>trans</tt>: The translated string.
+	 * 			 </ul>
+	 * 		 </ul>
 	 * 	 </ul>
 	 * </ul>
 	 *
@@ -125,6 +133,24 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 	 * @var \DirectoryIterator
 	 */
 	protected $mTranslationFiles = NULL;
+
+	/**
+	 * <h4>Translation properties table.</h4><p />
+	 *
+	 * This data member holds a table linking .po file comments to properties, it is a list
+	 * of key/value pairs in which the key is the .po file comment and the value is the
+	 * property name.
+	 *
+	 * The key is the comment prefix before the identifier code.
+	 *
+	 * @var array
+	 */
+	protected $mTranslationProperties = [
+		"Name for "			 => "name",
+		"Official name for " => "official_name",
+		"Common name for "	 => "common_name",
+		"Inverted name for " => "inverted_name"
+	];
 
 
 
@@ -232,6 +258,11 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 	public function current()
 	{
 		//
+		// Init local storage.
+		//
+		$identifier = $this->DefaultCode();
+
+		//
 		// Get current element.
 		//
 		$record = $this->mCodes[ $this->mPosition ];
@@ -254,17 +285,24 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 					= [ ISOCodes::kDEFAULT_LANGUAGE => $string ];
 
 				//
-				// Find translations.
+				// Compile translations.
 				//
 				foreach( $this->mTranslations as $language => $table )
 				{
 					//
-					// Match english string.
+					// Check key.
 					//
-					if( array_key_exists( $string, $table )
-					 && strlen( $table[ $string ] ) )
-						$record[ $property ][ $language ]
-							= $table[ $string ];
+					if( array_key_exists( $record[ $identifier ], $table ) )
+					{
+						//
+						// Check property.
+						//
+						if( array_key_exists( $property, $table[ $record[ $identifier ] ] ) )
+						{
+							$record[ $property ][ $language ]
+								= $table[ $record[ $identifier ] ][ $property ][ "trans" ];
+						}
+					}
 
 				} // Iterating translations.
 
@@ -496,8 +534,16 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 	 * 	<li><i>index</i>: The language code.
 	 * 	<li><i>value</i>: The translation table as an array:
 	 * 	 <ul>
-	 * 		<li><i>index</i>: The english string.
-	 * 		<li><i>value</i>: The translated string.
+	 * 		<li><i>index</i>: The code.
+	 * 		<li><i>value</i>: The property translations as an array:
+	 * 		 <ul>
+	 * 			<li><i>index</i>: The property name.
+	 * 			<li><i>value</i>: The property translation as an array:
+	 * 			 <ul>
+	 * 				<li><tt>engl</tt>: The english string.
+	 * 				<li><tt>trans</tt>: The translated string.
+	 * 			 </ul>
+	 * 		 </ul>
 	 * 	 </ul>
 	 * </ul>
 	 *
@@ -505,6 +551,13 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 	 */
 	protected function translationTable()
 	{
+		//
+		// Init local storage.
+		//
+		$props = [];
+		foreach( $this->mTranslationProperties as $key => $value )
+			$props[ $value ] = [ "length" => strlen( $key ), "comment" => $key ];
+
 		//
 		// Iterate translation files directory.
 		//
@@ -530,29 +583,63 @@ abstract class ISOCodesIterator implements \Iterator, \Countable
 				//
 				// Read file.
 				//
-				$file = file_get_contents( $file->getRealPath() );
-				if( $file !== FALSE )
+				$contents = file_get_contents( $file->getRealPath() );
+				if( $contents !== FALSE )
 				{
 					//
 					// Match english and translated entries.
 					//
+//					$count =
+//						preg_match_all(
+//							'/(msgid\s+"(.+)"\nmsgstr\s+"(.*)"\n)+/',
+//							$contents,
+//							$match
+//						);
+//					$this->mTranslations[ $language ]
+//						= array_combine(
+//						$match[ 2 ], $match[ 3 ] );
 					$count =
 						preg_match_all(
-							'/(msgid\s+"(.+)"\nmsgstr\s+"(.*)"\n)+/',
-							$file,
+							'/^#\.\s(.+)\n^msgid\s"(.+)"\n^msgstr\s"(.+)"/m',
+							$contents,
 							$match
 						);
-					if( $count === FALSE )
-						throw new \RuntimeException(
-							"Unable to parse file [$file], "
-						);														// !@! ==>
 
 					//
 					// Set translation table.
 					//
-					$this->mTranslations[ $language ]
-						= array_combine(
-							$match[ 2 ], $match[ 3 ] );
+					$this->mTranslations[ $language ] = [];
+					$ref = & $this->mTranslations[ $language ];
+					foreach( array_keys( $match[ 0 ] ) as $index )
+					{
+						//
+						// Parse code.
+						//
+						$code = NULL;
+						$property = NULL;
+						$english = NULL;
+						$translated = NULL;
+						foreach( $props as $key => $value )
+						{
+							if( substr($match[ 1 ][ $index ], 0, $value[ "length" ] ) == $value[ "comment" ] )
+							{
+								$code = substr($match[ 1 ][ $index ], $value[ "length" ] );
+								$property = $key;
+								$english = $match[ 2 ][ $index ];
+								$translated = $match[ 3 ][ $index ];
+								break;											// =>
+							}
+						}
+
+						//
+						// Handle entry.
+						//
+						if( $code !== NULL )
+						{
+							$ref[ $code ][ $property ][ "engl" ] = $english;
+							$ref[ $code ][ $property ][ "trans" ] = $translated;
+						}
+					}
 
 				} // Read the file.
 

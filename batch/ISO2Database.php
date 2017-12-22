@@ -6,7 +6,7 @@
  * This file contains the script to write the ISO data to a database, usage:
  *
  * <code>
- * php -f ISO2Database.php <connection URI> <json directory> <po directory>
+ * php -f ISO2Database.php <connection URI> <json directory> <po directory> <flags directory>
  * </code>
  *
  * <ul>
@@ -18,6 +18,7 @@
  *		expects that directory to contain a list of directories named <tt>iso_XXX</tt> where
  *      XXX stands for the standard. In the debian
  * 		{@link https://pkg-isocodes.alioth.debian.org} repository it is the root folder.
+ *  <li><b>flags directory</b>: Path to the root directory containing the country flags.
  * </ul>
  *
  * The database will contain the following collections:
@@ -61,8 +62,8 @@ use Milko\utils\ISOCodes;
 //
 // Check arguments.
 //
-if( $argc < 4 )
-	exit( "Usage: php -f ISO2Database.php <connection URI> <json directory> <po directory>\n" );
+if( $argc < 5 )
+	exit( "Usage: php -f ISO2Database.php <connection URI> <json directory> <po directory> <flags directory\n" );
 
 //
 // Get arguments.
@@ -70,6 +71,15 @@ if( $argc < 4 )
 $c = $argv[ 1 ];
 $j = $argv[ 2 ];
 $p = $argv[ 3 ];
+$f = $argv[ 4 ];
+
+//
+// Check flags directory.
+//
+$flag_dir = new SplFileInfo( $f );
+if( ! $flag_dir->isDir() )
+	exit( "Invalid flags directory [$f]\n" );
+$flags = json_decode( file_get_contents( $f . "/countries.json" ), TRUE );
 
 //
 // Instantiate class.
@@ -176,6 +186,35 @@ foreach( $iterator as $standard => $schema )
 		}
 		if( count( $synonyms ) )
 			$data[ "synonym" ] = array_unique( $synonyms );
+
+		//
+		// Add flag.
+		//
+		if( ($standard == "3166-1")
+		 || ($standard == "3166-2")
+		 || ($standard == "3166-3") )
+		{
+			//
+			// Check file.
+			//
+			switch( $standard )
+			{
+				case "3166-1":
+				case "3166-3":
+					$flag_code = $data[ "alpha_2" ];
+					break;
+				case "3166-2":
+					$flag_code = $data[ "code" ];
+					break;
+			}
+			if( array_key_exists( $flag_code, $flags ) )
+			{
+				$filename = $flag_dir->getRealPath() . "/svg/" . strtolower( $flag_code ) . ".svg";
+				$tmp = new SplFileInfo( $filename );
+				if( $tmp->isFile() )
+					$data[ "flag" ] = file_get_contents( $filename );
+			}
+		}
 
 		//
 		// Write record.
