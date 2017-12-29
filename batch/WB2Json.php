@@ -431,6 +431,11 @@ function DataSources( SplFileInfo	$theDirectory,
 					= [ $language => $record[ "description" ] ];
 
 			//
+			// Load names.
+			//
+			$cur[ $theDescriptors[ "kNames" ] ] = [ $record[ "name" ] ];
+
+			//
 			// Add last modification date.
 			//
 			if( array_key_exists("lastupdated", $record )
@@ -481,11 +486,14 @@ function DataSources( SplFileInfo	$theDirectory,
 				$current = & $terms[ $code ];
 
 				//
-				// Load label.
+				// Load label and names.
 				//
 				if( $record[ "name" ] != "" )
-					$current[ $theDescriptors[ "kLabel" ] ][ $language ]
-						= $record[ "name" ];
+				{
+					$current[ $theDescriptors[ "kLabel" ] ][ $language ] = $record[ "name" ];
+					if( ! in_array( $record[ "name" ], $current[ $theDescriptors[ "kNames" ] ] ) )
+						$current[ $theDescriptors[ "kNames" ] ][] = $record[ "name" ];
+				}
 
 				//
 				// Load definition.
@@ -654,6 +662,12 @@ function Topics( SplFileInfo	$theDirectory,
 				$cur[ $theDescriptors[ "kDefinition" ] ]
 					= [ $language => $record[ "sourceNote" ] ];
 
+			//
+			// Load names.
+			//
+			$cur[ $theDescriptors[ "kNames" ] ]
+				= [ $record[ "value" ] ];
+
 		} // Iterating records.
 
 		//
@@ -697,11 +711,14 @@ function Topics( SplFileInfo	$theDirectory,
 				$current = & $terms[ $code ];
 
 				//
-				// Load label.
+				// Load label and names.
 				//
 				if( $record[ "value" ] != "" )
-					$current[ $theDescriptors[ "kLabel" ] ][ $language ]
-						= $record[ "value" ];
+				{
+					$current[ $theDescriptors[ "kLabel" ] ][ $language ] = $record[ "value" ];
+					if( ! in_array( $record[ "value" ], $current[ $theDescriptors[ "kNames" ] ] ) )
+						$current[ $theDescriptors[ "kNames" ] ][] = $record[ "value" ];
+				}
 
 				//
 				// Load definition.
@@ -899,6 +916,12 @@ function Indicators( SplFileInfo	$theDirectory,
 				$cur[ $theDescriptors[ "kDefinition" ] ]
 					= [ $language => $record[ "sourceNote" ] ];
 
+			//
+			// Load names.
+			//
+			$cur[ $theDescriptors[ "kNames" ] ]
+				= [ $record[ "name" ] ];
+
 		} // Iterating records.
 
 		//
@@ -947,15 +970,18 @@ function Indicators( SplFileInfo	$theDirectory,
 				// Load organisation.
 				//
 				if( $record[ "sourceOrganization" ] != "" )
-					$cur[ $theDescriptors[ "kWB_org" ] ][ $language ]
+					$current[ $theDescriptors[ "kWB_org" ] ][ $language ]
 						= $record[ "sourceOrganization" ];
 
 				//
-				// Load label.
+				// Load label and names.
 				//
 				if( $record[ "name" ] != "" )
-					$current[ $theDescriptors[ "kLabel" ] ][ $language ]
-						= $record[ "name" ];
+				{
+					$current[ $theDescriptors[ "kLabel" ] ][ $language ] = $record[ "name" ];
+					if( ! in_array( $record[ "name" ], $current[ $theDescriptors[ "kNames" ] ] ) )
+						$current[ $theDescriptors[ "kNames" ] ][] = $record[ "name" ];
+				}
 
 				//
 				// Load definition.
@@ -1200,6 +1226,11 @@ function Income( SplFileInfo	$theDirectory,
 			//
 			$cur[ $theDescriptors[ "kLabel" ] ] = [ $language => $record[ "value" ] ];
 
+			//
+			// Load names.
+			//
+			$cur[ $theDescriptors[ "kNames" ] ] = [ $record[ "value" ] ];
+
 		} // Iterating records.
 
 		//
@@ -1245,11 +1276,14 @@ function Income( SplFileInfo	$theDirectory,
 				$current = & $terms[ $code ];
 
 				//
-				// Load label.
+				// Load label and names.
 				//
 				if( $record[ "value" ] != "" )
-					$current[ $theDescriptors[ "kLabel" ] ][ $language ]
-						= $record[ "value" ];
+				{
+					$current[ $theDescriptors[ "kLabel" ] ][ $language ] = $record[ "value" ];
+					if( ! in_array( $record[ "value" ], $current[ $theDescriptors[ "kNames" ] ] ) )
+						$current[ $theDescriptors[ "kNames" ] ][] = $record[ "value" ];
+				}
 
 			} // Iterating records.
 
@@ -1407,6 +1441,11 @@ function Lending( SplFileInfo	$theDirectory,
 			//
 			$cur[ $theDescriptors[ "kLabel" ] ] = [ $language => $record[ "value" ] ];
 
+			//
+			// Load names.
+			//
+			$cur[ $theDescriptors[ "kNames" ] ] = [ $record[ "value" ] ];
+
 		} // Iterating records.
 
 		//
@@ -1452,10 +1491,21 @@ function Lending( SplFileInfo	$theDirectory,
 				$current = & $terms[ $code ];
 
 				//
-				// Load label.
+				// Load label and names.
 				//
 				if( $record[ "value" ] != "" )
-					$current[ $theDescriptors[ "kLabel" ] ][ $language ]
+				{
+					$current[ $theDescriptors[ "kLabel" ] ][ $language ] = $record[ "value" ];
+					if( ! in_array( $record[ "value" ], $current[ $theDescriptors[ "kNames" ] ] ) )
+						$current[ $theDescriptors[ "kNames" ] ][] = $record[ "value" ];
+				}
+
+				//
+				// Load names.
+				//
+				if( ($record[ "value" ] != "")
+				 && (! in_array( $record[ "value" ], $current[ $theDescriptors[ "kNames" ] ] )) )
+					$current[ $theDescriptors[ "kNames" ] ][]
 						= $record[ "value" ];
 
 			} // Iterating records.
@@ -1774,6 +1824,13 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$cur[ $theDescriptors[ "kLabel" ] ] = $records[ $code ][ kLabel ];
 		}
 
+		//
+		// Load names.
+		//
+		$cur[ $theDescriptors[ "kNames" ] ]
+			= array_values(
+				array_unique( $cur[ $theDescriptors[ "kLabel" ] ] ) );
+
 	} // Iterating regions.
 
 	//
@@ -1874,6 +1931,8 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 					= $record[ "lendingType" ];
 
 			$cur[ $theDescriptors[ "kLabel" ] ] = $record[ kLabel ];
+			$cur[ $theDescriptors[ "kNames" ] ] = array_values( array_unique( $record[ kLabel ] ) );
+
 			if( array_key_exists( "capitalCity", $record ) )
 			{
 				if( array_key_exists( kLabel, $record[ "capitalCity" ] ) )
