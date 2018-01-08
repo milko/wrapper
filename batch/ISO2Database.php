@@ -188,39 +188,31 @@ foreach( $iterator as $standard => $schema )
 			$data[ "synonym" ] = array_unique( $synonyms );
 
 		//
-		// Add flag.
-		//
-		if( ($standard == "3166-1")
-		 || ($standard == "3166-2")
-		 || ($standard == "3166-3") )
-		{
-			//
-			// Check file.
-			//
-			switch( $standard )
-			{
-				case "3166-1":
-				case "3166-3":
-					$flag_code = $data[ "alpha_2" ];
-					break;
-				case "3166-2":
-					$flag_code = $data[ "code" ];
-					break;
-			}
-			if( array_key_exists( $flag_code, $flags ) )
-			{
-				$filename = $flag_dir->getRealPath() . "/svg/" . strtolower( $flag_code ) . ".svg";
-				$tmp = new SplFileInfo( $filename );
-				if( $tmp->isFile() )
-					$data[ "flag" ] = file_get_contents( $filename );
-			}
-		}
-
-		//
 		// Write record.
 		//
 		$col_standards[ $standard ]->AddOne( $data );
 	}
+}
+
+//
+// Inform.
+//
+echo( "==> Flags" );
+
+//
+// Add flags.
+//
+$directory = new DirectoryIterator($flag_dir->getRealPath() . "/svg/");
+$col_flags = $database->Client( "flags", [] );
+foreach( $directory as $file )
+{
+	if( $file->getExtension() == "svg" )
+		$col_flags->AddOne(
+			[
+				"_id" => strtoupper( $file->getBasename( ".svg" ) ),
+				"flag" => file_get_contents( $file->getRealPath() )
+			]
+		);
 }
 
 echo( "\nDone!\n" );

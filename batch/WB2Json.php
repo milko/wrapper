@@ -227,7 +227,7 @@ function TERMS( \Milko\Wrapper\ClientServer	$theDatabase)
 	// Init local storage.
 	//
 	$terms = [];
-	$collection = $theDatabase->Client( "TERMS", [] );
+	$collection = $theDatabase->Client( "terms", [] );
 	$collection->Connect();
 
 	//
@@ -273,7 +273,7 @@ function DESCRIPTORS( \Milko\Wrapper\ClientServer	$theDatabase)
 	// Init local storage.
 	//
 	$descriptors = [];
-	$collection = $theDatabase->Client( "DESCRIPTORS", [] );
+	$collection = $theDatabase->Client( "descriptors", [] );
 	$collection->Connect();
 
 	//
@@ -377,9 +377,9 @@ function DataSources( SplFileInfo	$theDirectory,
 			// Load term.
 			//
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 
@@ -528,9 +528,9 @@ function DataSources( SplFileInfo	$theDirectory,
 		//
 		$from = $term[ kId ];
 		$to = $term[ kNid ];
-		$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+		$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kId ] = "schemas/$hash";
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
@@ -630,9 +630,9 @@ function Topics( SplFileInfo	$theDirectory,
 			// Load term.
 			//
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 
@@ -753,9 +753,9 @@ function Topics( SplFileInfo	$theDirectory,
 		//
 		$from = $term[ kId ];
 		$to = $term[ kNid ];
-		$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+		$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kId ] = "schemas/$hash";
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
@@ -855,9 +855,9 @@ function Indicators( SplFileInfo	$theDirectory,
 			// Load term.
 			//
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 
@@ -1025,10 +1025,10 @@ function Indicators( SplFileInfo	$theDirectory,
 
 			$edge = [];
 			$from = $term[ kId ];
-			$to = "TERMS/$tmp";
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$to = "terms/$tmp";
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
-			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kId ] = "schemas/$hash";
 			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
@@ -1040,11 +1040,11 @@ function Indicators( SplFileInfo	$theDirectory,
 			if( ! in_array( $tmp, $sources ) )
 			{
 				$edge = [];
-				$from = "TERMS/$tmp";
+				$from = "terms/$tmp";
 				$to = $term[ kNid ];
-				$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+				$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 				$hash = md5( "$from\t$to\t$predicate" );
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
@@ -1064,10 +1064,10 @@ function Indicators( SplFileInfo	$theDirectory,
 			{
 				$edge = [];
 				$from = $term[ kId ];
-				$to = "TERMS/$topic";
-				$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+				$to = "terms/$topic";
+				$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 				$hash = md5( "$from\t$to\t$predicate" );
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
@@ -1079,11 +1079,11 @@ function Indicators( SplFileInfo	$theDirectory,
 				if( ! in_array( $topic, $topics ) )
 				{
 					$edge = [];
-					$from = "TERMS/$topic";
+					$from = "terms/$topic";
 					$to = $term[ kNid ];
-					$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+					$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 					$hash = md5( "$from\t$to\t$predicate" );
-					$edge[ kId ] = "SCHEMAS/$hash";
+					$edge[ kId ] = "schemas/$hash";
 					$edge[ kKey ] = $hash;
 					$edge[ kFrom ] = $from;
 					$edge[ kTo ] = $to;
@@ -1102,9 +1102,9 @@ function Indicators( SplFileInfo	$theDirectory,
 		{
 			$from = $term[ kId ];
 			$to = $term[ kNid ];
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
-			$edge[ kId ] = "SCHEMAS/$hash";
+			$edge[ kId ] = "schemas/$hash";
 			$edge[ kKey ] = $hash;
 			$edge[ kFrom ] = $from;
 			$edge[ kTo ] = $to;
@@ -1202,9 +1202,9 @@ function Income( SplFileInfo	$theDirectory,
 			// Load term.
 			//
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 
@@ -1314,9 +1314,9 @@ function Income( SplFileInfo	$theDirectory,
 		//
 		$from = $term[ kId ];
 		$to = $term[ kNid ];
-		$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+		$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kId ] = "schemas/$hash";
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
@@ -1417,9 +1417,9 @@ function Lending( SplFileInfo	$theDirectory,
 			// Load term.
 			//
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 
@@ -1537,9 +1537,9 @@ function Lending( SplFileInfo	$theDirectory,
 		//
 		$from = $term[ kId ];
 		$to = $term[ kNid ];
-		$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+		$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kId ] = "schemas/$hash";
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
@@ -1784,9 +1784,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$terms[ $code ] = [];
 			$cur = & $terms[ $code ];
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 			$cur[ $theDescriptors[ "kConst" ] ]
@@ -1811,9 +1811,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			$cur = & $terms[ $code ];
 
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 			$cur[ $theDescriptors[ "kConst" ] ]
@@ -1849,21 +1849,21 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		$to = ( ($term[ kLid ] == "NA")
 			 || ($term[ kLid ] == "WLD") )
-			? "TERMS/$namespace"
-			: ("TERMS/" . "$namespace:WLD");
+			? "terms/$namespace"
+			: ("terms/" . "$namespace:WLD");
 
 		//
 		// Build edge.
 		//
 		$from = $term[ kId ];
-		$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+		$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 		$hash = md5( "$from\t$to\t$predicate" );
-		$edge[ kId ] = "SCHEMAS/$hash";
+		$edge[ kId ] = "schemas/$hash";
 		$edge[ kKey ] = $hash;
 		$edge[ kFrom ] = $from;
 		$edge[ kTo ] = $to;
 		$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-		$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/$namespace" ];
+		$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/$namespace" ];
 
 		//
 		// Add edge.
@@ -1903,9 +1903,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 		if( ! array_key_exists( $code, $theRegions ) )
 		{
 			$key = "$namespace:$code";
-			$cur[ kId ] = "TERMS/$key";
+			$cur[ kId ] = "terms/$key";
 			$cur[ kKey ] = $key;
-			$cur[ kNid ] = "TERMS/$namespace";
+			$cur[ kNid ] = "terms/$namespace";
 			$cur[ kLid ] = $code;
 			$cur[ kGid ] = $key;
 			$cur[ $theDescriptors[ "kConst" ] ]
@@ -1967,40 +1967,40 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			//
 			// Link region.
 			//
-			$from = "TERMS/" . $record[ "region" ];
-			$to = "TERMS/" . $ns_country;
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+			$from = "terms/" . $record[ "region" ];
+			$to = "terms/" . $ns_country;
+			$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! in_array( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 
 			//
 			// Link country.
 			//
-			$from = "TERMS/" . "$ns_country:$code";
-			$to = "TERMS/" . $record[ "region" ];
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$from = "terms/" . "$ns_country:$code";
+			$to = "terms/" . $record[ "region" ];
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! array_key_exists( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 		}
@@ -2010,37 +2010,37 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "adminregion", $record ) )
 		{
-			$from = "TERMS/" . $record[ "adminregion" ];
-			$to = "TERMS/" . $ns_country;
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+			$from = "terms/" . $record[ "adminregion" ];
+			$to = "terms/" . $ns_country;
+			$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! in_array( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 
-			$from = "TERMS/" . "$ns_country:$code";
-			$to = "TERMS/" . $record[ "adminregion" ];
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$from = "terms/" . "$ns_country:$code";
+			$to = "terms/" . $record[ "adminregion" ];
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! array_key_exists( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 		}
@@ -2050,14 +2050,14 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "incomeLevel", $record ) )
 		{
-			$from = "TERMS/" . $record[ "incomeLevel" ];
-			$to = "TERMS/" . $ns_country;
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+			$from = "terms/" . $record[ "incomeLevel" ];
+			$to = "terms/" . $ns_country;
+			$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! in_array( $hash, $edges ) )
 			{
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
@@ -2066,20 +2066,20 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 				$edges[ $hash ] = $edge;
 			}
 
-			$from = "TERMS/" . "$ns_country:$code";
-			$to = "TERMS/" . $record[ "incomeLevel" ];
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$from = "terms/" . "$ns_country:$code";
+			$to = "terms/" . $record[ "incomeLevel" ];
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! array_key_exists( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 		}
@@ -2089,14 +2089,14 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 		//
 		if( array_key_exists( "lendingType", $record ) )
 		{
-			$from = "TERMS/" . $record[ "lendingType" ];
-			$to = "TERMS/" . $ns_country;
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_category_of" ];
+			$from = "terms/" . $record[ "lendingType" ];
+			$to = "terms/" . $ns_country;
+			$predicate = "terms/" . $theTerms[ "k_predicate_category_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! in_array( $hash, $edges ) )
 			{
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
@@ -2105,20 +2105,20 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 				$edges[ $hash ] = $edge;
 			}
 
-			$from = "TERMS/" . "$ns_country:$code";
-			$to = "TERMS/" . $record[ "lendingType" ];
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$from = "terms/" . "$ns_country:$code";
+			$to = "terms/" . $record[ "lendingType" ];
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! array_key_exists( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
-				$edge[ $theDescriptors[ "kBranches" ] ] = [ "TERMS/" . $ns_country ];
+				$edge[ $theDescriptors[ "kBranches" ] ] = [ "terms/" . $ns_country ];
 				$edges[ $hash ] = $edge;
 			}
 		}
@@ -2131,15 +2131,15 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			//
 			// Connect to enum.
 			//
-			$from = "TERMS/" . "$ns_country:$code";
-			$to = "TERMS/" . $ns_country;
-			$predicate = "TERMS/" . $theTerms[ "k_predicate_enum_of" ];
+			$from = "terms/" . "$ns_country:$code";
+			$to = "terms/" . $ns_country;
+			$predicate = "terms/" . $theTerms[ "k_predicate_enum_of" ];
 			$hash = md5( "$from\t$to\t$predicate" );
 
 			if( ! array_key_exists( $hash, $edges ) )
 			{
 				$edge = [];
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
@@ -2155,12 +2155,12 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			{
 				$edge = [];
 
-				$from = "TERMS/" . "$ns_country:$code";
-				$to = "TERMS/" . $theTerms[ "kISO_3166_1" ] . ":" . $code;
-				$predicate = "TERMS/" . $theTerms[ "k_predicate_endorse" ];
+				$from = "terms/" . "$ns_country:$code";
+				$to = "terms/" . $theTerms[ "kISO_3166_1" ] . ":" . $code;
+				$predicate = "terms/" . $theTerms[ "k_predicate_endorse" ];
 				$hash = md5( "$from\t$to\t$predicate" );
 
-				$edge[ kId ] = "SCHEMAS/$hash";
+				$edge[ kId ] = "schemas/$hash";
 				$edge[ kKey ] = $hash;
 				$edge[ kFrom ] = $from;
 				$edge[ kTo ] = $to;
