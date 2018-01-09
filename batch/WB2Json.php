@@ -1600,8 +1600,12 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 	//
 	$standard = kStdCountry;
 	$link = $theStandards[ kStdCountry ];
-	$iso = $theDatabase->Client( "ISO_3166-1", [] );
-	$iso->Connect();
+	$iso1 = $theDatabase->Client( "ISO_3166-1", [] );
+	$iso1->Connect();
+	$iso3 = $theDatabase->Client( "ISO_3166-3", [] );
+	$iso3->Connect();
+	$flags = $theDatabase->Client( "flags", [] );
+	$flags->Connect();
 
 	//
 	// Inform.
@@ -1916,6 +1920,12 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			if( array_key_exists( "iso2Code", $record ) )
 				$cur[ $theDescriptors[ "kSynonym" ] ][] = $record[ "iso2Code" ];
 
+			if( array_key_exists( "iso2Code", $record ) ) {
+				$tmp = $flags->GetOne( $record[ "iso2Code" ] );
+				if( $tmp !== NULL )
+					$cur[ $theDescriptors[ "kLogo" ] ] = $tmp[ "flag" ];
+			}
+
 			if( array_key_exists( "region", $record ) )
 				$cur[ $theDescriptors[ "kSTD_geo_politic" ] ]
 					= $record[ "region" ];
@@ -2149,9 +2159,9 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 			}
 
 			//
-			// Connect to ISO.
+			// Connect to ISO 3166-1.
 			//
-			if( $iso->GetOne( $code ) )
+			if( $iso1->GetOne( $code ) )
 			{
 				$edge = [];
 
@@ -2166,6 +2176,33 @@ function Country( \Milko\Wrapper\ClientServer	$theDatabase,
 				$edge[ kTo ] = $to;
 				$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
 				$edges[ $hash ] = $edge;
+			}
+
+			//
+			// Connect to ISO 3166-3.
+			//
+			else
+			{
+				//
+				// Retrieve ISO record.
+				//
+				$tmp = $iso3->FindOne( [ "alpha_3" => $code ] );
+				if( $tmp !== NULL )
+				{
+					$edge = [];
+
+					$from = "terms/" . "$ns_country:$code";
+					$to = "terms/" . $theTerms[ "kISO_3166_3" ] . ":" . $tmp[ "_id" ];
+					$predicate = "terms/" . $theTerms[ "k_predicate_endorse" ];
+					$hash = md5( "$from\t$to\t$predicate" );
+
+					$edge[ kId ] = "schemas/$hash";
+					$edge[ kKey ] = $hash;
+					$edge[ kFrom ] = $from;
+					$edge[ kTo ] = $to;
+					$edge[ $theDescriptors[ "kPredicate" ] ] = $predicate;
+					$edges[ $hash ] = $edge;
+				}
 			}
 		}
 

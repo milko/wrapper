@@ -317,6 +317,35 @@ class Collection extends Client
 	} // Find.
 
 
+	/*===================================================================================
+	 *	FindOne																			*
+	 *==================================================================================*/
+
+	/**
+	 * <h4>Retrieve first document matching provided query.</h4><p />
+	 *
+	 * We use the findOne() method.
+	 *
+	 * @param array					$theQuery			Search query.
+	 * @return array				The document or <tt>NULL</tt>.
+	 *
+	 * @uses Connect()
+	 * @uses Connection()
+	 * @uses \MongoDB\Collection::find()
+	 */
+	public function FindOne( $theQuery = [] )
+	{
+		//
+		// Connect object.
+		//
+		$this->Connect();
+
+		return
+			$this->Connection()->findOne( $theQuery );								// ==>
+
+	} // FindOne.
+
+
 
 /*=======================================================================================
  *																						*
