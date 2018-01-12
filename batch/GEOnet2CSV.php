@@ -113,7 +113,7 @@ foreach( $iterator as $file )
 			$line = $row[ 0 ];
 
 			//
-			// Get header.
+			// Write header.
 			//
 			if( ! $done_header )
 			{
@@ -126,6 +126,9 @@ foreach( $iterator as $file )
 					$has_header = TRUE;
 				}
 
+				//
+				// Skip line.
+				//
 				$done_header = TRUE;
 				continue;														// =>
 			}
